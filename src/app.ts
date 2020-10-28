@@ -22,13 +22,9 @@ server.use("/test", (req, res) => {
 
 const whitelist: string[] = [
   "http://localhost:1027",
-  "http://localhost:3000",
-  "http://localhost:3030",
-  "http://localhost:3344",
-  "https://troisplay.vercel.app",
+  "http://67.205.179.49:3000",
   "http://troisplay.com",
   "http://www.troisplay.com",
-  "https://troisplay2.vercel.app",
   "mobile://troisplay.app",
   "web://troisplay.app",
   "https://overwatch-troisplay.vercel.app",

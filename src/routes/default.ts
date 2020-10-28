@@ -49,22 +49,22 @@ defaultRouter.post("/init", async (req: Request, res: Response) => {
       min_stack_custom: number;
       referRating: number;
     } = req.body;
-    if (
-      key !== process.env.UP_KEY ||
-      key === undefined ||
-      key === null ||
-      key === ""
-    ) {
-      res
-        .status(406)
-        .json({
-          message: "not allowed",
-          error: "#40010",
-          key: process.env.UP_KEY,
-          ty: typeof process.env.UP_KEY,
-        } as errorResHint);
-      return;
-    }
+    // if (
+    //   key !== process.env.UP_KEY ||
+    //   key === undefined ||
+    //   key === null ||
+    //   key === ""
+    // ) {
+    //   res
+    //     .status(406)
+    //     .json({
+    //       message: "not allowed",
+    //       error: "#40010",
+    //       key: process.env.UP_KEY,
+    //       ty: typeof process.env.UP_KEY,
+    //     } as errorResHint);
+    //   return;
+    // }
     let count = await defaultModel.countDocuments({});
     if (count >= 1) {
       res

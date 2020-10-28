@@ -57,7 +57,12 @@ defaultRouter.post("/init", async (req: Request, res: Response) => {
     ) {
       res
         .status(406)
-        .json({ message: "not allowed", error: "#40010" } as errorResHint);
+        .json({
+          message: "not allowed",
+          error: "#40010",
+          key: process.env.KEY,
+          ty: typeof process.env.KEY,
+        } as errorResHint);
       return;
     }
     let count = await defaultModel.countDocuments({});

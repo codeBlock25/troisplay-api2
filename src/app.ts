@@ -16,12 +16,18 @@ const db: string | number = process.env.DATABASE_URI;
 server.use(json());
 server.use(urlencoded({ extended: false }));
 
+server.use("/test", (req, res) => {
+  res.send("Working");
+});
+
 const whitelist: string[] = [
   "http://localhost:1027",
   "http://localhost:3000",
   "http://localhost:3030",
   "http://localhost:3344",
   "https://troisplay.vercel.app",
+  "http://troisplay.com",
+  "http://www.troisplay.com",
   "https://troisplay2.vercel.app",
   "mobile://troisplay.app",
   "web://troisplay.app",

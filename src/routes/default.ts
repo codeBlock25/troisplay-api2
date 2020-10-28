@@ -50,7 +50,7 @@ defaultRouter.post("/init", async (req: Request, res: Response) => {
       referRating: number;
     } = req.body;
     if (
-      key !== process.env.KEY ||
+      key !== process.env.UP_KEY ||
       key === undefined ||
       key === null ||
       key === ""
@@ -60,8 +60,8 @@ defaultRouter.post("/init", async (req: Request, res: Response) => {
         .json({
           message: "not allowed",
           error: "#40010",
-          key: process.env.KEY,
-          ty: typeof process.env.KEY,
+          key: process.env.UP_KEY,
+          ty: typeof process.env.UP_KEY,
         } as errorResHint);
       return;
     }

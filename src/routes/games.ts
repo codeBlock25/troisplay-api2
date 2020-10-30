@@ -12,7 +12,7 @@ import UserPlay, { GameRec } from "../model/plays";
 import AdminModel from "../model/admin";
 import defaultModel from "../model/default";
 import { successResHint, errorResHint } from "./default";
-import { cloneDeep, isEmpty } from "lodash";
+import { cloneDeep, filter, isEmpty } from "lodash";
 import roomModel from "../model/rooms";
 import AdminCashModel from "../model/admin_model";
 
@@ -2652,17 +2652,18 @@ GamesRouter.post("/custom-game", async (req: Request, res: Response) => {
         .json({ message: "error found", error: "insuficient found" });
       return;
     }
-    const p2 = await PlayerModel.findOne({ playername: player2Username });
-
-    if (!p2 || p2.userID === decoded.id && (player2Username !== "")) {
-      res
+    const p2 = await PlayerModel.findOne({ playername: player2Username.toLowerCase() });
+    if (player2Username !== "") {
+      if (!p2) { 
+        res
         .status(409)
         .json({ message: "error found", error: "player 2 not found" });
-      return;
+        return;
+      }
     }
     await new GameModel({
       gameMemberCount: 2,
-      members: [decoded.id, p2.userID],
+      members: [decoded.id, p2?.userID?? null],
       price_in_coin: cashRating * price_in_value,
       price_in_value,
       gameDetail: "A game created between friends",
@@ -2904,30 +2905,11 @@ GamesRouter.get("/requests", async (req: Request, res: Response) => {
     })
       .sort({ date: -1 })
       .then((result) => {
-        let requests = [];
-        result.map((rels) => {
-          if (rels.members[0] === decoded.id) {
-            return;
-          }
-          requests.push({
-            date: rels.date,
-            gameDetail: rels.gameDetail,
-            gameID: rels.gameID,
-            gameMemberCount: rels.gameMemberCount,
-            gameType: rels.gameType,
-            members: rels.members,
-            playCount: rels.playCount,
-            price_in_coin: rels.price_in_coin,
-            price_in_value: rels.price_in_value,
-            _id: rels._id,
-            title: rels.battleScore.player1.title,
-            description: rels.battleScore.player1.description,
-            endDate: rels.battleScore.player1.endDate,
-            endGameTime: rels.battleScore.player1.endGameTime,
-            choice: rels.battleScore.player1.choice,
-          });
-        });
-        res.json({ message: "content found", requests });
+        let clone = cloneDeep(result)
+        let data = filter(clone, (_game_) => {
+         return _game_.members[1] === decoded.id
+        })
+        res.json({ message: "content found", requests: data });
       })
       .catch((error) => {
         res.status(500).json({ message: "error found", error });
@@ -2962,13 +2944,16 @@ GamesRouter.get("/custom-game/games", async (req: Request, res: Response) => {
       return;
     }
     await GameModel.find({
-      played: true,
+      played: false,
       gameID: Games.custom_game,
-      isComplete: false,
     })
       .sort({ date: -1 })
       .then((requests) => {
-        res.json({ message: "content found", requests });
+        let clone = cloneDeep(requests);
+        let data = filter(clone, (_game_) => {
+          return _game_.members[1] === null;
+        });
+        res.json({ message: "content found", requests: data });
       })
       .catch((error) => {
         res.status(500).json({ message: "error found", error });

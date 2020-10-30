@@ -77,71 +77,78 @@ const salt = genSaltSync(5),
   userRoute = Router();
 
 userRoute.post("/", async (req: Request, res: Response) => {
-  const {
-    full_name,
-    phone_number,
-    key,
-    refer_code,
-  }: {
-    full_name: string;
-    phone_number: string;
-    key: string;
-    refer_code: string;
-  } = req.body;
-  let hashedKey = hashSync(key, salt);
-  let new_user = new userModel({
-    full_name,
-    phone_number: phone_number.replace(/(\s)|[+]/g, ""),
-    key: hashedKey,
-  });
-  let referee: any = await ReferalModel.findOne({ refer_code: refer_code.toLowerCase() });
-  new_user
-    .save()
-    .then(async (result) => {
-      Promise.all([
-        referee &&
-          (await ReferalModel.updateOne(
-            { refer_code },
-            { inactiveReferal: referee.inactiveReferal + 1 }
-          )),
-        await new ReferalModel({
-          userID: result._id,
-          refer_code: rand({
-            length: 7,
-            charset: "alphabetic",
-          }),
-        }).save(),
-        await new WalletModel({
-          userID: result._id,
-        }).save(),
-        await new CashWalletModel({
-          userID: result._id,
-        }).save(),
-        await new DeviceModel({
-          userID: result._id,
-        }).save(),
-        await new RecordModel({
-          userID: result._id,
-        }).save(),
-      ])
-        .then(() => {
+  try {
+    const {
+      full_name,
+      phone_number,
+      key,
+      refer_code,
+    }: {
+      full_name: string;
+      phone_number: string;
+      key: string;
+      refer_code: string;
+    } = req.body;
+    let hashedKey = hashSync(key, salt);
+    let new_user = new userModel({
+      full_name,
+      phone_number: phone_number.replace(/(\s)|[+]/g, ""),
+      key: hashedKey,
+    });
+    let referee = await ReferalModel.findOne({
+      refer_code: refer_code.toLowerCase(),
+    });
+    new_user
+      .save()
+      .then(async (result) => {
+        Promise.all([
+          referee &&
+            (await ReferalModel.updateOne(
+              { refer_code },
+              { inactiveReferal: referee.inactiveReferal + 1 }
+            )),
+          await new ReferalModel({
+            userID: result._id,
+            refer_code: rand({
+              length: 7,
+              charset: "alphabetic",
+            }),
+          }).save(),
+          await new WalletModel({
+            userID: result._id,
+          }).save(),
+          await new CashWalletModel({
+            userID: result._id,
+          }).save(),
+          await new DeviceModel({
+            userID: result._id,
+          }).save(),
+          await new RecordModel({
+            userID: result._id,
+          }).save(),
+        ])
+          .then(() => {
+            res.json({ message: "succesful" });
+          })
+          .catch((error) => {
+            userModel.deleteOne({ _id: result._id });
+            console.log(error);
+          });
           res.json({ message: "content found" });
         })
-        .catch((error) => {
-          userModel.deleteOne({ _id: result._id });
-          throw new Error(error);
+        .catch((err) => {
+          if (err.keyPattern) {
+            if (err.keyPattern.phone_number) {
+              res.status(400).json({ message: "error found", error: err });
+              return;
+            }
+          }
+          res.status(500).json({ message: "error found", error: err });
         });
-      res.json({ message: "content found" });
-    })
-    .catch((err) => {
-      if (err.keyPattern) {
-        if (err.keyPattern.phone_number) {
-          res.status(400).json({ message: "error found", error: err });
-          return;
-        }
-      }
-      res.status(500).json({ message: "error found", error: err });
-    });
+      } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "error found", error });
+  }
 });
 
 userRoute.post("/login", async (req: Request, res: Response) => {

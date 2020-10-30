@@ -41,27 +41,27 @@ var corsOptions: CorsOptions = {
   credentials: true,
 };
 
-server.use("/media", (req: Request, res: Response) => {
-  try {
-    let acceptable: string[] = ["png", "jpg", "jpeg"];
-    let fileLocation: string = path.join(__dirname, req.originalUrl);
-    if (!acceptable.includes(_.last(fileLocation.split(".")))) {
-      res.status(404).send("404");
-      return;
-    }
-    let steam: ReadStream = fs.createReadStream(
-      path.join(__dirname, req.originalUrl)
-    );
-    steam.on("open", () => {
-      steam.pipe(res);
-    });
-    steam.on("error", (err) => {
-      res.end(err);
-    });
-  } catch (error) {
-    res.status(404).send(error);
-  }
-});
+// server.use("/media", (req: Request, res: Response) => {
+//   try {
+//     let acceptable: string[] = ["png", "jpg", "jpeg"];
+//     let fileLocation: string = path.join(__dirname, req.originalUrl);
+//     if (!acceptable.includes(_.last(fileLocation.split(".")))) {
+//       res.status(404).send("404");
+//       return;
+//     }
+//     let steam: ReadStream = fs.createReadStream(
+//       path.join(__dirname, req.originalUrl)
+//     );
+//     steam.on("open", () => {
+//       steam.pipe(res);
+//     });
+//     steam.on("error", (err) => {
+//       res.end(err);
+//     });
+//   } catch (error) {
+//     res.status(404).send(error);
+//   }
+// });
 
 server.use(cors());
 server.use("/api", customRoute);

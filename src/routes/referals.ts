@@ -6,7 +6,7 @@ import users from "../model/users";
 import { config as envConfig } from "dotenv";
 
 envConfig();
-
+const secret = process.env.SECRET ?? ""
 const ReferalRoute: Router = Router();
 
 ReferalRoute.put("/up-active", async (req: Request, res: Response) => {
@@ -22,7 +22,7 @@ ReferalRoute.put("/up-active", async (req: Request, res: Response) => {
       res.status(410).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded: string | object | any = verify(token, process.env.SECRET);
+    let decoded: string | object | any = verify(token, secret);
     let found = await users.findById(decoded.id);
     let refel_data = await ReferalModel.findOne({ userID: decoded.id });
     if (!found) {
@@ -34,8 +34,8 @@ ReferalRoute.put("/up-active", async (req: Request, res: Response) => {
         refer_code,
       },
       {
-        activeReferal: refel_data.activeReferal + 1,
-        inactiveReferal: refel_data.inactiveReferal - 1,
+        activeReferal: (refel_data?.activeReferal ?? 0) + 1,
+        inactiveReferal: (refel_data?.inactiveReferal ?? 0) - 1,
       }
     )
       .then((data) => {
@@ -66,8 +66,8 @@ ReferalRoute.put("/up-inactive", async (req: Request, res: Response) => {
       res.status(410).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded: string | object | any = verify(token, process.env.SECRET);
-    let found: Document = await users.findById(decoded.id);
+    let decoded: string | object | any = verify(token, secret);
+    let found = await users.findById(decoded.id);
     let refel_data: any = await ReferalModel.findOne({ userID: decoded.id });
     if (!found) {
       res.status(410).json({ message: "error found", error: "invalid user" });

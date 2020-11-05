@@ -1,6 +1,5 @@
 import { Router, Request, Response } from "express";
 import { config as envConfig } from "dotenv";
-import users from "../model/users";
 import { verify } from "jsonwebtoken";
 import VideoModel from "../model/video";
 import AdminModel from "../model/admin";
@@ -11,7 +10,7 @@ const VideoRoute = Router();
 
 VideoRoute.post("", async (req: Request, res: Response) => {
   try {
-    const auth = req.headers.authorization;
+    const auth = req.headers.authorization ?? "";
     if (auth) {
       res.json({ message: "error", error: "invalid auth" });
       return;

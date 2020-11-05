@@ -13,6 +13,7 @@ import { PRODUCTION_FLAG, PUBLIC_KEY, SECRET_KEY } from "./wallet";
 import PlayerModel from "../model/player";
 
 envConfig()
+const secret = process.env.SECRET ?? ""
 export const payload: {
     country: string; 
     customer: string;
@@ -44,13 +45,13 @@ BillRouter.post("/airtime", async (req: Request, res: Response) => {
           res.status(406).json({ message: "error found", error: "empty token" });
           return;
         }
-        let decoded = verify(token, process.env.SECRET) as unknown as {id: string};
+        let decoded = verify(token, secret) as unknown as {id: string};
         let found = await users.findById(decoded.id);
         if (!found) {
           res.status(406).json({ message: "error found", error: "invalid user" });
           return;
         }
-        let { currentCash } = await CashWalletModel.findOne({ userID: decoded.id })
+        let { currentCash } = await CashWalletModel.findOne({ userID: decoded.id })?? {currentCash: 0}
         let {phone_number, amount, key}: {phone_number: string, amount: number, key: string} = req.body
         if (currentCash < amount) {
             res.status(401).json({message: "insufficient fund"})
@@ -101,13 +102,13 @@ BillRouter.post("/data", async (req: Request, res: Response) => {
           res.status(406).json({ message: "error found", error: "empty token" });
           return;
         }
-        let decoded = verify(token, process.env.SECRET) as unknown as {id: string};
+        let decoded = verify(token, secret) as unknown as {id: string};
         let found = await users.findById(decoded.id);
         if (!found) {
           res.status(406).json({ message: "error found", error: "invalid user" });
           return;
         }
-        let { currentCash } = await CashWalletModel.findOne({ userID: decoded.id })
+        let { currentCash } = await CashWalletModel.findOne({ userID: decoded.id }) ?? {currentCash: 0}
         let {phone_number, amount, key}: {phone_number: string, amount: number, key: string} = req.body
         if (currentCash < amount) {
             res.status(401).json({message: "insufficient fund"})
@@ -159,13 +160,15 @@ BillRouter.post("/transfer", async (req: Request, res: Response) => {
           res.status(406).json({ message: "error found", error: "empty token" });
           return;
         }
-        let decoded = verify(token, process.env.SECRET) as unknown as {id: string};
+        let decoded = verify(token, secret) as unknown as {id: string};
         let found = await users.findById(decoded.id);
         if (!found) {
           res.status(406).json({ message: "error found", error: "invalid user" });
           return;
         }
-        let { currentCash } = await CashWalletModel.findOne({ userID: decoded.id })
+        let { currentCash } = (await CashWalletModel.findOne({
+          userID: decoded.id,
+        })) ?? { currentCash: 0 };
         let { username, amount, key }: { username: string, amount: number, key: string; } = req.body;
         if (currentCash < amount) {
             res.status(401).json({message: "error found", error: "insuficient fund"})
@@ -181,7 +184,9 @@ BillRouter.post("/transfer", async (req: Request, res: Response) => {
             res.status(403).json({message: "error found", error: "incorrect key"})
             return
         }
-        let { currentCash: currentCashP2 } = await CashWalletModel.findOne({ userID: playerDetails.userID })
+        let { currentCash: currentCashP2 } = (await CashWalletModel.findOne({
+          userID: playerDetails.userID,
+        })) ?? { currentCash: 0 };
         await CashWalletModel.updateOne({userID: decoded.id}, {currentCash: currentCash - amount})
         await CashWalletModel.updateOne({ userID: playerDetails.userID }, { currentCash: currentCashP2 + amount })
         res.json({message: "succesful"})
@@ -204,13 +209,15 @@ BillRouter.post("/transfer/direct", async (req: Request, res: Response) => {
           res.status(406).json({ message: "error found", error: "empty token" });
           return;
         }
-        let decoded = verify(token, process.env.SECRET) as unknown as {id: string};
+        let decoded = verify(token, secret) as unknown as {id: string};
         let found = await users.findById(decoded.id);
         if (!found) {
           res.status(406).json({ message: "error found", error: "invalid user" });
           return;
         }
-        let { currentCash } = await CashWalletModel.findOne({ userID: decoded.id })
+        let { currentCash } = (await CashWalletModel.findOne({
+          userID: decoded.id,
+        })) ?? { currentCash: 0 };
         let { username, amount, key }: { username: string, amount: number, key: string; } = req.body;
         if (currentCash < amount) {
             res.status(401).json({message: "error found", error: "insuficient fund"})
@@ -226,11 +233,11 @@ BillRouter.post("/transfer/direct", async (req: Request, res: Response) => {
             res.status(403).json({message: "error found", error: "incorrect key"})
             return
         }
-        let { currentCash: currentCashP2 } = await CashWalletModel.findOne({ userID: playerDetails.userID })
-        
 const flw = new Flutterwave(PUBLIC_KEY, SECRET_KEY  );
  
-const {bank_name} = await PlayerModel.findOne({userID: decoded.id})
+const { bank_name } = (await PlayerModel.findOne({ userID: decoded.id })) ?? {
+  bank_name: "",
+};
 const initTrans = async () => {
  
     try {

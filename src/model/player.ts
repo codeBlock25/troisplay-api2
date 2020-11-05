@@ -8,6 +8,7 @@ export interface playerType extends Document {
   location: string;
   isConfirmPolicy: boolean;
   bank_name: string;
+  about_me: string
   account_number: string;
   recovery_question: string;
   recovery_answer: string;

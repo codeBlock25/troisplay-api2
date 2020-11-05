@@ -7,6 +7,7 @@ import { config as envConfig } from "dotenv";
 
 const DeviceRouter: Router = Router();
 envConfig();
+const secret = process.env.SECRET ?? "";
 
 export interface IDevice {
   userID: string;
@@ -40,7 +41,7 @@ DeviceRouter.post("/", async (req: Request, res: Response) => {
       res.status(410).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded: string | object | any = verify(token, process.env.SECRET);
+    let decoded: string | object | any = verify(token, secret);
     let found = await users.findById(decoded.id);
     if (!found) {
       res.status(410).json({ message: "error found", error: "invalid user" });
@@ -57,8 +58,8 @@ DeviceRouter.post("/", async (req: Request, res: Response) => {
     });
     await newdevicesetup
       .save()
-      .then((value: deviceType) => {})
-      .catch((error: Error) => {});
+      .then((_) => {})
+      .catch((_) => {});
   } catch (error) {}
 });
 
@@ -74,14 +75,14 @@ DeviceRouter.get("/personal", async (req: Request, res: Response) => {
       res.status(410).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded: string | object | any = verify(token, process.env.SECRET);
+    let decoded: string | object | any = verify(token, secret);
     let found = await users.findById(decoded.id);
     if (!found) {
       res.status(410).json({ message: "error found", error: "invalid user" });
       return;
     }
     await DeviceModel.findOne({ userID: decoded.id })
-      .then((setup: deviceType) => {
+      .then((setup) => {
         res.json({ message: "content body", setup });
       })
       .catch((error: Error) => {
@@ -113,7 +114,7 @@ DeviceRouter.put("/", async (req: Request, res: Response) => {
       res.status(410).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded: string | object | any = verify(token, process.env.SECRET);
+    let decoded: string | object | any = verify(token, secret);
     let found = await users.findById(decoded.id);
     let deviceSetup: any = await DeviceModel.findOne({ userID: decoded.id });
     if (!found) {

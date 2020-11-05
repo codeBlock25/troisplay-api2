@@ -6,172 +6,38 @@ import moment from "moment";
 import WalletModel from "../model/walltet";
 import RecordModel from "../model/gamerecord";
 import { config as envConfig } from "dotenv";
-import PlayerModel, { playerType } from "../model/player";
+import PlayerModel from "../model/player";
 import CashWalletModel from "../model/cash_wallet";
 import UserPlay, { GameRec } from "../model/plays";
 import AdminModel from "../model/admin";
 import defaultModel from "../model/default";
 import { successResHint, errorResHint } from "./default";
-import { cloneDeep, filter, isEmpty } from "lodash";
 import roomModel from "../model/rooms";
 import AdminCashModel from "../model/admin_model";
+import { RoshamboOption, choices, PayType } from "../types/enum"
+import { roshamboHint, matcherHint } from "../types/interface"
+import {
+  FindWinnerOnRoshambo,
+  MarkRoshamboGame,
+  FindWinnerOnPenalty,
+  AdminCash,
+  FindWinnerOnMatcher,
+  shuffle,
+  PlayerCash,
+  PlayAdmin,
+  PlayerDrawCash,
+} from "../function";
 
 envConfig();
 const GamesRouter: Router = Router();
 
-export enum RoshamboOption {
-  rock,
-  paper,
-  scissors,
-}
+const secret: string = process.env.SECRET ?? "";
 
-export enum PayType {
-  cash,
-  coin,
-}
-
-export interface roshamboHint {
-  price_in_cash: number;
-  gameInPut: {
-    round1: number;
-    round2: number;
-    round3: number;
-    round4: number;
-    round5: number;
-  };
-}
-
-export interface matcherHint {
-  price_in_cash: number;
-  gameInPut: number;
-}
-
-export enum choices {
-  at_stated_timed,
-  immediately,
-}
-
-export function FindWinnerOnPenalty(
-  p1: {
-    round1: number;
-    round2: number;
-    round3: number;
-    round4: number;
-    round5: number;
-  },
-  p2: {
-    round1: number;
-    round2: number;
-    round3: number;
-    round4: number;
-    round5: number;
-  }
-) {
-  let count = 0;
-  p1.round1 === p2.round1 ? count++ : count--;
-  p1.round2 === p2.round2 ? count++ : count--;
-  p1.round3 === p2.round3 ? count++ : count--;
-  p1.round4 === p2.round4 ? count++ : count--;
-  p1.round5 === p2.round5 ? count++ : count--;
-  return count >= 3;
-}
-
-export function AdminCash (commission_value_in: "$"|"c"|"%", commission_value: number, adminCurrentCash: number, game_price: number, memberCount: number, cashRating: number ) {
-  return  commission_value_in === "$"
-    ? adminCurrentCash + (commission_value * 2)
-    : commission_value_in === "c"
-    ? adminCurrentCash +
-      ((cashRating * commission_value) * 2)
-    : commission_value_in === "%"
-    ? adminCurrentCash +
-      (game_price / commission_value)
-    : adminCurrentCash 
-}
-
-export function FindWinnerOnRoshambo(
-  p1: {
-    round1: number;
-    round2: number;
-    round3: number;
-    round4: number;
-    round5: number;
-  },
-  p2: {
-    round1: number;
-    round2: number;
-    round3: number;
-    round4: number;
-    round5: number;
-  }
-): number {
-  let count = 0;
-  (p1.round1 === RoshamboOption.rock &&
-    p2.round1 === RoshamboOption.scissors) ||
-  (p1.round1 === RoshamboOption.paper &&
-    p2.round1 === RoshamboOption.scissors) ||
-  (p1.round1 === RoshamboOption.scissors && p2.round1 === RoshamboOption.paper)
-    ? count++
-    : count;
-  (p1.round2 === RoshamboOption.rock &&
-    p2.round2 === RoshamboOption.scissors) ||
-  (p1.round2 === RoshamboOption.paper &&
-    p2.round2 === RoshamboOption.scissors) ||
-  (p1.round2 === RoshamboOption.scissors && p2.round2 === RoshamboOption.paper)
-    ? count++
-    : count;
-  (p1.round3 === RoshamboOption.rock &&
-    p2.round3 === RoshamboOption.scissors) ||
-  (p1.round3 === RoshamboOption.paper &&
-    p2.round3 === RoshamboOption.scissors) ||
-  (p1.round3 === RoshamboOption.scissors && p2.round3 === RoshamboOption.paper)
-    ? count++
-    : count;
-  (p1.round4 === RoshamboOption.rock &&
-    p2.round4 === RoshamboOption.scissors) ||
-  (p1.round4 === RoshamboOption.paper &&
-    p2.round4 === RoshamboOption.scissors) ||
-  (p1.round4 === RoshamboOption.scissors && p2.round4 === RoshamboOption.paper)
-    ? count++
-    : count;
-  (p1.round5 === RoshamboOption.rock &&
-    p2.round5 === RoshamboOption.scissors) ||
-  (p1.round5 === RoshamboOption.paper &&
-    p2.round5 === RoshamboOption.scissors) ||
-  (p1.round5 === RoshamboOption.scissors && p2.round5 === RoshamboOption.paper)
-    ? count++
-    : count;
-  return count;
-}
-
-export function FindWinnerOnMatcher(p1: number, p2: number) {
-  return p1 === p2;
-}
-
-export function MarkRoshamboGame(
-  p1: RoshamboOption,
-  p2: RoshamboOption
-): GameRec {
-  let marked =
-    p1 === RoshamboOption.scissors && p2 === RoshamboOption.rock
-      ? GameRec.win
-      : p1 === RoshamboOption.rock && p2 === RoshamboOption.paper
-      ? GameRec.win
-      : p1 === RoshamboOption.paper && p2 === RoshamboOption.scissors
-      ? GameRec.win
-      : p1 === p2
-      ? GameRec.draw
-      : GameRec.lose;
-  return marked;
-}
-
-export function shuffle(array: string[]): string[] {
-  return array.sort(() => Math.random() - 0.5);
-}
 
 GamesRouter.post("/spin", async (req: Request, res: Response) => {
   try {
     const { price_in_coin }: GameType = req.body;
-    let auth: string = req.headers.authorization;
+    let auth: string = req.headers.authorization ?? "";
     if (!auth) {
       res.status(406).json({ message: "error found", error: "invalid auth" });
       return;
@@ -181,7 +47,7 @@ GamesRouter.post("/spin", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
@@ -210,7 +76,7 @@ GamesRouter.post("/spin", async (req: Request, res: Response) => {
           await WalletModel.updateOne(
             { userID: decoded.id },
             { currentCoin: price_in_coin + wallet.currentCoin }
-          ).then(async (result: GameType) => {
+          ).then(async (_) => {
             if (foundRecord) {
               await RecordModel.updateOne(
                 { userID: decoded.id },
@@ -245,7 +111,7 @@ GamesRouter.post("/spin", async (req: Request, res: Response) => {
 
 GamesRouter.get("/spin/check-time", async (req: Request, res: Response) => {
   try {
-    let auth: string = req.headers.authorization;
+    let auth: string = req.headers.authorization ?? "";
     if (!auth) {
       res.status(406).json({ message: "error found", error: "invalid auth" });
       return;
@@ -255,7 +121,7 @@ GamesRouter.get("/spin/check-time", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
@@ -267,7 +133,7 @@ GamesRouter.get("/spin/check-time", async (req: Request, res: Response) => {
       members: [decoded.id],
       gameID: Games.glory_spin,
       date: { $gte: new Date(moment().format("YYYY-MM-DD")) },
-    }).then((result: GameType) => {
+    }).then((result) => {
       if (!result) {
         res.json({
           message: "content found",
@@ -296,7 +162,7 @@ GamesRouter.get("/spin/check-time", async (req: Request, res: Response) => {
 
 GamesRouter.get("/search", async (req: Request, res: Response) => {
   try {
-    let auth: string = req.headers.authorization;
+    let auth: string = req.headers.authorization ?? "";
     if (!auth) {
       res.status(406).json({ message: "error found", error: "invalid auth" });
       return;
@@ -306,7 +172,7 @@ GamesRouter.get("/search", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
@@ -321,19 +187,19 @@ GamesRouter.get("/search", async (req: Request, res: Response) => {
       price_in_coin: parseInt(price, 10),
       gameID: parseInt(game, 10),
     })
-      .then(async (result: GameType) => {
-        await PlayerModel.findOne({ userID: result.members[0] }).then(
-          (result2: playerType) => {
+      .then(async (result) => {
+        await PlayerModel.findOne({ userID: result?.members[0] }).then(
+          (result2) => {
             res.json({
               message: "content found",
               games: {
-                id: result._id,
-                profilepic: result2.playerpic,
-                playername: result2.playername,
-                priceType: result.priceType,
-                price_in_coin: result.price_in_coin,
-                price_in_value: result.price_in_value,
-                date: result.date,
+                id: result?._id,
+                profilepic: result2?.playerpic,
+                playername: result2?.playername,
+                priceType: result?.priceType,
+                price_in_coin: result?.price_in_coin,
+                price_in_value: result?.price_in_value,
+                date: result?.date,
               },
             });
           }
@@ -349,7 +215,7 @@ GamesRouter.get("/search", async (req: Request, res: Response) => {
 
 GamesRouter.get("/getter", async (req: Request, res: Response) => {
   try {
-    let auth: string = req.headers.authorization;
+    let auth: string = req.headers.authorization ?? "";
     if (!auth) {
       res.status(406).json({ message: "error found", error: "invalid auth" });
       return;
@@ -359,7 +225,7 @@ GamesRouter.get("/getter", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
@@ -380,7 +246,7 @@ GamesRouter.get("/getter", async (req: Request, res: Response) => {
       .sort({ date: -1 })
       .limit(15)
       .then(async (result: GameType[]) => {
-        let r = []
+        let r: any[] = []
         result.map((resl)=>{
           r.push({
             _id: resl._id,
@@ -412,7 +278,7 @@ GamesRouter.get("/getter", async (req: Request, res: Response) => {
 
 GamesRouter.post("/play", async (req: Request, res: Response) => {
   try {
-    let auth: string = req.headers.authorization;
+    let auth: string = req.headers.authorization ?? "";
     const {
       gameID,
       playWith,
@@ -426,7 +292,7 @@ GamesRouter.post("/play", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded: any = verify(token, process.env.SECRET);
+    let decoded: any = verify(token, secret);
     let found = await users.findById(decoded.id);
     let game_ = await GameModel.findById(gameID);
     let coin_wallet = await WalletModel.findOne({ userID: decoded.id });
@@ -436,7 +302,7 @@ GamesRouter.post("/play", async (req: Request, res: Response) => {
       return;
     }
     if (playWith === PayType.cash) {
-      if (cash_wallet.currentCash < game_.price_in_value) {
+      if ((cash_wallet?.currentCash ?? 0) < (game_?.price_in_value ?? 0)) {
         res
           .status(401)
           .json({ message: "error found", error: "insufficient fund" });
@@ -446,16 +312,16 @@ GamesRouter.post("/play", async (req: Request, res: Response) => {
         { _id: gameID },
         { 
           played: true,
-          members: [game_.members[0], decoded.id],
+          members: [game_?.members[0], decoded.id],
         } 
       )
-        .then(async (gameRec) => {
+        .then(async (_) => {
           CashWalletModel.updateOne(
             { userID: decoded.id }, 
-            { currentCash: cash_wallet.currentCash - game_.price_in_value }
+            { currentCash: (cash_wallet?.currentCash ?? 0) - (game_?.price_in_value ?? 0)}
           )
             .then(() => {
-              res.json({ message: "play", price: game_.price_in_value });
+              res.json({ message: "play", price: game_?.price_in_value });
             })
             .catch((error) => {
               res.status(500).json({ message: "error found", error });
@@ -465,7 +331,7 @@ GamesRouter.post("/play", async (req: Request, res: Response) => {
           res.status(500).json({ message: "error found", error });
         });
     } else if (playWith === PayType.coin) {
-      if (game_.price_in_coin > coin_wallet.currentCoin) {
+      if ((game_?.price_in_coin ?? 0) > (coin_wallet?.currentCoin ?? 0)) {
         res.status(401).json({
           message: "error found",
           error: "insufficient fund in your coin account",
@@ -476,16 +342,16 @@ GamesRouter.post("/play", async (req: Request, res: Response) => {
         { _id: gameID },
         {
           played: true,
-          members: [game_.members[0], decoded.id],
+          members: [game_?.members[0], decoded.id],
         }
       )
-        .then(async (gameRec) => {
+        .then(async (_) => {
           await WalletModel.updateOne(
             { userID: decoded.id },
-            { currentCoin: coin_wallet.currentCoin - game_.price_in_coin }
+            { currentCoin: (coin_wallet?.currentCoin ?? 0)- (game_?.price_in_coin ?? 0)}
           )
             .then(() => {
-              res.json({ message: "play", price: game_.price_in_coin
+              res.json({ message: "play", price: game_?.price_in_coin
              });
             })
             .catch((error) => {
@@ -504,7 +370,7 @@ GamesRouter.post("/play", async (req: Request, res: Response) => {
 
 GamesRouter.post("/roshambo", async (req: Request, res: Response) => {
   try {
-    let auth = req.headers.authorization;
+    let auth = req.headers.authorization ?? "";
     let {
       price_in_cash,
       gameInPut,
@@ -519,17 +385,24 @@ GamesRouter.post("/roshambo", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
-    let {currentCash} = await CashWalletModel.findOne({ userID: decoded.id });
-    let { currentCoin } = await WalletModel.findOne({ userID: decoded.id });
-    let { cashRating } = await defaultModel.findOne({});
+    let cashInstance = await CashWalletModel.findOne({ userID: decoded.id });
+    let coinInstance = await WalletModel.findOne({ userID: decoded.id });
+    let defaultInstance = await defaultModel.findOne({});
     if (!found) {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
     }
+    if (!coinInstance || !cashInstance || !defaultInstance) {
+      res.status(500).json({error: "internal error", message: "error found"})
+      return
+    };
+    const { currentCash } = cashInstance;
+    const { currentCoin } = coinInstance;
+    const { cashRating } = defaultInstance;
     let isExiting = await GameModel.findOne({
       played: false,
       price_in_value: price_in_cash,
@@ -612,7 +485,7 @@ GamesRouter.post("/roshambo", async (req: Request, res: Response) => {
 
 GamesRouter.post("/penalty", async (req: Request, res: Response) => {
   try {
-    let auth = req.headers.authorization;
+    let auth = req.headers.authorization ?? "";
     let {
       price_in_cash,
       gameInPut,
@@ -627,13 +500,24 @@ GamesRouter.post("/penalty", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
-    let {currentCash} = await CashWalletModel.findOne({ userID: decoded.id });
-    let { currentCoin } = await WalletModel.findOne({ userID: decoded.id });
-    let {cashRating} = await defaultModel.findOne({})
+    let cashInstance = await CashWalletModel.findOne({ userID: decoded.id });
+    let coinInstance = await WalletModel.findOne({ userID: decoded.id });
+    let defaultInstance = await defaultModel.findOne({});
+    if (!found) {
+      res.status(406).json({ message: "error found", error: "invalid user" });
+      return;
+    }
+    if (!coinInstance || !cashInstance || !defaultInstance) {
+      res.status(500).json({ error: "internal error", message: "error found" });
+      return;
+    }
+    const { currentCash } = cashInstance;
+    const { currentCoin } = coinInstance;
+    const { cashRating } = defaultInstance;
     if (!found) {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
@@ -722,7 +606,7 @@ GamesRouter.post("/penalty", async (req: Request, res: Response) => {
 
 GamesRouter.post("/guess-master", async (req: Request, res: Response) => {
   try {
-    let auth = req.headers.authorization;
+    let auth = req.headers.authorization ?? "";
     let {
       price_in_cash,
       gameInPut,
@@ -737,13 +621,24 @@ GamesRouter.post("/guess-master", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
-    let {currentCash} = await CashWalletModel.findOne({ userID: decoded.id });
-    let { currentCoin } = await WalletModel.findOne({ userID: decoded.id });
-    let { cashRating } = await defaultModel.findOne({});
+    let cashInstance = await CashWalletModel.findOne({ userID: decoded.id });
+    let coinInstance = await WalletModel.findOne({ userID: decoded.id });
+    let defaultInstance = await defaultModel.findOne({});
+    if (!found) {
+      res.status(406).json({ message: "error found", error: "invalid user" });
+      return;
+    }
+    if (!coinInstance || !cashInstance || !defaultInstance) {
+      res.status(500).json({ error: "internal error", message: "error found" });
+      return;
+    }
+    const { currentCash } = cashInstance;
+    const { currentCoin } = coinInstance;
+    const { cashRating } = defaultInstance;
     if (!found) {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
@@ -832,7 +727,7 @@ GamesRouter.post("/guess-master", async (req: Request, res: Response) => {
 
 GamesRouter.get("/check", async (req: Request, res: Response) => {
   try {
-    let auth = req.headers.authorization;
+    let auth = req.headers.authorization ?? "";
     if (!auth) {
       res.status(406).json({
         message: "not allowed",
@@ -895,7 +790,7 @@ GamesRouter.get("/check", async (req: Request, res: Response) => {
 
 GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
   try {
-    let auth = req.headers.authorization;
+    let auth = req.headers.authorization ?? "";
     let {
       id,
       gameInPut,
@@ -918,99 +813,82 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
-    const { cashRating, commission_penalty } = await defaultModel.findOne({});
-    let { currentCash } = await CashWalletModel.findOne({
-      userID: decoded.id,
-    });
     let game_ = await GameModel.findById(id);
-    let { currentCash: p1Cash } = await CashWalletModel.findOne({
-      userID: game_.members[0],
-    });
-    let { currentCash: AdminCurrentCash } = await AdminCashModel.findOne({})
     if (!found) {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
     }
-    let winner = FindWinnerOnPenalty(game_.battleScore.player1, gameInPut);
+    let cashInstance = await CashWalletModel.findOne({ userID: decoded.id });
+    let coinInstance = await WalletModel.findOne({ userID: decoded.id });
+    let defaultInstance = await defaultModel.findOne({});
+    let adminCashInstance = await AdminCashModel.findOne({});
+    let p2CashInstance = await CashWalletModel.findOne({
+      userID: game_?.members[0],
+    });
+    if (!found) {
+      res.status(406).json({ message: "error found", error: "invalid user" });
+      return;
+    }
+    if (!coinInstance || !cashInstance || !defaultInstance || !p2CashInstance || !adminCashInstance) {
+      res.status(500).json({ error: "internal error", message: "error found" });
+      return;
+    }
+    const { currentCash: p1Cash } = cashInstance;
+    const { currentCoin } = coinInstance;
+    const { currentCash: p2Cash } = p2CashInstance;
+    const { currentCash: AdminCurrentCash } = adminCashInstance;
+    const { cashRating, commission_penalty } = defaultInstance;
+    let winner = FindWinnerOnPenalty(game_?.battleScore.player1, gameInPut);
     if (winner) {
       await AdminCashModel.updateOne(
         {},
-        {currentCash: AdminCash(commission_penalty.value_in, commission_penalty.value, AdminCurrentCash, game_.price_in_value, 2, cashRating)
+        {currentCash: AdminCash(commission_penalty, AdminCurrentCash, (game_?.price_in_value ?? 0), 2, cashRating)
           })
-         
       await new RecordModel({
         userID: decoded.id,
         game: Games.penalth_card,
         won: "yes",
-        earnings:
-          commission_penalty.value_in === "$"
-            ? game_.price_in_value +
-              (game_.price_in_value - commission_penalty.value)
-            : commission_penalty.value_in === "c"
-            ? game_.price_in_value +
-              (game_.price_in_value - cashRating * commission_penalty.value)
-            : commission_penalty.value_in === "%"
-            ? game_.price_in_value +
-              (game_.price_in_value -
-                game_.price_in_value / commission_penalty.value)
-            : p1Cash,
+        earnings: PlayerCash(commission_penalty, p1Cash, game_?.price_in_value ?? 0, 1, cashRating)
       }).save();
       await new RecordModel({
-        userID: game_.members[0],
+        userID: game_?.members[0],
         game: Games.penalth_card,
         won: "no",
-        earnings: -(commission_penalty.value_in === "$"
-          ? game_.price_in_value +
-            (game_.price_in_value - commission_penalty.value)
-          : commission_penalty.value_in === "c"
-          ? game_.price_in_value +
-            (game_.price_in_value - cashRating * commission_penalty.value)
-          : commission_penalty.value_in === "%"
-          ? game_.price_in_value +
-            (game_.price_in_value -
-              game_.price_in_value / commission_penalty.value)
-          : p1Cash),
+        earnings: -PlayerCash(
+          commission_penalty,
+          p2Cash,
+          game_?.price_in_value ?? 0,
+          1,
+          cashRating
+        ),
       }).save();
       await CashWalletModel.updateOne(
         { userID: decoded.id },
         {
-          currentCash:
-            commission_penalty.value_in === "$"
-              ? currentCash +
-                game_.price_in_value +
-                (game_.price_in_value - commission_penalty.value)
-              : commission_penalty.value_in === "c"
-              ? game_.price_in_value +
-                currentCash +
-                (game_.price_in_value - cashRating * commission_penalty.value)
-              : commission_penalty.value_in === "%"
-              ? game_.price_in_value +
-                currentCash +
-                (game_.price_in_value -
-                  game_.price_in_value / commission_penalty.value)
-              : currentCash,
+          currentCash: PlayerCash(
+            commission_penalty,
+            p1Cash,
+            game_?.price_in_value ?? 0,
+            1,
+            cashRating
+          ),
         }
       )
         .then(() => {
           res.json({
             message: "you won",
             winner: true,
-            price:
-              commission_penalty.value_in === "$"
-                ? game_.price_in_value +
-                  (game_.price_in_value - commission_penalty.value)
-                : commission_penalty.value_in === "c"
-                ? game_.price_in_value +
-                  (game_.price_in_value - cashRating * commission_penalty.value)
-                : commission_penalty.value_in === "%"
-                ? game_.price_in_value +
-                  (game_.price_in_value -
-                    game_.price_in_value / commission_penalty.value)
-                : p1Cash,
+            price: PlayerCash(
+              commission_penalty,
+              p1Cash,
+              game_?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
           });
         })
         .catch((error) => {
@@ -1021,53 +899,30 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
         userID: decoded.id,
         game: Games.penalth_card,
         won: "no",
-        earnings: -(commission_penalty.value_in === "$"
-          ? game_.price_in_value +
-            (game_.price_in_value - commission_penalty.value)
-          : commission_penalty.value_in === "c"
-          ? game_.price_in_value +
-            (game_.price_in_value - cashRating * commission_penalty.value)
-          : commission_penalty.value_in === "%"
-          ? game_.price_in_value +
-            (game_.price_in_value -
-              game_.price_in_value / commission_penalty.value)
-          : p1Cash),
+        earnings: -PlayerCash(commission_penalty, p1Cash, game_?.price_in_value ?? 0, 1, cashRating)
       }).save();
       await new RecordModel({
-        userID: game_.members[0],
+        userID: game_?.members[0],
         game: Games.penalth_card,
         won: "yes",
-        earnings:
-          commission_penalty.value_in === "$"
-            ? game_.price_in_value +
-              (game_.price_in_value - commission_penalty.value)
-            : commission_penalty.value_in === "c"
-            ? game_.price_in_value +
-              (game_.price_in_value - cashRating * commission_penalty.value)
-            : commission_penalty.value_in === "%"
-            ? game_.price_in_value +
-              (game_.price_in_value -
-                game_.price_in_value / commission_penalty.value)
-            : p1Cash,
+        earnings: PlayerCash(
+          commission_penalty,
+          p2Cash,
+          game_?.price_in_value ?? 0,
+          1,
+          cashRating
+        ),
       }).save();
       await CashWalletModel.updateOne(
-        { userID: game_.members[0] },
+        { userID: game_?.members[0] },
         {
-          p1Cash:
-            commission_penalty.value_in === "$"
-              ? p1Cash +
-                game_.price_in_value +
-                (game_.price_in_value - commission_penalty.value)
-              : commission_penalty.value_in === "c"
-              ? game_.price_in_value +
-                p1Cash +
-                (game_.price_in_value - cashRating * commission_penalty.value)
-              : commission_penalty.value_in === "%"
-              ? game_.price_in_value +
-                p1Cash +
-                (game_.price_in_value -
-                  game_.price_in_value / commission_penalty.value)
-              : p1Cash,
+          p2Cash: PlayerCash(
+            commission_penalty,
+            p1Cash,
+            game_?.price_in_value ?? 0,
+            1,
+            cashRating
+          ),
         }
       )
         .then(() => {
@@ -1081,6 +936,7 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
           res.status(500).json({ message: "error found", error });
         });
     }
+    await PlayAdmin(commission_penalty, game_?.price_in_value??0, AdminCurrentCash, cashRating, 2)
   } catch (error) {
     res.status(500).json({ message: "error found", error });
     console.error(error);
@@ -1089,7 +945,7 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
 
 GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
   try {
-    let auth = req.headers.authorization;
+    let auth = req.headers.authorization ?? "";
     let {
       id,
       gameInPut,
@@ -1112,96 +968,180 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
-    const { cashRating, commission_roshambo } = await defaultModel.findOne({});
-    let { currentCash } = await CashWalletModel.findOne({
-      userID: decoded.id,
-    });
-    
-    console.log(currentCash)
     let game_ = await GameModel.findById(id);
-    let { currentCash: p1Cash } = await CashWalletModel.findOne({
-      userID: game_.members[0],
+    let cashInstance = await CashWalletModel.findOne({ userID: decoded.id });
+    let coinInstance = await WalletModel.findOne({ userID: decoded.id });
+    let defaultInstance = await defaultModel.findOne({});
+    let adminCashInstance = await AdminCashModel.findOne({});
+    let p2CashInstance = await CashWalletModel.findOne({
+      userID: game_?.members[0],
     });
     if (!found) {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
     }
-    let winner = FindWinnerOnRoshambo(game_.battleScore.player1, gameInPut);
-    if (winner) {
+    if (
+      !coinInstance ||
+      !cashInstance ||
+      !defaultInstance ||
+      !p2CashInstance ||
+      !adminCashInstance
+    ) {
+      res.status(500).json({ error: "internal error", message: "error found" });
+      return;
+    }
+    const { currentCash: p1Cash } = cashInstance;
+    const { currentCoin } = coinInstance;
+    const { currentCash: p2Cash } = p2CashInstance;
+    const { currentCash: AdminCurrentCash } = adminCashInstance;
+    const { cashRating, commission_roshambo } = defaultInstance;
+    let winner = FindWinnerOnRoshambo(game_?.battleScore.player1, gameInPut);
+    if (winner === GameRec.win) {
       await new RecordModel({
         userID: decoded.id,
         game: Games.roshambo,
         won: "yes",
-        earnings:
-          commission_roshambo.value_in === "$"
-            ? game_.price_in_value +
-              (game_.price_in_value - commission_roshambo.value)
-            : commission_roshambo.value_in === "c"
-            ? game_.price_in_value +
-              (game_.price_in_value - cashRating * commission_roshambo.value)
-            : commission_roshambo.value_in === "%"
-            ? game_.price_in_value +
-              (game_.price_in_value -
-                game_.price_in_value / commission_roshambo.value)
-            : p1Cash,
+        earnings: PlayerCash(
+          commission_roshambo,
+          p1Cash,
+          game_?.price_in_value ?? 0,
+          1,
+          cashRating
+        ),
       }).save();
       await new RecordModel({
-        userID: game_.members[0],
+        userID: game_?.members[0],
         game: Games.roshambo,
         won: "no",
-        earnings: -(commission_roshambo.value_in === "$"
-          ? game_.price_in_value +
-            (game_.price_in_value - commission_roshambo.value)
-          : commission_roshambo.value_in === "c"
-          ? game_.price_in_value +
-            (game_.price_in_value - cashRating * commission_roshambo.value)
-          : commission_roshambo.value_in === "%"
-          ? game_.price_in_value +
-            (game_.price_in_value -
-              game_.price_in_value / commission_roshambo.value)
-          : p1Cash),
+        earnings: -PlayerCash(
+              commission_roshambo,
+              p2Cash,
+              game_?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
       }).save();
       await CashWalletModel.updateOne(
         { userID: decoded.id },
         {
-          currentCash:
-            commission_roshambo.value_in === "$"
-              ? currentCash +
-                game_.price_in_value +
-                (game_.price_in_value - commission_roshambo.value)
-              : commission_roshambo.value_in === "c"
-              ? game_.price_in_value +
-                currentCash +
-                (game_.price_in_value - cashRating * commission_roshambo.value)
-              : commission_roshambo.value_in === "%"
-              ? game_.price_in_value +
-                currentCash +
-                (game_.price_in_value -
-                  game_.price_in_value / commission_roshambo.value)
-              : currentCash,
+          currentCash: PlayerCash(
+            commission_roshambo,
+            p1Cash,
+            game_?.price_in_value ?? 0,
+            1,
+            cashRating
+          ),
         }
       )
         .then(() => {
           res.json({
             message: "you won",
-            winner: true,
-            price:
-              commission_roshambo.value_in === "$"
-                ? game_.price_in_value +
-                  (game_.price_in_value - commission_roshambo.value)
-                : commission_roshambo.value_in === "c"
-                ? game_.price_in_value +
-                  (game_.price_in_value -
-                    cashRating * commission_roshambo.value)
-                : commission_roshambo.value_in === "%"
-                ? game_.price_in_value +
-                  (game_.price_in_value -
-                    game_.price_in_value / commission_roshambo.value)
-                : p1Cash,
+            winner,
+            game_result: {
+              round1: MarkRoshamboGame(game_?.battleScore.player1.round1,gameInPut.round1),
+              round2: MarkRoshamboGame(game_?.battleScore.player1.round2,gameInPut.round2),
+              round3: MarkRoshamboGame(game_?.battleScore.player1.round3,gameInPut.round3),
+              round4: MarkRoshamboGame(game_?.battleScore.player1.round4,gameInPut.round4),
+              round5: MarkRoshamboGame(game_?.battleScore.player1.round5,gameInPut.round5),
+            },
+            price: PlayerCash(
+              commission_roshambo,
+              p1Cash,
+              game_?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
+          });
+        })
+        .catch((error) => {
+          res.status(500).json({ message: "error found", error });
+        });
+    } else if (winner === GameRec.draw) {
+      await new RecordModel({
+        userID: decoded.id,
+        game: Games.roshambo,
+        won: "yes",
+        earnings: PlayerDrawCash(
+          commission_roshambo,
+          p1Cash,
+          game_?.price_in_value ?? 0,
+          1,
+          cashRating
+        ),
+      }).save();
+      await new RecordModel({
+        userID: game_?.members[0],
+        game: Games.roshambo,
+        won: "no",
+        earnings: -PlayerDrawCash(
+          commission_roshambo,
+          p2Cash,
+          game_?.price_in_value ?? 0,
+          1,
+          cashRating
+        ),
+      }).save();
+      await CashWalletModel.updateOne(
+        { userID: game_?.members[0] },
+        {
+          currentCash: PlayerDrawCash(
+            commission_roshambo,
+            p2Cash,
+            game_?.price_in_value ?? 0,
+            1,
+            cashRating
+          ),
+        }
+      )
+      await CashWalletModel.updateOne(
+        { userID: decoded.id },
+        {
+          currentCash: PlayerDrawCash(
+            commission_roshambo,
+            p1Cash,
+            game_?.price_in_value ?? 0,
+            1,
+            cashRating
+          ),
+        }
+      )
+        .then(() => {
+          res.json({
+            message: "you won",
+            winner,
+            game_result: {
+              round1: MarkRoshamboGame(
+                game_?.battleScore.player1.round1,
+                gameInPut.round1
+              ),
+              round2: MarkRoshamboGame(
+                game_?.battleScore.player1.round2,
+                gameInPut.round2
+              ),
+              round3: MarkRoshamboGame(
+                game_?.battleScore.player1.round3,
+                gameInPut.round3
+              ),
+              round4: MarkRoshamboGame(
+                game_?.battleScore.player1.round4,
+                gameInPut.round4
+              ),
+              round5: MarkRoshamboGame(
+                game_?.battleScore.player1.round5,
+                gameInPut.round5
+              ),
+            },
+            price: PlayerCash(
+              commission_roshambo,
+              p1Cash,
+              game_?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
           });
         })
         .catch((error) => {
@@ -1209,69 +1149,82 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
         });
     } else {
       await new RecordModel({
-        userID: game_.members[0],
+        userID: game_?.members[0],
         game: Games.roshambo,
         won: "yes",
-        earnings:
-          commission_roshambo.value_in === "$"
-            ? game_.price_in_value +
-              (game_.price_in_value - commission_roshambo.value)
-            : commission_roshambo.value_in === "c"
-            ? game_.price_in_value +
-              (game_.price_in_value - cashRating * commission_roshambo.value)
-            : commission_roshambo.value_in === "%"
-            ? game_.price_in_value +
-              (game_.price_in_value -
-                game_.price_in_value / commission_roshambo.value)
-            : p1Cash,
+        earnings: PlayerCash(
+          commission_roshambo,
+          p2Cash,
+          game_?.price_in_value ?? 0,
+          1,
+          cashRating
+        ),
       }).save();
       await new RecordModel({
         userID: decoded.id,
         game: Games.roshambo,
         won: "no",
-        earnings: -(commission_roshambo.value_in === "$"
-          ? game_.price_in_value +
-            (game_.price_in_value - commission_roshambo.value)
-          : commission_roshambo.value_in === "c"
-          ? game_.price_in_value +
-            (game_.price_in_value - cashRating * commission_roshambo.value)
-          : commission_roshambo.value_in === "%"
-          ? game_.price_in_value +
-            (game_.price_in_value -
-              game_.price_in_value / commission_roshambo.value)
-          : p1Cash),
+        earnings: -PlayerCash(
+          commission_roshambo,
+          p1Cash,
+          game_?.price_in_value ?? 0,
+          1,
+          cashRating
+        ),
       }).save();
       await CashWalletModel.updateOne(
-        { userID: game_.members[0] },
+        { userID: game_?.members[0] },
         {
-          p1Cash:
-            commission_roshambo.value_in === "$"
-              ? p1Cash +
-                game_.price_in_value +
-                (game_.price_in_value - commission_roshambo.value)
-              : commission_roshambo.value_in === "c"
-              ? game_.price_in_value +
-                p1Cash +
-                (game_.price_in_value - cashRating * commission_roshambo.value)
-              : commission_roshambo.value_in === "%"
-              ? game_.price_in_value +
-                p1Cash +
-                (game_.price_in_value -
-                  game_.price_in_value / commission_roshambo.value)
-              : p1Cash,
+          p1Cash: PlayerCash(
+            commission_roshambo,
+            p2Cash,
+            game_?.price_in_value ?? 0,
+            1,
+            cashRating
+          ),
         }
       )
         .then(() => {
           res.json({
             message: "you lost",
-            winner: false,
+            winner,
             price: 0,
+            game_result: {
+              round1: MarkRoshamboGame(
+                game_?.battleScore.player1.round1,
+                gameInPut.round1
+              ),
+              round2: MarkRoshamboGame(
+                game_?.battleScore.player1.round2,
+                gameInPut.round2
+              ),
+              round3: MarkRoshamboGame(
+                game_?.battleScore.player1.round3,
+                gameInPut.round3
+              ),
+              round4: MarkRoshamboGame(
+                game_?.battleScore.player1.round4,
+                gameInPut.round4
+              ),
+              round5: MarkRoshamboGame(
+                game_?.battleScore.player1.round5,
+                gameInPut.round5
+              ),
+            },
           });
         })
         .catch((error) => {
           res.status(500).json({ message: "error found", error });
         });
     }
+
+    await PlayAdmin(
+      commission_roshambo,
+      game_?.price_in_value ?? 0,
+      AdminCurrentCash,
+      cashRating,
+      2
+    );
   } catch (error) {
     res.status(500).json({ message: "error found", error });
     console.error(error);
@@ -1280,7 +1233,7 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
 
 GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
   try {
-    let auth = req.headers.authorization;
+    let auth = req.headers.authorization ?? "";
     let {
       id,
       gameInPut,
@@ -1297,97 +1250,86 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
-    const { cashRating, commission_guess_mater } = await defaultModel.findOne(
-      {}
-    );
-    let { currentCash } = await CashWalletModel.findOne({
-      userID: decoded.id,
-    });
     let game_ = await GameModel.findById(id);
-    let { currentCash: p1Cash } = await CashWalletModel.findOne({
-      userID: game_.members[0],
+    let cashInstance = await CashWalletModel.findOne({ userID: decoded.id });
+    let coinInstance = await WalletModel.findOne({ userID: decoded.id });
+    let defaultInstance = await defaultModel.findOne({});
+    let adminCashInstance = await AdminCashModel.findOne({});
+    let p2CashInstance = await CashWalletModel.findOne({
+      userID: game_?.members[0],
     });
     if (!found) {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
     }
-    let winner = FindWinnerOnMatcher(game_.battleScore.player1, gameInPut);
+    if (
+      !coinInstance ||
+      !cashInstance ||
+      !defaultInstance ||
+      !p2CashInstance ||
+      !adminCashInstance
+    ) {
+      res.status(500).json({ error: "internal error", message: "error found" });
+      return;
+    }
+    const { currentCash: p1Cash } = cashInstance;
+    const { currentCoin } = coinInstance;
+    const { currentCash: p2Cash } = p2CashInstance;
+    const { currentCash: AdminCurrentCash } = adminCashInstance;
+    const { cashRating, commission_guess_mater } = defaultInstance;
+    let winner = FindWinnerOnMatcher(game_?.battleScore.player1, gameInPut);
     if (winner) {
       await new RecordModel({
-        userID: game_.members[0],
+        userID: game_?.members[0],
         game: Games.matcher,
         won: "yes",
-        earnings:
-          commission_guess_mater.value_in === "$"
-            ? game_.price_in_value +
-              (game_.price_in_value - commission_guess_mater.value)
-            : commission_guess_mater.value_in === "c"
-            ? game_.price_in_value +
-              (game_.price_in_value - cashRating * commission_guess_mater.value)
-            : commission_guess_mater.value_in === "%"
-            ? game_.price_in_value +
-              (game_.price_in_value -
-                game_.price_in_value / commission_guess_mater.value)
-            : p1Cash,
+        earnings: PlayerCash(
+          commission_guess_mater,
+          p2Cash,
+          game_?.price_in_value ?? 0,
+          1,
+          cashRating
+        ),
       }).save();
       await new RecordModel({
         userID: decoded.id,
         game: Games.matcher,
         won: "no",
-        earnings: -(commission_guess_mater.value_in === "$"
-          ? game_.price_in_value +
-            (game_.price_in_value - commission_guess_mater.value)
-          : commission_guess_mater.value_in === "c"
-          ? game_.price_in_value +
-            (game_.price_in_value - cashRating * commission_guess_mater.value)
-          : commission_guess_mater.value_in === "%"
-          ? game_.price_in_value +
-            (game_.price_in_value -
-              game_.price_in_value / commission_guess_mater.value)
-          : p1Cash),
+        earnings: -PlayerCash(
+          commission_guess_mater,
+          p1Cash,
+          game_?.price_in_value ?? 0,
+          1,
+          cashRating
+        ),
       }).save();
       await CashWalletModel.updateOne(
         { userID: decoded.id },
         {
-          currentCash:
-            commission_guess_mater.value_in === "$"
-              ? currentCash +
-                game_.price_in_value +
-                (game_.price_in_value - commission_guess_mater.value)
-              : commission_guess_mater.value_in === "c"
-              ? game_.price_in_value +
-                currentCash +
-                (game_.price_in_value -
-                  cashRating * commission_guess_mater.value)
-              : commission_guess_mater.value_in === "%"
-              ? game_.price_in_value +
-                currentCash +
-                (game_.price_in_value -
-                  game_.price_in_value / commission_guess_mater.value)
-              : currentCash,
+          currentCash: PlayerCash(
+            commission_guess_mater,
+            p1Cash,
+            game_?.price_in_value ?? 0,
+            1,
+            cashRating
+          ),
         }
       )
         .then(() => {
           res.json({
             message: "you won",
             winner: true,
-            price:
-              commission_guess_mater.value_in === "$"
-                ? game_.price_in_value +
-                  (game_.price_in_value - commission_guess_mater.value)
-                : commission_guess_mater.value_in === "c"
-                ? game_.price_in_value +
-                  (game_.price_in_value -
-                    cashRating * commission_guess_mater.value)
-                : commission_guess_mater.value_in === "%"
-                ? game_.price_in_value +
-                  (game_.price_in_value -
-                    game_.price_in_value / commission_guess_mater.value)
-                : p1Cash,
+            price: PlayerCash(
+              commission_guess_mater,
+              p1Cash,
+              game_?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
           });
         })
         .catch((error) => {
@@ -1405,58 +1347,39 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
       });
       if (count >= 3) {
         await new RecordModel({
-          userID: game_.members[0],
+          userID: game_?.members[0],
           game: Games.matcher,
           won: "yes",
-          earnings:
-            commission_guess_mater.value_in === "$"
-              ? game_.price_in_value +
-                (game_.price_in_value - commission_guess_mater.value)
-              : commission_guess_mater.value_in === "c"
-              ? game_.price_in_value +
-                (game_.price_in_value -
-                  cashRating * commission_guess_mater.value)
-              : commission_guess_mater.value_in === "%"
-              ? game_.price_in_value +
-                (game_.price_in_value -
-                  game_.price_in_value / commission_guess_mater.value)
-              : p1Cash,
+          earnings: PlayerCash(
+            commission_guess_mater,
+            p2Cash,
+            game_?.price_in_value ?? 0,
+            1,
+            cashRating
+          ),
         }).save();
         await new RecordModel({
           userID: decoded.id,
           game: Games.matcher,
           won: "no",
-          earnings: -(commission_guess_mater.value_in === "$"
-            ? game_.price_in_value +
-              (game_.price_in_value - commission_guess_mater.value)
-            : commission_guess_mater.value_in === "c"
-            ? game_.price_in_value +
-              (game_.price_in_value - cashRating * commission_guess_mater.value)
-            : commission_guess_mater.value_in === "%"
-            ? game_.price_in_value +
-              (game_.price_in_value -
-                game_.price_in_value / commission_guess_mater.value)
-            : p1Cash),
+          earnings: -PlayerCash(
+              commission_guess_mater,
+              p1Cash,
+              game_?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
         }).save();
         await CashWalletModel.updateOne(
-          { userID: game_.members[0] },
+          { userID: game_?.members[0] },
           {
-            p1Cash:
-              commission_guess_mater.value_in === "$"
-                ? p1Cash +
-                  game_.price_in_value +
-                  (game_.price_in_value - commission_guess_mater.value)
-                : commission_guess_mater.value_in === "c"
-                ? game_.price_in_value +
-                  p1Cash +
-                  (game_.price_in_value -
-                    cashRating * commission_guess_mater.value)
-                : commission_guess_mater.value_in === "%"
-                ? game_.price_in_value +
-                  p1Cash +
-                  (game_.price_in_value -
-                    game_.price_in_value / commission_guess_mater.value)
-                : p1Cash,
+            p1Cash: PlayerCash(
+              commission_guess_mater,
+              p2Cash,
+              game_?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
           }
         )
           .then(() => {
@@ -1473,6 +1396,14 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
         res.json({ count: 4 - count, winner: false, price: 0 });
       }
     }
+      await PlayAdmin(
+        commission_guess_mater,
+        game_?.price_in_value ?? 0,
+        AdminCurrentCash,
+        cashRating,
+        2
+      );
+  
   } catch (error) {
     res.status(500).json({ message: "error found", error });
     console.error(error);
@@ -1481,7 +1412,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
 
 GamesRouter.get("/mine", async (req: Request, res: Response) => {
   try {
-    let auth: string = req.headers.authorization;
+    let auth: string = req.headers.authorization ?? "";
     if (!auth) {
       res.status(406).json({ message: "error found", error: "invalid auth" });
       return;
@@ -1491,7 +1422,7 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
@@ -1504,7 +1435,7 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
       .sort({ date: -1 })
       .limit(45)
       .then((result) => {
-        let games = [];
+        let games: any[] = [];
         roomgames.map(g => {
           games.push({
             date: g.date,
@@ -1548,7 +1479,7 @@ GamesRouter.post(
   "/roshambo/challange/one-on-one",
   async (req: Request, res: Response) => {
     try {
-      let auth = req.headers.authorization;
+      let auth = req.headers.authorization ?? "";
       let {
         id,
         gameInPut,
@@ -1569,37 +1500,46 @@ GamesRouter.post(
         res.status(406).json({ message: "error found", error: "empty token" });
         return;
       }
-      let decoded = (verify(token, process.env.SECRET) as unknown) as {
+      let decoded = (verify(token, secret) as unknown) as {
         id: string;
       };
       let found = await users.findById(decoded.id);
-      if (!found) {
-        res.status(419).json({
-          message: "error found",
-          error: "invalid user",
-        } as errorResHint);
-        return;
-      }
-      let { commission_roshambo, cashRating } = await defaultModel.findOne({});
-      let game_ = await GameModel.findById(id);
-      let { currentCoin } = await WalletModel.findOne({
-        userID: decoded.id,
-      });
-      let { currentCash } = await CashWalletModel.findOne({
-        userID: decoded.id,
-      });
-      
-      if (!game_) {
+     let game_ = await GameModel.findById(id);
+     let cashInstance = await CashWalletModel.findOne({ userID: decoded.id });
+     let coinInstance = await WalletModel.findOne({ userID: decoded.id });
+     let defaultInstance = await defaultModel.findOne({});
+     let adminCashInstance = await AdminCashModel.findOne({});
+     let p2CashInstance = await CashWalletModel.findOne({
+       userID: game_?.members[0],
+     });
+     if (!found) {
+       res.status(406).json({ message: "error found", error: "invalid user" });
+       return;
+     }
+     if (
+       !coinInstance ||
+       !cashInstance ||
+       !defaultInstance ||
+       !p2CashInstance ||
+       !adminCashInstance
+     ) {
+       res
+         .status(500)
+         .json({ error: "internal error", message: "error found" });
+       return;
+     }
+     if (!game_) {
         res.status(401).json({
           message: "error found",
           error: "invalid game",
         } as errorResHint);
         return;
       }
-      let { currentCash: currentCashP2 } = await CashWalletModel.findOne({
-        userID: game_?.members[0] ?? "",
-      });
-
+     const { currentCash: p1Cash } = cashInstance;
+     const { currentCoin } = coinInstance;
+     const { currentCash: p2Cash } = p2CashInstance;
+     const { currentCash: AdminCurrentCash } = adminCashInstance;
+     const { cashRating, commission_roshambo } = defaultInstance;
       // with coin
       if (payWith === PayType.coin) {
         if (game_.price_in_coin > currentCoin) {
@@ -1610,7 +1550,7 @@ GamesRouter.post(
         }
       } else {
         // with cash
-        if (game_.price_in_value > currentCash) {
+        if (game_.price_in_value > p1Cash) {
           res
             .status(401)
             .json({ message: "error found", error: "insufficient fund" });
@@ -1626,10 +1566,10 @@ GamesRouter.post(
         ),
         gameID: id,
       }).save();
-      let played = await UserPlay.countDocuments({
-        player2ID: decoded.id,
-        gameID: id,
-      });
+      // let played = await UserPlay.countDocuments({
+      //   player2ID: decoded.id,
+      //   gameID: id,
+      // });
       let winCount = await UserPlay.countDocuments({
         player2ID: decoded.id,
         gameID: id,
@@ -1683,7 +1623,7 @@ GamesRouter.post(
           { userID: decoded.id },
           {
             currentCash:
-              currentCash + (commission_roshambo.value_in === "$"
+              p1Cash + (commission_roshambo.value_in === "$"
                 ?
                   (game_.price_in_value - commission_roshambo.value)
                 : commission_roshambo.value_in === "c"
@@ -1700,7 +1640,7 @@ GamesRouter.post(
           { userID: game_.members[0] },
           {
             currentCash:
-              currentCashP2 + (commission_roshambo.value_in === "$"
+              p2Cash + (commission_roshambo.value_in === "$"
                 ?
                   (game_.price_in_value - commission_roshambo.value)
                 : commission_roshambo.value_in === "c"
@@ -1773,7 +1713,7 @@ GamesRouter.post(
           { userID: decoded.id },
           {
             currentCash:
-              currentCash + (commission_roshambo.value_in === "$"
+              p1Cash + (commission_roshambo.value_in === "$"
                 ? game_.price_in_value +
                   (game_.price_in_value - commission_roshambo.value)
                 : commission_roshambo.value_in === "c"
@@ -1842,7 +1782,7 @@ GamesRouter.post(
           { userID: game_.members[0] },
           {
             currentCash:
-              currentCashP2 + (commission_roshambo.value_in === "$"
+              p2Cash + (commission_roshambo.value_in === "$"
                 ? game_.price_in_value +
                   (game_.price_in_value - commission_roshambo.value)
                 : commission_roshambo.value_in === "c"
@@ -1886,7 +1826,7 @@ GamesRouter.post(
   "/penalty/challange/one-on-one",
   async (req: Request, res: Response) => {
     try {
-      let auth = req.headers.authorization;
+      let auth = req.headers.authorization ?? "";
       let {
         id,
         gameInPut,
@@ -1907,21 +1847,44 @@ GamesRouter.post(
         res.status(406).json({ message: "error found", error: "empty token" });
         return;
       }
-      let decoded = (verify(token, process.env.SECRET) as unknown) as {
+      let decoded = (verify(token, secret) as unknown) as {
         id: string;
       };
       let found = await users.findById(decoded.id);
-      let {currentCoin} = await WalletModel.findOne({userID: decoded.id})
-      let { currentCash } = await CashWalletModel.findOne({
-        userID: decoded.id,
-      });
-      console.log(currentCash)
       let game_ = await GameModel.findById(id);
+      let cashInstance = await CashWalletModel.findOne({ userID: decoded.id });
+      let coinInstance = await WalletModel.findOne({ userID: decoded.id });
+      let defaultInstance = await defaultModel.findOne({});
+      let adminCashInstance = await AdminCashModel.findOne({});
+      let p2CashInstance = await CashWalletModel.findOne({
+        userID: game_?.members[0],
+      });
       if (!found) {
         res.status(406).json({ message: "error found", error: "invalid user" });
         return;
       }
-      let { commission_penalty, cashRating } = await defaultModel.findOne({});
+      if (
+        !coinInstance ||
+        !cashInstance ||
+        !defaultInstance ||
+        !p2CashInstance ||
+        !adminCashInstance ||
+        !game_
+      ) {
+        res
+          .status(500)
+          .json({ error: "internal error", message: "error found" });
+        return;
+      }
+      const { currentCash: p1Cash } = cashInstance;
+      const { currentCoin } = coinInstance;
+      const { currentCash: p2Cash } = p2CashInstance;
+      const { currentCash: AdminCurrentCash } = adminCashInstance;
+      const { cashRating, commission_penalty } = defaultInstance;
+    if (!found) {
+        res.status(406).json({ message: "error found", error: "invalid user" });
+        return;
+      }
 
       // with coin
       if (payWith === PayType.coin) {
@@ -1933,7 +1896,7 @@ GamesRouter.post(
         }
       } else {
         // with cash
-        if (game_.price_in_value > currentCash) {
+        if (game_.price_in_value > p1Cash) {
           res
           .status(401)
           .json({ message: "error found", error: "insufficient fund" });
@@ -1942,13 +1905,10 @@ GamesRouter.post(
       }
       await GameModel.findOne({ _id: id })
         .then(async (result) => {
-          let { currentCash: currentCashP2 } = await CashWalletModel.findOne({
-            userID: game_.members[0],
-          });
           await new UserPlay({
             player2ID: decoded.id,
-            isWin: result.battleScore.player1[`round${round}`] === gameInPut,
-            gameID: result._id,
+            isWin: result?.battleScore.player1[`round${round}`] === gameInPut,
+            gameID: result?._id,
           }).save();
 
           let winCount = await UserPlay.countDocuments({
@@ -1963,19 +1923,19 @@ GamesRouter.post(
           });
           if (winCount >= 3) {
             await new RecordModel({
-              userID: game_.members[0],
+              userID: game_?.members[0],
               game: Games.penalth_card,
               won: "no",
               earnings: -(commission_penalty.value_in === "$"
-                ? game_.price_in_value +
-                  (game_.price_in_value - commission_penalty.value)
+                ? (game_?.price_in_value ?? 0) +
+                  ((game_?.price_in_value ?? 0) - commission_penalty.value)
                 : commission_penalty.value_in === "c"
-                ? game_.price_in_value +
-                  (game_.price_in_value - cashRating * commission_penalty.value)
+                ? (game_?.price_in_value ?? 0) +
+                  ((game_?.price_in_value ?? 0) - cashRating * commission_penalty.value)
                 : commission_penalty.value_in === "%"
-                ? game_.price_in_value +
-                  (game_.price_in_value -
-                    game_.price_in_value / commission_penalty.value)
+                ? (game_?.price_in_value ?? 0) +
+                  ((game_?.price_in_value ?? 0) -
+                    (game_?.price_in_value ?? 0) / commission_penalty.value)
                 : 0),
             }).save();
             await new RecordModel({
@@ -1984,50 +1944,50 @@ GamesRouter.post(
               won: "yes",
               earnings:
                 commission_penalty.value_in === "$"
-                  ? game_.price_in_value +
-                    (game_.price_in_value - commission_penalty.value)
+                  ? (game_?.price_in_value ?? 0) +
+                    ((game_?.price_in_value ?? 0) - commission_penalty.value)
                   : commission_penalty.value_in === "c"
-                  ? game_.price_in_value +
-                    (game_.price_in_value -
+                  ? (game_?.price_in_value ?? 0) +
+                    ((game_?.price_in_value ?? 0) -
                       cashRating * commission_penalty.value)
                   : commission_penalty.value_in === "%"
-                  ? game_.price_in_value +
-                    (game_.price_in_value -
-                      game_.price_in_value / commission_penalty.value)
+                  ? (game_?.price_in_value ?? 0) +
+                    ((game_?.price_in_value ?? 0) -
+                      (game_?.price_in_value ?? 0) / commission_penalty.value)
                   : 0,
             }).save();
             await CashWalletModel.updateOne(
               { userID: decoded.id },
               {
                 currentCash:
-                  currentCash + (commission_penalty.value_in === "$"
-                    ? game_.price_in_value +
-                      (game_.price_in_value - commission_penalty.value)
+                  p1Cash + (commission_penalty.value_in === "$"
+                    ? (game_?.price_in_value ?? 0) +
+                      ((game_?.price_in_value ?? 0) - commission_penalty.value)
                     : commission_penalty.value_in === "c"
-                    ? game_.price_in_value +
-                      (game_.price_in_value -
+                    ? (game_?.price_in_value ?? 0) +
+                      ((game_?.price_in_value ?? 0) -
                         cashRating * commission_penalty.value)
                     : commission_penalty.value_in === "%"
-                    ? game_.price_in_value +
-                      (game_.price_in_value -
-                        game_.price_in_value / commission_penalty.value)
+                    ? (game_?.price_in_value ?? 0) +
+                      ((game_?.price_in_value ?? 0) -
+                        (game_?.price_in_value ?? 0) / commission_penalty.value)
                     : 0),
               }
             );
             res.json({
-              winner: game_.battleScore.player1[`round${round}`] === gameInPut,
+              winner: game_?.battleScore.player1[`round${round}`] === gameInPut,
               price:
                 commission_penalty.value_in === "$"
-                  ? game_.price_in_value +
-                    (game_.price_in_value - commission_penalty.value)
+                  ? (game_?.price_in_value ?? 0) +
+                    ((game_?.price_in_value ?? 0) - commission_penalty.value)
                   : commission_penalty.value_in === "c"
-                  ? game_.price_in_value +
-                    (game_.price_in_value -
+                  ? (game_?.price_in_value ?? 0) +
+                    ((game_?.price_in_value ?? 0) -
                       cashRating * commission_penalty.value)
                   : commission_penalty.value_in === "%"
-                  ? game_.price_in_value +
-                    (game_.price_in_value -
-                      game_.price_in_value / commission_penalty.value)
+                  ? (game_?.price_in_value ?? 0) +
+                    ((game_?.price_in_value ?? 0) -
+                      (game_?.price_in_value ?? 0) / commission_penalty.value)
                   : 0,
               final: true,
               finalWin: true,
@@ -2039,55 +1999,55 @@ GamesRouter.post(
               game: Games.penalth_card,
               won: "no",
               earnings: -(commission_penalty.value_in === "$"
-                ? game_.price_in_value +
-                  (game_.price_in_value - commission_penalty.value)
+                ? (game_?.price_in_value ?? 0) +
+                  ((game_?.price_in_value ?? 0) - commission_penalty.value)
                 : commission_penalty.value_in === "c"
-                ? game_.price_in_value +
-                  (game_.price_in_value - cashRating * commission_penalty.value)
+                ? (game_?.price_in_value ?? 0) +
+                  ((game_?.price_in_value ?? 0) - cashRating * commission_penalty.value)
                 : commission_penalty.value_in === "%"
-                ? game_.price_in_value +
-                  (game_.price_in_value -
-                    game_.price_in_value / commission_penalty.value)
+                ? (game_?.price_in_value ?? 0) +
+                  ((game_?.price_in_value ?? 0) -
+                    (game_?.price_in_value ?? 0) / commission_penalty.value)
                 : 0),
             }).save();
             await new RecordModel({
-              userID: game_.members[0],
+              userID: game_?.members[0],
               game: Games.penalth_card,
               won: "yes",
               earnings:
                 commission_penalty.value_in === "$"
-                  ? game_.price_in_value +
-                    (game_.price_in_value - commission_penalty.value)
+                  ? (game_?.price_in_value ?? 0) +
+                    ((game_?.price_in_value ?? 0) - commission_penalty.value)
                   : commission_penalty.value_in === "c"
-                  ? game_.price_in_value +
-                    (game_.price_in_value -
+                  ? (game_?.price_in_value ?? 0) +
+                    ((game_?.price_in_value ?? 0) -
                       cashRating * commission_penalty.value)
                   : commission_penalty.value_in === "%"
-                  ? game_.price_in_value +
-                    (game_.price_in_value -
-                      game_.price_in_value / commission_penalty.value)
+                  ? (game_?.price_in_value ?? 0) +
+                    ((game_?.price_in_value ?? 0) -
+                      (game_?.price_in_value ?? 0) / commission_penalty.value)
                   : 0,
             }).save();
             await CashWalletModel.updateOne(
-              { userID: game_.members[0] },
+              { userID: game_?.members[0] },
               {
                 currentCash:
-                  currentCashP2 + (commission_penalty.value_in === "$"
-                    ? game_.price_in_value +
-                      (game_.price_in_value - commission_penalty.value)
+                  p2Cash + (commission_penalty.value_in === "$"
+                    ? (game_?.price_in_value ?? 0) +
+                      ((game_?.price_in_value ?? 0) - commission_penalty.value)
                     : commission_penalty.value_in === "c"
-                    ? game_.price_in_value +
-                      (game_.price_in_value -
+                    ? (game_?.price_in_value ?? 0) +
+                      ((game_?.price_in_value ?? 0) -
                         cashRating * commission_penalty.value)
                     : commission_penalty.value_in === "%"
-                    ? game_.price_in_value +
-                      (game_.price_in_value -
-                        game_.price_in_value / commission_penalty.value)
+                    ? (game_?.price_in_value ?? 0) +
+                      ((game_?.price_in_value ?? 0) -
+                        (game_?.price_in_value ?? 0) / commission_penalty.value)
                     : 0),
               }
             );
             res.json({
-              winner: game_.battleScore.player1[`round${round}`] === gameInPut,
+              winner: game_?.battleScore.player1[`round${round}`] === gameInPut,
               price: 0,
               final: true,
               finalWin: false,
@@ -2095,7 +2055,7 @@ GamesRouter.post(
             return;
           } else {
             res.json({
-              winner: game_.battleScore.player1[`round${round}`] === gameInPut,
+              winner: game_?.battleScore.player1[`round${round}`] === gameInPut,
               price: 0,
               final: false,
             });
@@ -2113,7 +2073,7 @@ GamesRouter.post(
 
 GamesRouter.post("/lucky-geoge", async (req: Request, res: Response) => {
   try {
-    let auth = req.headers.authorization;
+    let auth = req.headers.authorization ?? "";
     if (!auth || auth === "") {
       res.status(403).json({ message: "error found", error: "invalid auth" });
       return;
@@ -2133,7 +2093,8 @@ GamesRouter.post("/lucky-geoge", async (req: Request, res: Response) => {
         .json({ message: "error found", error: "Admin not found" });
       return;
     }
-    const {cashRating} = await defaultModel.findOne({})
+    const defaultInstance = await defaultModel.findOne({})
+    const cashRating = defaultInstance?.cashRating ?? 0;
     const {
       title,
       description,
@@ -2153,7 +2114,7 @@ GamesRouter.post("/lucky-geoge", async (req: Request, res: Response) => {
       gameMemberCount: memberCount,
       members: [],
       priceType: "virtual",
-      price_in_coin: price* cashRating??0,
+      price_in_coin: price* cashRating,
       price_in_value: price,
       gameDetail: "Lucky geoge.",
       gameID: Games.lucky_geoge,
@@ -2173,7 +2134,7 @@ GamesRouter.post("/lucky-geoge", async (req: Request, res: Response) => {
 
 GamesRouter.get("/lucky-geoge", async (req: Request, res: Response) => {
   try {
-    let auth = req.headers.authorization;
+    let auth = req.headers.authorization ?? "";
     if (!auth || auth === "") {
       res.status(403).json({ message: "error found", error: "invalid auth" });
       return;
@@ -2197,8 +2158,8 @@ GamesRouter.get("/lucky-geoge", async (req: Request, res: Response) => {
      })
      return;
     } else if (user) {
-      let { currentCash } = await CashWalletModel.findOne({ userID: decoded.id });
-      let { currentCoin } = await WalletModel.findOne({ userID: decoded.id });
+      let currentCash = (await CashWalletModel.findOne({ userID: decoded.id }))?.currentCash ?? 0;
+      let currentCoin = (await WalletModel.findOne({ userID: decoded.id }))?.currentCoin ?? 0;
       let allG = await GameModel.find({gameID: Games.lucky_geoge, played: false})
       await GameModel.find({ gameID: Games.lucky_geoge, members: { $not: { $eq: decoded.id } }, played: false, $or: [{ price_in_value: { $lte: currentCash } }, { price_in_coin: { $lte: currentCoin } }] }).then((games) => {
         res.json(admin? {games: allG} : {games})
@@ -2217,7 +2178,7 @@ GamesRouter.get("/lucky-geoge", async (req: Request, res: Response) => {
 
 GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
   try {
-    let auth = req.headers.authorization;
+    let auth = req.headers.authorization ?? "";
     if (!auth || auth === "") {
       res.status(403).json({ message: "error found", error: "invalid auth" });
       return;
@@ -2235,8 +2196,11 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
       res.status(419).json({ message: "error found", error: "User not found" });
       return;
     }
-    let { currentCash } = await CashWalletModel.findOne({ userID: decoded.id });
-    let { currentCoin } = await WalletModel.findOne({ userID: decoded.id });
+      let currentCash =
+        (await CashWalletModel.findOne({ userID: decoded.id }))?.currentCash ??
+        0;
+      let currentCoin =
+        (await WalletModel.findOne({ userID: decoded.id }))?.currentCoin ?? 0;
     const {
       id,
       payWith,
@@ -2244,8 +2208,7 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
       id: string;
       payWith: PayType;
     } = req.body;
-    let { price_in_coin: stack, price_in_value } = await GameModel.findById(id);
-    const { cashRating } = await defaultModel.findOne({});
+    let { price_in_coin: stack, price_in_value } = await GameModel.findById(id) ?? {price_in_coin: 0, price_in_value: 0};
     if (payWith === PayType.cash) {
       if (price_in_value > currentCash) {
         res
@@ -2276,13 +2239,13 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
       }
     )
       .then(async (result) => {
-        res.json({ message: "successful", price: result.price_in_value });
-        if (result.members.length >= result.gameMemberCount) {
-          let winners = shuffle(result.members).slice(
+        res.json({ message: "successful", price: result?.price_in_value });
+        if ((result?.members.length ?? 0) >= (result?.gameMemberCount ?? 0)) {
+          let winners = shuffle((result?.members?? [""])).slice(
             0,
-            result.battleScore.player1.winnerCount
+            result?.battleScore.player1.winnerCount
           );
-          for (let member in result.members) {
+          for (let member in result?.members) {
             if (!winners.includes(member)) {
               await RecordModel.updateOne(
                 {
@@ -2297,7 +2260,7 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
             }
           }
           for (let winner in winners) {
-            let { currentCash } = await CashWalletModel.findById(winner);
+            let { currentCash } = await CashWalletModel.findById(winner)??{currentCash: 0};
 
             await RecordModel.updateOne(
               {
@@ -2305,13 +2268,13 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
               },
               {
                 won: "yes",
-                earnings: result.battleScore.player1.winnerPrice,
+                earnings: result?.battleScore.player1.winnerPrice,
                 date_mark: new Date(),
               }
             );
             await CashWalletModel.updateOne(
               { _id: winner },
-              { currentCash: (currentCash ?? 0) + result.battleScore.player1.winnerPrice }
+              { currentCash: (currentCash ?? 0) + result?.battleScore.player1.winnerPrice }
             );
           }
           await GameModel.updateOne({ _id: id }, { played: true}).then(()=>{}).catch(console.error)
@@ -2327,7 +2290,7 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
 
 GamesRouter.post("/penalty/exit", async (req: Request, res: Response) => {
   try {
-    let auth = req.headers.authorization;
+    let auth = req.headers.authorization ?? "";
     let {
       id,
     }: {
@@ -2342,15 +2305,15 @@ GamesRouter.post("/penalty/exit", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
-    const { cashRating, commission_penalty } = await defaultModel.findOne({});
+    const { cashRating, commission_penalty } = await defaultModel.findOne({})?? {cashRating: 0, commission_penalty:{value: 0, value_in: "$"}};
     let game_ = await GameModel.findById(id);
     let { currentCash: p1Cash } = await CashWalletModel.findOne({
-      userID: game_.members[0],
-    });
+      userID: game_?.members[0],
+    })?? {currentCash: 0};
     if (!found) {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
@@ -2362,39 +2325,39 @@ GamesRouter.post("/penalty/exit", async (req: Request, res: Response) => {
       earnings: 0,
     }).save();
     await new RecordModel({
-      userID: game_.members[0],
+      userID: game_?.members[0],
       game: Games.penalth_card,
       won: "yes",
       earnings:
         commission_penalty.value_in === "$"
-          ? game_.price_in_value +
-            (game_.price_in_value - commission_penalty.value)
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) - commission_penalty.value)
           : commission_penalty.value_in === "c"
-          ? game_.price_in_value +
-            (game_.price_in_value - cashRating * commission_penalty.value)
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) - cashRating * commission_penalty.value)
           : commission_penalty.value_in === "%"
-          ? game_.price_in_value +
-            (game_.price_in_value -
-              game_.price_in_value / commission_penalty.value)
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) -
+              (game_?.price_in_value ?? 0) / commission_penalty.value)
           : p1Cash,
     }).save();
     await CashWalletModel.updateOne(
-      { userID: game_.members[0] },
+      { userID: game_?.members[0] },
       {
         p1Cash:
           commission_penalty.value_in === "$"
             ? p1Cash +
-              game_.price_in_value +
-              (game_.price_in_value - commission_penalty.value)
+              (game_?.price_in_value ?? 0) +
+              ((game_?.price_in_value ?? 0) - commission_penalty.value)
             : commission_penalty.value_in === "c"
-            ? game_.price_in_value +
+            ? (game_?.price_in_value ?? 0) +
               p1Cash +
-              (game_.price_in_value - cashRating * commission_penalty.value)
+              ((game_?.price_in_value ?? 0) - cashRating * commission_penalty.value)
             : commission_penalty.value_in === "%"
-            ? game_.price_in_value +
+            ? (game_?.price_in_value ?? 0) +
               p1Cash +
-              (game_.price_in_value -
-                game_.price_in_value / commission_penalty.value)
+              ((game_?.price_in_value ?? 0) -
+                (game_?.price_in_value ?? 0) / commission_penalty.value)
             : p1Cash,
       }
     )
@@ -2414,7 +2377,7 @@ GamesRouter.post("/penalty/exit", async (req: Request, res: Response) => {
 
 GamesRouter.post("/roshambo/exit", async (req: Request, res: Response) => {
   try {
-    let auth = req.headers.authorization;
+    let auth = req.headers.authorization ?? "";
     let {
       id,
     }: {
@@ -2429,34 +2392,34 @@ GamesRouter.post("/roshambo/exit", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
-    const { cashRating, commission_roshambo } = await defaultModel.findOne({});
+    const { cashRating, commission_roshambo } = await defaultModel.findOne({})?? {cashRating: 0, commission_roshambo: {value: 0, value_in: "$"}};
     let game_ = await GameModel.findById(id);
     let { currentCash: p1Cash } = await CashWalletModel.findOne({
-      userID: game_.members[0],
-    });
+      userID: game_?.members[0],
+    })?? {currentCash: 0};
     if (!found) {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
     }
     await new RecordModel({
-      userID: game_.members[0],
+      userID: game_?.members[0],
       game: Games.roshambo,
       won: "yes",
       earnings:
         commission_roshambo.value_in === "$"
-          ? game_.price_in_value +
-            (game_.price_in_value - commission_roshambo.value)
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) - commission_roshambo.value)
           : commission_roshambo.value_in === "c"
-          ? game_.price_in_value +
-            (game_.price_in_value - cashRating * commission_roshambo.value)
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) - cashRating * commission_roshambo.value)
           : commission_roshambo.value_in === "%"
-          ? game_.price_in_value +
-            (game_.price_in_value -
-              game_.price_in_value / commission_roshambo.value)
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) -
+              (game_?.price_in_value ?? 0) / commission_roshambo.value)
           : p1Cash,
     }).save();
     await new RecordModel({
@@ -2466,22 +2429,22 @@ GamesRouter.post("/roshambo/exit", async (req: Request, res: Response) => {
       earnings: 0,
     }).save();
     await CashWalletModel.updateOne(
-      { userID: game_.members[0] },
+      { userID: game_?.members[0] },
       {
         p1Cash:
           commission_roshambo.value_in === "$"
             ? p1Cash +
-              game_.price_in_value +
-              (game_.price_in_value - commission_roshambo.value)
+              (game_?.price_in_value ?? 0) +
+              ((game_?.price_in_value ?? 0) - commission_roshambo.value)
             : commission_roshambo.value_in === "c"
-            ? game_.price_in_value +
+            ? (game_?.price_in_value ?? 0) +
               p1Cash +
-              (game_.price_in_value - cashRating * commission_roshambo.value)
+              ((game_?.price_in_value ?? 0) - cashRating * commission_roshambo.value)
             : commission_roshambo.value_in === "%"
-            ? game_.price_in_value +
+            ? (game_?.price_in_value ?? 0) +
               p1Cash +
-              (game_.price_in_value -
-                game_.price_in_value / commission_roshambo.value)
+              ((game_?.price_in_value ?? 0) -
+                (game_?.price_in_value ?? 0) / commission_roshambo.value)
             : p1Cash,
       }
     )
@@ -2501,7 +2464,7 @@ GamesRouter.post("/roshambo/exit", async (req: Request, res: Response) => {
 
 GamesRouter.post("/matcher/exit", async (req: Request, res: Response) => {
   try {
-    let auth = req.headers.authorization;
+    let auth = req.headers.authorization ?? "";
     let {
       id,
     }: {
@@ -2516,36 +2479,36 @@ GamesRouter.post("/matcher/exit", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
     const { cashRating, commission_guess_mater } = await defaultModel.findOne(
       {}
-    );
+    )?? {cashRating:0, commission_guess_mater:{value:0, value_in:"$"}};
     let game_ = await GameModel.findById(id);
     let { currentCash: p1Cash } = await CashWalletModel.findOne({
-      userID: game_.members[0],
-    });
+      userID: game_?.members[0],
+    })?? {currentCash: 0};
     if (!found) {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
     }
     await new RecordModel({
-      userID: game_.members[0],
+      userID: game_?.members[0],
       game: Games.roshambo,
       won: "yes",
       earnings:
         commission_guess_mater.value_in === "$"
-          ? game_.price_in_value +
-            (game_.price_in_value - commission_guess_mater.value)
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) - commission_guess_mater.value)
           : commission_guess_mater.value_in === "c"
-          ? game_.price_in_value +
-            (game_.price_in_value - cashRating * commission_guess_mater.value)
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) - cashRating * commission_guess_mater.value)
           : commission_guess_mater.value_in === "%"
-          ? game_.price_in_value +
-            (game_.price_in_value -
-              game_.price_in_value / commission_guess_mater.value)
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) -
+              (game_?.price_in_value ?? 0) / commission_guess_mater.value)
           : p1Cash,
     }).save();
     await new RecordModel({
@@ -2554,34 +2517,34 @@ GamesRouter.post("/matcher/exit", async (req: Request, res: Response) => {
       won: "no",
       earnings:
         commission_guess_mater.value_in === "$"
-          ? game_.price_in_value +
-            (game_.price_in_value - commission_guess_mater.value)
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) - commission_guess_mater.value)
           : commission_guess_mater.value_in === "c"
-          ? game_.price_in_value +
-            (game_.price_in_value - cashRating * commission_guess_mater.value)
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) - cashRating * commission_guess_mater.value)
           : commission_guess_mater.value_in === "%"
-          ? game_.price_in_value +
-            (game_.price_in_value -
-              game_.price_in_value / commission_guess_mater.value)
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) -
+              (game_?.price_in_value ?? 0) / commission_guess_mater.value)
           : p1Cash,
     }).save();
     await CashWalletModel.updateOne(
-      { userID: game_.members[0] },
+      { userID: game_?.members[0] },
       {
         p1Cash:
           commission_guess_mater.value_in === "$"
             ? p1Cash +
-              game_.price_in_value +
-              (game_.price_in_value - commission_guess_mater.value)
+              (game_?.price_in_value ?? 0) +
+              ((game_?.price_in_value ?? 0) - commission_guess_mater.value)
             : commission_guess_mater.value_in === "c"
-            ? game_.price_in_value +
+            ? (game_?.price_in_value ?? 0) +
               p1Cash +
-              (game_.price_in_value - cashRating * commission_guess_mater.value)
+              ((game_?.price_in_value ?? 0) - cashRating * commission_guess_mater.value)
             : commission_guess_mater.value_in === "%"
-            ? game_.price_in_value +
+            ? (game_?.price_in_value ?? 0) +
               p1Cash +
-              (game_.price_in_value -
-                game_.price_in_value / commission_guess_mater.value)
+              ((game_?.price_in_value ?? 0) -
+                (game_?.price_in_value ?? 0) / commission_guess_mater.value)
             : p1Cash,
       }
     )
@@ -2601,7 +2564,7 @@ GamesRouter.post("/matcher/exit", async (req: Request, res: Response) => {
 
 GamesRouter.post("/custom-game", async (req: Request, res: Response) => {
   try {
-    let auth = req.headers.authorization;
+    let auth = req.headers.authorization ?? "";
     if (!auth) {
       res.status(406).json({ message: "error found", error: "invalid auth" });
       return;
@@ -2611,7 +2574,7 @@ GamesRouter.post("/custom-game", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
@@ -2622,10 +2585,10 @@ GamesRouter.post("/custom-game", async (req: Request, res: Response) => {
       } as errorResHint);
       return;
     }
-    const { cashRating } = await defaultModel.findOne({});
+    const { cashRating } = await defaultModel.findOne({})??{cashRating: 0};
     const { currentCash } = await CashWalletModel.findOne({
       userID: decoded.id,
-    });
+    })??{currentCash: 0};
 
     const {
       player2Username,
@@ -2652,18 +2615,17 @@ GamesRouter.post("/custom-game", async (req: Request, res: Response) => {
         .json({ message: "error found", error: "insuficient found" });
       return;
     }
-    const p2 = await PlayerModel.findOne({ playername: player2Username.toLowerCase() });
-    if (player2Username !== "") {
-      if (!p2) { 
-        res
+    const p2 = await PlayerModel.findOne({ playername: player2Username });
+
+    if (!p2 || p2.userID === decoded.id && (player2Username !== "")) {
+      res
         .status(409)
         .json({ message: "error found", error: "player 2 not found" });
-        return;
-      }
+      return;
     }
     await new GameModel({
       gameMemberCount: 2,
-      members: [decoded.id, p2?.userID?? null],
+      members: [decoded.id, p2.userID],
       price_in_coin: cashRating * price_in_value,
       price_in_value,
       gameDetail: "A game created between friends",
@@ -2702,7 +2664,7 @@ GamesRouter.get(
   "/custom-game/challange",
   async (req: Request, res: Response) => {
     try {
-      let auth = req.headers.authorization;
+      let auth = req.headers.authorization ?? "";
       if (!auth) {
         res.status(406).json({ message: "error found", error: "invalid auth" });
         return;
@@ -2712,7 +2674,7 @@ GamesRouter.get(
         res.status(406).json({ message: "error found", error: "empty token" });
         return;
       }
-      let decoded = (verify(token, process.env.SECRET) as unknown) as {
+      let decoded = (verify(token, secret) as unknown) as {
         id: string;
       };
       let found = await users.findById(decoded.id);
@@ -2731,13 +2693,13 @@ GamesRouter.get(
       const paywith: PayType = parseInt(payWith, 10);
       const { currentCash } = await CashWalletModel.findOne({
         userID: decoded.id,
-      });
-      const { currentCoin } = await WalletModel.findOne({ userID: decoded.id });
+      })?? {currentCash: 0};
+      const { currentCoin } = await WalletModel.findOne({ userID: decoded.id })??{currentCoin: 0};
       const {
         price_in_value,
         price_in_coin,
         battleScore,
-      } = await GameModel.findById(gameID);
+      } = await GameModel.findById(gameID)??{price_in_coin:0, price_in_value:0, battleScore:{player1: {}, player2:{}}};
       if (paywith === PayType.cash) {
         if (price_in_value > currentCash) {
           res.status(402).json({
@@ -2805,7 +2767,7 @@ GamesRouter.get(
 
 GamesRouter.post("/custom-game/exit", async (req: Request, res: Response) => {
   try {
-    let auth = req.headers.authorization;
+    let auth = req.headers.authorization ?? "";
     let {
       id,
     }: {
@@ -2820,45 +2782,45 @@ GamesRouter.post("/custom-game/exit", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
     const { cashRating, commission_custom_game } = await defaultModel.findOne(
       {}
-    );
+    )??{cashRating:0, commission_custom_game:{value: 0, value_in: "$"}};
     let game_ = await GameModel.findById(id);
     let { currentCash: p1Cash } = await CashWalletModel.findOne({
-      userID: game_.members[0],
-    });
+      userID: game_?.members[0],
+    })??{currentCash: 0};
     if (!found) {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
     }
     await GameModel.updateOne({ _id: id }, { played: true });
     await new RecordModel({
-      userID: game_.members[0],
+      userID: game_?.members[0],
       game: Games.custom_game,
       won: "rejected",
-      earnings: game_.price_in_value,
+      earnings: game_?.price_in_value,
     }).save();
     await CashWalletModel.updateOne(
-      { userID: game_.members[0] },
+      { userID: game_?.members[0] },
       {
         p1Cash:
           commission_custom_game.value_in === "$"
             ? p1Cash +
-              game_.price_in_value +
-              (game_.price_in_value - commission_custom_game.value)
+              (game_?.price_in_value ?? 0) +
+              ((game_?.price_in_value ?? 0) - commission_custom_game.value)
             : commission_custom_game.value_in === "c"
-            ? game_.price_in_value +
+            ? (game_?.price_in_value ?? 0) +
               p1Cash +
-              (game_.price_in_value - cashRating * commission_custom_game.value)
+              ((game_?.price_in_value ?? 0) - cashRating * commission_custom_game.value)
             : commission_custom_game.value_in === "%"
-            ? game_.price_in_value +
+            ? (game_?.price_in_value ?? 0) +
               p1Cash +
-              (game_.price_in_value -
-                game_.price_in_value / commission_custom_game.value)
+              ((game_?.price_in_value ?? 0) -
+                (game_?.price_in_value ?? 0) / commission_custom_game.value)
             : p1Cash,
       }
     )
@@ -2878,7 +2840,7 @@ GamesRouter.post("/custom-game/exit", async (req: Request, res: Response) => {
 
 GamesRouter.get("/requests", async (req: Request, res: Response) => {
   try {
-    let auth = req.headers.authorization;
+    let auth = req.headers.authorization ?? "";
     if (!auth) {
       res.status(406).json({ message: "error found", error: "invalid auth" });
       return;
@@ -2888,7 +2850,7 @@ GamesRouter.get("/requests", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
@@ -2905,11 +2867,30 @@ GamesRouter.get("/requests", async (req: Request, res: Response) => {
     })
       .sort({ date: -1 })
       .then((result) => {
-        let clone = cloneDeep(result)
-        let data = filter(clone, (_game_) => {
-         return _game_.members[1] === decoded.id
-        })
-        res.json({ message: "content found", requests: data });
+        let requests: any[] = [];
+        result.map((rels) => {
+          if (rels.members[0] === decoded.id) {
+            return;
+          }
+          requests.push({
+            date: rels.date,
+            gameDetail: rels.gameDetail,
+            gameID: rels.gameID,
+            gameMemberCount: rels.gameMemberCount,
+            gameType: rels.gameType,
+            members: rels.members,
+            playCount: rels.playCount,
+            price_in_coin: rels.price_in_coin,
+            price_in_value: rels.price_in_value,
+            _id: rels._id,
+            title: rels.battleScore.player1.title,
+            description: rels.battleScore.player1.description,
+            endDate: rels.battleScore.player1.endDate,
+            endGameTime: rels.battleScore.player1.endGameTime,
+            choice: rels.battleScore.player1.choice,
+          });
+        });
+        res.json({ message: "content found", requests });
       })
       .catch((error) => {
         res.status(500).json({ message: "error found", error });
@@ -2922,7 +2903,7 @@ GamesRouter.get("/requests", async (req: Request, res: Response) => {
 
 GamesRouter.get("/custom-game/games", async (req: Request, res: Response) => {
   try {
-    let auth = req.headers.authorization;
+    let auth = req.headers.authorization ?? "";
     if (!auth) {
       res.status(406).json({ message: "error found", error: "invalid auth" });
       return;
@@ -2932,7 +2913,7 @@ GamesRouter.get("/custom-game/games", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       id: string;
     };
     let found = await users.findById(decoded.id);
@@ -2944,16 +2925,13 @@ GamesRouter.get("/custom-game/games", async (req: Request, res: Response) => {
       return;
     }
     await GameModel.find({
-      played: false,
+      played: true,
       gameID: Games.custom_game,
+      isComplete: false,
     })
       .sort({ date: -1 })
       .then((requests) => {
-        let clone = cloneDeep(requests);
-        let data = filter(clone, (_game_) => {
-          return _game_.members[1] === null;
-        });
-        res.json({ message: "content found", requests: data });
+        res.json({ message: "content found", requests });
       })
       .catch((error) => {
         res.status(500).json({ message: "error found", error });

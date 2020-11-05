@@ -15,6 +15,7 @@ import LogModel from "../model/log";
 import AdminModel, { AdminLevel } from "../model/admin";
 
 config();
+const secret = process.env.SECRET ?? ""
 
 const os = [
   { name: "Windows Phone", value: "Windows Phone", version: "OS" },
@@ -73,82 +74,74 @@ function matchItem(
 }
 
 const salt = genSaltSync(5),
-  secret = process.env.SECRET || "powemre$#$VESdfver#$#4dfmdpfv",
   userRoute = Router();
 
 userRoute.post("/", async (req: Request, res: Response) => {
-  try {
-    const {
-      full_name,
-      phone_number,
-      key,
-      refer_code,
-    }: {
-      full_name: string;
-      phone_number: string;
-      key: string;
-      refer_code: string;
-    } = req.body;
-    let hashedKey = hashSync(key, salt);
-    let new_user = new userModel({
-      full_name,
-      phone_number: phone_number.replace(/(\s)|[+]/g, ""),
-      key: hashedKey,
-    });
-    let referee = await ReferalModel.findOne({
-      refer_code: refer_code.toLowerCase(),
-    });
-    new_user
-      .save()
-      .then(async (result) => {
-        Promise.all([
-          referee &&
-            (await ReferalModel.updateOne(
-              { refer_code },
-              { inactiveReferal: referee.inactiveReferal + 1 }
-            )),
-          await new ReferalModel({
-            userID: result._id,
-            refer_code: rand({
-              length: 7,
-              charset: "alphabetic",
-            }),
-          }).save(),
-          await new WalletModel({
-            userID: result._id,
-          }).save(),
-          await new CashWalletModel({
-            userID: result._id,
-          }).save(),
-          await new DeviceModel({
-            userID: result._id,
-          }).save(),
-          await new RecordModel({
-            userID: result._id,
-          }).save(),
-        ])
-          .then(() => {
-            res.json({ message: "succesful" });
-          })
-          .catch((error) => {
-            userModel.deleteOne({ _id: result._id });
-            console.log(error);
-          });
+  const {
+    full_name,
+    phone_number,
+    key,
+    refer_code,
+  }: {
+    full_name: string;
+    phone_number: string;
+    key: string;
+    refer_code: string;
+  } = req.body;
+  let hashedKey = hashSync(key, salt);
+  let new_user = new userModel({
+    full_name,
+    phone_number: phone_number.replace(/(\s)|[+]/g, ""),
+    key: hashedKey,
+  });
+  let referee: any = await ReferalModel.findOne({ refer_code: refer_code.toLowerCase() });
+  new_user
+    .save()
+    .then(async (result) => {
+      Promise.all([
+        referee &&
+          (await ReferalModel.updateOne(
+            { refer_code },
+            { inactiveReferal: referee.inactiveReferal + 1 }
+          )),
+        await new ReferalModel({
+          userID: result._id,
+          refer_code: rand({
+            length: 7,
+            charset: "alphabetic",
+          }),
+        }).save(),
+        await new WalletModel({
+          userID: result._id,
+        }).save(),
+        await new CashWalletModel({
+          userID: result._id,
+        }).save(),
+        await new DeviceModel({
+          userID: result._id,
+        }).save(),
+        await new RecordModel({
+          userID: result._id,
+        }).save(),
+      ])
+        .then(() => {
           res.json({ message: "content found" });
         })
-        .catch((err) => {
-          if (err.keyPattern) {
-            if (err.keyPattern.phone_number) {
-              res.status(400).json({ message: "error found", error: err });
-              return;
-            }
-          }
-          res.status(500).json({ message: "error found", error: err });
+        .catch((error) => {
+          userModel.deleteOne({ _id: result._id });
+          throw new Error(error);
         });
-      } catch (error) {
-      console.log(error);
-      res.status(500).json({ message: "error found", error });
-  }
+      res.json({ message: "content found" });
+    })
+    .catch((err) => {
+      if (err.keyPattern) {
+        if (err.keyPattern.phone_number) {
+          res.status(400).json({ message: "error found", error: err });
+          return;
+        }
+      }
+      res.status(500).json({ message: "error found", error: err });
+    });
 });
 
 userRoute.post("/login", async (req: Request, res: Response) => {
@@ -174,10 +167,10 @@ userRoute.post("/login", async (req: Request, res: Response) => {
     let isPlayer: boolean = Boolean(
       await PlayerModel.findOne({ userID: user._id })
     );
-    let token = sign({ id: user._id }, process.env.SECRET, {
+    let token = sign({ id: user._id }, secret, {
       expiresIn: "30 days",
     });
-    var agent = req.headers["user-agent"];
+    var agent = req.headers["user-agent"]??"";
     var os_ = matchItem(agent, os).name;
     var browser_ = matchItem(agent, browser).name;
     var device_type = matchItem(agent, os).value;
@@ -218,7 +211,7 @@ userRoute.get("/verify", async (req: Request, res: Response) => {
     return;
   }
   try {
-    let decoded: string | object = verify(token, process.env.SECRET);
+    let decoded: string | object = verify(token, secret);
     res.json({ message: "content found", detail: decoded });
   } catch (error) {
     res.status(404).json({ message: "error found", error: "invalid token" });
@@ -286,13 +279,13 @@ userRoute.post("/admin/login", async (req: Request, res: Response) => {
     if (!admin) {
       res.status(404).json({ message: "error found", error: "User not found" });
     }
-    let confirmedAdmin: boolean = compareSync(password, admin.password);
+    let confirmedAdmin: boolean = compareSync(password, admin?.password??"");
     if (!confirmedAdmin) {
       res
         .status(401)
         .json({ message: "error found", error: "incorrect password" });
     }
-    let token: string = sign({ adminID: admin._id }, process.env.SECRET, {
+    let token: string = sign({ adminID: admin?._id }, secret, {
       expiresIn: "10 days",
     });
     res.json({ message: "success", token });

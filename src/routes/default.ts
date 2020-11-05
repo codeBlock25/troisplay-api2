@@ -56,7 +56,8 @@ defaultRouter.post("/init", async (req: Request, res: Response) => {
     //   key === ""
     // ) {
     //   res
-    //     .status(406)
+    //     .status
+    406;
     //     .json({
     //       message: "not allowed",
     //       error: "#40010",
@@ -129,7 +130,7 @@ defaultRouter.put("/update", async (req: Request, res: Response) => {
       } as errorResHint);
       return;
     }
-    let { adminID } = verify(token, process.env.SECRET) as { adminID: string };
+    let { adminID } = verify(token, process.env.SECRET ??"") as { adminID: string };
     let admin = AdminModel.findById(adminID);
     if (!admin) {
       res.status(406).json({

@@ -2,11 +2,13 @@ import { Router, Request, Response } from "express";
 import { verify } from "jsonwebtoken";
 import users from "../model/users";
 import { config as envConfig } from "dotenv";
-import { Document } from "mongoose";
-import WalletModel, { walletType } from "../model/walltet";
+import WalletModel from "../model/walltet";
 import CashWalletModel from "../model/cash_wallet";
 import Flutterwave from "flutterwave-node-v3"
 import AdminCashModel from "../model/admin_model";
+
+envConfig();
+const secret = process.env.SECRET ?? "";
 
 export const PUBLIC_KEY = "FLWPUBK-892063403640cc5691d22bdf9368d89e-X";
 export const SECRET_KEY = "FLWSECK-62f4703237f4d34d5a7f1c03d3e4d72c-X";
@@ -74,9 +76,7 @@ export const banks =  [
  { id: 191, code: '044', name: 'Access Bank' },
   { id: 567, code: '90115', name: 'TCF MFB' }
 ]
-export const PRODUCTION_FLAG = false
-
-envConfig();
+export const PRODUCTION_FLAG = false;
 const WalletRouter: Router = Router();
 
 const flw = new Flutterwave(PUBLIC_KEY, SECRET_KEY,PRODUCTION_FLAG);
@@ -94,19 +94,19 @@ WalletRouter.get("/", async (req: Request, res: Response) => {
       res.status(410).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded: string | object | any = verify(token, process.env.SECRET);
-    let found: Document = await users.findById(decoded.id);
+    let decoded: string | object | any = verify(token, secret);
+    let found = await users.findById(decoded.id);
     if (!found) {
       res.status(410).json({ message: "error found", error: "invalid user" });
       return;
     }
     await WalletModel.findOne({ userID: decoded.id })
-      .then((result: walletType) => {
+      .then((result) => {
         res.json({
           message: "content found",
           wallet: {
-            currentCoin: result.currentCoin,
-            pendingCoin: result.pendingCoin,
+            currentCoin: result?.currentCoin,
+            pendingCoin: result?.pendingCoin,
           },
         });
       })
@@ -121,7 +121,7 @@ WalletRouter.get("/", async (req: Request, res: Response) => {
 
 
 WalletRouter.post("/withdraw", async (req, res) => {try {
-  let auth: string = req.headers.authorization;
+  let auth: string = req.headers.authorization ?? "";
   if (!auth) {
     res.status(406).json({ message: "error found", error: "invalid auth" });
     return;
@@ -131,7 +131,7 @@ WalletRouter.post("/withdraw", async (req, res) => {try {
     res.status(406).json({ message: "error found", error: "empty token" });
     return;
   }
-  let decoded = (verify(token, process.env.SECRET) as unknown) as {
+  let decoded = (verify(token, secret) as unknown) as {
     id: string;
   };
   let found = await users.findById(decoded.id);
@@ -140,7 +140,9 @@ WalletRouter.post("/withdraw", async (req, res) => {try {
     return;
   }
   const { amount }: {amount: number} = req.body
-  let { currentCash } = await CashWalletModel.findOne({ userID: decoded.id })
+  let { currentCash } = (await CashWalletModel.findOne({
+    userID: decoded.id,
+  })) ?? { currentCash: 0 };
   if (!amount) {
     res.status(406).json({message: "invalid input", error: "amount in required"})
     return
@@ -160,9 +162,9 @@ WalletRouter.post("/withdraw", async (req, res) => {try {
 }
 })
 
-WalletRouter.post("/admin", async ( req, res ) => {
+WalletRouter.post("/admin", async (_req, res) => {
   await new AdminCashModel({}).save();
-  res.send("Hello")
-})
+  res.send("Hello");
+});
 
 export default WalletRouter;

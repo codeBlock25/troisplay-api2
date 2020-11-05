@@ -4,12 +4,15 @@ import AdminModel from "../model/admin";
 import GameModel, { Games } from "../model/games";
 import PlayerModel from "../model/player";
 import users from "../model/users";
+import { config as envConfig } from "dotenv"
 
+envConfig()
+const secret = process.env.SECRET??"";
 const MonitorRouter: Router = Router();
 
 MonitorRouter.get("/", async (req: Request, res: Response) => {
   try {
-    const auth: string = req.headers.authorization;
+    const auth: string = req.headers.authorization ?? "";
     if (!auth) {
       res.status(401).json({ message: "error found", error: "invalid auth" });
       return;
@@ -20,7 +23,7 @@ MonitorRouter.get("/", async (req: Request, res: Response) => {
       return;
     }
 
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       adminID: string;
     };
     let Admin = await AdminModel.findById(decoded.adminID);
@@ -43,7 +46,7 @@ MonitorRouter.get("/", async (req: Request, res: Response) => {
 
 MonitorRouter.get("/accounts/data", async (req: Request, res: Response) => {
   try {
-    const auth: string = req.headers.authorization;
+    const auth: string = req.headers.authorization ?? "";
     if (!auth) {
       res.status(401).json({ message: "error found", error: "invalid auth" });
       return;
@@ -54,7 +57,7 @@ MonitorRouter.get("/accounts/data", async (req: Request, res: Response) => {
       return;
     }
 
-    let decoded = (verify(token, process.env.SECRET) as unknown) as {
+    let decoded = (verify(token, secret) as unknown) as {
       adminID: string;
     };
     let Admin = await AdminModel.findById(decoded.adminID);
@@ -77,7 +80,7 @@ MonitorRouter.get("/accounts/data", async (req: Request, res: Response) => {
 
 MonitorRouter.get("/games/data", async (req: Request, res: Response) => {
   try {
-    const auth: string = req.headers.authorization;
+    const auth: string = req.headers.authorization ?? "";
     if (!auth) {
       res.status(401).json({ message: "error found", error: "invalid auth" });
       return;
@@ -88,7 +91,7 @@ MonitorRouter.get("/games/data", async (req: Request, res: Response) => {
       return;
     }
 
-    let decoded: any = verify(token, process.env.SECRET);
+    let decoded: any = verify(token, secret);
     let Admin = await AdminModel.findById(decoded.adminID);
     if (!Admin) {
       res

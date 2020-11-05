@@ -1,6 +1,5 @@
 import { Router, Response, Request } from "express";
-import { Document } from "mongoose";
-import PlayerModel from "../model/player";
+import PlayerModel, { playerType } from "../model/player";
 import multer, { diskStorage, StorageEngine } from "multer";
 import { sign, verify } from "jsonwebtoken";
 import { config as envConfig } from "dotenv";
@@ -14,9 +13,10 @@ import CashWalletModel from "../model/cash_wallet";
 const salt = genSaltSync(10);
 
 envConfig();
+const secret = process.env.SECRET ?? "";
 const storage: StorageEngine = diskStorage({
   destination: function (_req: Request, _file: any, cb: Function) {
-    cb(null, "dist/media");
+    cb(null, "static/media");
   },
   filename: function (_req: Request, file: any, cb: Function) {
     cb(
@@ -45,25 +45,14 @@ interface PlayerType {
   recovery_question: string;
   recovery_answer: string;
 }
-interface PlayerDocType extends Document {
-  playerpic: string;
-  playername: string;
-  email: string;
-  about_me: string;
-  location: string;
-  isConfirmPolicy: boolean;
-  bank_name: string;
-  account_number: string;
-  recovery_question: string;
-  recovery_answer: string;
-}
+
 
 PlayerRouter.post(
   "/new",
   upload.single("profile-pic"),
   async (req: Request, res: Response) => {
     try {
-      let auth: string = req.headers.authorization;
+      let auth: string = req.headers.authorization ?? "";
       if (!auth) {
         res.status(410).json({ message: "error found", error: "invalid auth" });
         return;
@@ -73,7 +62,7 @@ PlayerRouter.post(
         res.status(410).json({ message: "error found", error: "empty token" });
         return;
       }
-      let decoded: string | object | any = verify(token, process.env.SECRET);
+      let decoded: string | object | any = verify(token, secret);
       let found = await users.findById(decoded.id);
       let deviceSetup = await DeviceModel.findOne({ userID: decoded.id });
       let gamerecord = await RecordModel.find({ userID: decoded.id })
@@ -94,7 +83,7 @@ PlayerRouter.post(
         res.status(410).json({ message: "error found", error: "invalid user" });
         return;
       }
-      let newplayer: Document;
+      let newplayer: playerType;
       if (req.file) {
         newplayer = new PlayerModel({
           userID: decoded.id,
@@ -121,7 +110,7 @@ PlayerRouter.post(
       }
       await newplayer
         .save()
-        .then((result: PlayerDocType) => {
+        .then((result) => {
           res.json({
             message: "successful",
             player: {
@@ -159,7 +148,7 @@ PlayerRouter.post(
 
 PlayerRouter.get("/record", async (req: Request, res: Response) => {
 try {
-   let auth: string = req.headers.authorization;
+   let auth: string = req.headers.authorization ?? "";
    if (!auth) {
      res.status(410).json({ message: "error found", error: "invalid auth" });
      return;
@@ -169,7 +158,7 @@ try {
      res.status(410).json({ message: "error found", error: "empty token" });
      return;
    }
-   let decoded: string | object | any = verify(token, process.env.SECRET);
+   let decoded: string | object | any = verify(token, secret);
    let user_ = await users.findById(decoded.id);
    let found = await PlayerModel.findOne({
      userID: decoded.id,
@@ -188,13 +177,13 @@ try {
    res.json({
      message: "content found",
      user: {
-       full_name: user_.full_name,
-       phone_number: user_.phone_number
+       full_name: user_?.full_name,
+       phone_number: user_?.phone_number
       },
      player: {
        userID: decoded.id,
-       full_name: user_.full_name,
-       phone_number: user_.phone_number,
+       full_name: user_?.full_name,
+       phone_number: user_?.phone_number,
        playerpic: found.playerpic,
        playername: found.playername,
        email: found.email,
@@ -251,7 +240,7 @@ PlayerRouter.post("/forgot/confirm", async (req: Request, res: Response) => {
     return;
   }
   if (player.recovery_answer === answer) {
-    let token = sign({ playerID: player.userID }, process.env.SECRET, {
+    let token = sign({ playerID: player.userID }, secret, {
       expiresIn: "3 hours",
     });
     res.json({
@@ -265,7 +254,7 @@ PlayerRouter.post("/forgot/confirm", async (req: Request, res: Response) => {
 
 PlayerRouter.post("/forgot/update", async (req: Request, res: Response) => {
   try {
-    let auth: string = req.headers.authorization;
+    let auth: string = req.headers.authorization ?? "";
     if (!auth) {
       res.status(410).json({ message: "error found", error: "invalid auth" });
       return;
@@ -275,7 +264,7 @@ PlayerRouter.post("/forgot/update", async (req: Request, res: Response) => {
       res.status(410).json({ message: "error found", error: "empty token" });
       return;
     }
-    let decoded: string | object | any = verify(token, process.env.SECRET);
+    let decoded: string | object | any = verify(token, secret);
     const { betting_key }: { betting_key: string } = req.body;
     let hashedKey = hashSync(betting_key, salt);
     await users

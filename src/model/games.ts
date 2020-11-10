@@ -94,6 +94,16 @@ const GameSchema: Schema<GameDocType> = new Schema({
     type: Number,
     default: 1,
   },
+  players: {
+    type: [
+      {
+        player_name: String,
+        phone_number: String,
+        ticket: String,
+        winner: Boolean,
+      },
+    ],
+  },
   isComplete: {
     type: Boolean,
     default: false,

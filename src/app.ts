@@ -28,10 +28,11 @@ server.use("/test", (_req, res) => {
 
 
 const whitelist: string[] = [
+  "http://localhost:3000",
   "http://localhost:1027",
   "http://troisplay.com",
   "http://www.troisplay.com",
-  "https://troisplay.com",
+  "https://www.troisplay.com",
   "https://www.troisplay.com",
   "http://admin.troisplay.com",
   "http://www.admin.troisplay.com",

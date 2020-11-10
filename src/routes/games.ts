@@ -26,7 +26,10 @@ import {
   PlayerCash,
   PlayAdmin,
   PlayerDrawCash,
+  PlayerCashLeft,
+  PlayerCoinLeft,
 } from "../function";
+import { generate as randGenerate } from "randomstring";
 
 envConfig();
 const GamesRouter: Router = Router();
@@ -794,6 +797,7 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
     let {
       id,
       gameInPut,
+      payWith
     }: {
       id: string;
       gameInPut: {
@@ -803,6 +807,7 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
         round4: number;
         round5: number;
       };
+      payWith: PayType
     } = req.body;
     if (!auth) {
       res.status(406).json({ message: "error found", error: "invalid auth" });
@@ -843,6 +848,33 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
     const { currentCash: AdminCurrentCash } = adminCashInstance;
     const { cashRating, commission_penalty } = defaultInstance;
     let winner = FindWinnerOnPenalty(game_?.battleScore.player1, gameInPut);
+    if (payWith === PayType.coin) {
+      CashWalletModel.updateOne(
+        { userID: decoded.id },
+        {
+          currentCash: PlayerCoinLeft(
+            commission_penalty,
+            currentCoin,
+            game_?.price_in_value ?? 0,
+            1,
+            cashRating
+          ),
+        }
+      );
+    } else {
+       CashWalletModel.updateOne(
+         { userID: decoded.id },
+         {
+           currentCash: PlayerCashLeft(
+             commission_penalty,
+             p1Cash,
+             game_?.price_in_value ?? 0,
+             1,
+             cashRating
+           ),
+         }
+       );
+    }
     if (winner) {
       await AdminCashModel.updateOne(
         {},
@@ -949,6 +981,7 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
     let {
       id,
       gameInPut,
+      payWith
     }: {
       id: string;
       gameInPut: {
@@ -958,6 +991,7 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
         round4: number;
         round5: number;
       };
+      payWith: PayType
     } = req.body;
     if (!auth) {
       res.status(406).json({ message: "error found", error: "invalid auth" });
@@ -1000,6 +1034,33 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
     const { currentCash: AdminCurrentCash } = adminCashInstance;
     const { cashRating, commission_roshambo } = defaultInstance;
     let winner = FindWinnerOnRoshambo(game_?.battleScore.player1, gameInPut);
+     if (payWith === PayType.coin) {
+       CashWalletModel.updateOne(
+         { userID: decoded.id },
+         {
+           currentCash: PlayerCoinLeft(
+             commission_roshambo,
+             currentCoin,
+             game_?.price_in_value ?? 0,
+             1,
+             cashRating
+           ),
+         }
+       );
+     } else {
+       CashWalletModel.updateOne(
+         { userID: decoded.id },
+         {
+           currentCash: PlayerCashLeft(
+             commission_roshambo,
+             p1Cash,
+             game_?.price_in_value ?? 0,
+             1,
+             cashRating
+           ),
+         }
+       );
+     }
     if (winner === GameRec.win) {
       await new RecordModel({
         userID: decoded.id,
@@ -1237,9 +1298,11 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
     let {
       id,
       gameInPut,
+      payWith
     }: {
       id: string;
-      gameInPut: number;
+        gameInPut: number;
+      payWith: PayType
     } = req.body;
     if (!auth) {
       res.status(406).json({ message: "error found", error: "invalid auth" });
@@ -1282,6 +1345,33 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
     const { currentCash: AdminCurrentCash } = adminCashInstance;
     const { cashRating, commission_guess_mater } = defaultInstance;
     let winner = FindWinnerOnMatcher(game_?.battleScore.player1, gameInPut);
+    if (payWith === PayType.coin) {
+      CashWalletModel.updateOne(
+        { userID: decoded.id },
+        {
+          currentCash: PlayerCoinLeft(
+            commission_guess_mater,
+            currentCoin,
+            game_?.price_in_value ?? 0,
+            1,
+            cashRating
+          ),
+        }
+      );
+    } else {
+      CashWalletModel.updateOne(
+        { userID: decoded.id },
+        {
+          currentCash: PlayerCashLeft(
+            commission_guess_mater,
+            p1Cash,
+            game_?.price_in_value ?? 0,
+            1,
+            cashRating
+          ),
+        }
+      );
+    }
     if (winner) {
       await new RecordModel({
         userID: game_?.members[0],
@@ -1289,7 +1379,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
         won: "yes",
         earnings: PlayerCash(
           commission_guess_mater,
-          p2Cash,
+          0,
           game_?.price_in_value ?? 0,
           1,
           cashRating
@@ -1301,7 +1391,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
         won: "no",
         earnings: -PlayerCash(
           commission_guess_mater,
-          p1Cash,
+          0,
           game_?.price_in_value ?? 0,
           1,
           cashRating
@@ -1314,7 +1404,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
             commission_guess_mater,
             p1Cash,
             game_?.price_in_value ?? 0,
-            1,
+            2,
             cashRating
           ),
         }
@@ -1325,7 +1415,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
             winner: true,
             price: PlayerCash(
               commission_guess_mater,
-              p1Cash,
+              0,
               game_?.price_in_value ?? 0,
               1,
               cashRating
@@ -1352,7 +1442,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
           won: "yes",
           earnings: PlayerCash(
             commission_guess_mater,
-            p2Cash,
+            0,
             game_?.price_in_value ?? 0,
             1,
             cashRating
@@ -1363,21 +1453,21 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
           game: Games.matcher,
           won: "no",
           earnings: -PlayerCash(
-              commission_guess_mater,
-              p1Cash,
-              game_?.price_in_value ?? 0,
-              1,
-              cashRating
-            ),
+            commission_guess_mater,
+            0,
+            game_?.price_in_value ?? 0,
+            1,
+            cashRating
+          ),
         }).save();
         await CashWalletModel.updateOne(
           { userID: game_?.members[0] },
           {
-            p1Cash: PlayerCash(
+            currentCash: PlayerCash(
               commission_guess_mater,
               p2Cash,
               game_?.price_in_value ?? 0,
-              1,
+              2,
               cashRating
             ),
           }
@@ -1538,7 +1628,7 @@ GamesRouter.post(
      const { currentCash: p1Cash } = cashInstance;
      const { currentCoin } = coinInstance;
      const { currentCash: p2Cash } = p2CashInstance;
-     const { currentCash: AdminCurrentCash } = adminCashInstance;
+    //  const { currentCash: AdminCurrentCash } = adminCashInstance;
      const { cashRating, commission_roshambo } = defaultInstance;
       // with coin
       if (payWith === PayType.coin) {
@@ -1879,7 +1969,7 @@ GamesRouter.post(
       const { currentCash: p1Cash } = cashInstance;
       const { currentCoin } = coinInstance;
       const { currentCash: p2Cash } = p2CashInstance;
-      const { currentCash: AdminCurrentCash } = adminCashInstance;
+      // const { currentCash: AdminCurrentCash } = adminCashInstance;
       const { cashRating, commission_penalty } = defaultInstance;
     if (!found) {
         res.status(406).json({ message: "error found", error: "invalid user" });
@@ -2102,13 +2192,15 @@ GamesRouter.post("/lucky-geoge", async (req: Request, res: Response) => {
       price,
       winnerPrice,
       winnerCount,
+      endDateTime
     }: {
       title: string;
       description: string;
       memberCount: number;
       price: number;
       winnerPrice: number,
-      winnerCount: number;
+        winnerCount: number;
+      endDateTime: Date
     } = req.body;
     await new GameModel({
       gameMemberCount: memberCount,
@@ -2118,7 +2210,7 @@ GamesRouter.post("/lucky-geoge", async (req: Request, res: Response) => {
       price_in_value: price,
       gameDetail: "Lucky geoge.",
       gameID: Games.lucky_geoge,
-      battleScore: { player1: { title, description, winnerCount, winnerPrice } },
+      battleScore: { player1: { title, description, winnerCount, winnerPrice, endDateTime } },
     })
       .save()
       .then((result) => {
@@ -2161,7 +2253,7 @@ GamesRouter.get("/lucky-geoge", async (req: Request, res: Response) => {
       let currentCash = (await CashWalletModel.findOne({ userID: decoded.id }))?.currentCash ?? 0;
       let currentCoin = (await WalletModel.findOne({ userID: decoded.id }))?.currentCoin ?? 0;
       let allG = await GameModel.find({gameID: Games.lucky_geoge, played: false})
-      await GameModel.find({ gameID: Games.lucky_geoge, members: { $not: { $eq: decoded.id } }, played: false, $or: [{ price_in_value: { $lte: currentCash } }, { price_in_coin: { $lte: currentCoin } }] }).then((games) => {
+      await GameModel.find({ gameID: Games.lucky_geoge, played: false, $or: [{ price_in_value: { $lte: currentCash } }, { price_in_coin: { $lte: currentCoin } }] }).then((games) => {
         res.json(admin? {games: allG} : {games})
       }).catch((error) => {
         res.status(500).json({ message: "error found", error });
@@ -2232,10 +2324,14 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
         { currentCoin: currentCoin - stack }
       );
     }
+    let ticket = randGenerate({
+      length: 12,
+      charset: "alphabetic",
+    });
     await GameModel.findOneAndUpdate(
       { _id: id },
       {
-        $push: { members: decoded.id },
+        $push: { members: decoded.id, players: {player_name: user.full_name, phone_number: user.phone_number, winner: false, ticket, date: new Date(), id: user._id} },
       }
     )
       .then(async (result) => {
@@ -2285,6 +2381,90 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
       });
   } catch (error) {
     res.status(500).json({ message: "error found", error });
+  }
+});
+
+GamesRouter.post("/lucky-judge/update", async (req: Request, res: Response) => {
+  try {
+    let auth = req.headers.authorization ?? "";
+    if (!auth || auth === "") {
+      res.status(403).json({ message: "error found", error: "invalid auth" });
+      return;
+    }
+    let token = auth.replace("Bearer ", "");
+    if (!token || token === "") {
+      res.status(401).json({ message: "error found", error: "invalid token" });
+      return;
+    }
+    let decoded = (verify(token, process.env.SECRET ?? "") as unknown) as {
+      adminID: string;
+    };
+    let user = await AdminModel.findById(decoded.adminID);
+    if (!user) {
+      res.status(419).json({ message: "error found", error: "User not found" });
+      return;
+    }
+    const {
+      id,
+      newGameTime,
+    }: {
+      id: string;
+      newGameTime: Date;
+      } = req.body;
+    let { battleScore } = await GameModel.findOne({ _id: id }) ?? { battleScore: {player1: {}, player2: {}}}
+    await GameModel.findOneAndUpdate(
+      { _id: id },
+      {
+        battleScore: {
+          player1: {
+            ...battleScore.player1,
+            endDateTime: newGameTime
+          },
+          player2: {}
+        }
+      }
+    )
+      .then(async () => {
+        res.json({ message: "successful" });
+      })
+      .catch((error) => {
+        res.status(500).json({ message: "error found", error });
+      });
+  } catch (error) {
+    res.status(500).json({ message: "error found", error });
+  }
+});
+
+GamesRouter.delete("/lucky-judge", async (req: Request, res: Response) => {
+  try {
+    const auth = req.headers.authorization;
+    if (!auth) {
+      res.status(406).json({ message: "invalid auth" });
+      return;
+    }
+    const token = auth.replace("Bearer ", "");
+    if (!token || token === "") {
+      res.status(406).json({ message: "invalid auth" });
+      return;
+    }
+    let decoded = verify(token, secret) as { adminID: string };
+    let admin = await AdminModel.findById(decoded.adminID);
+
+    if (!admin) {
+      res.status(406).json({ message: "admin not found" });
+      return;
+    }
+    const id = (req.query.id as unknown) as string;
+    await GameModel
+      .deleteOne({ _id: id })
+      .then(() => {
+        res.json({ message: "deleted successfully" });
+      })
+      .catch((error) => {
+        res.status(500).json({ message: "error", error });
+      });
+  } catch (error) {
+    res.status(500).json({ error });
   }
 });
 
@@ -2593,7 +2773,6 @@ GamesRouter.post("/custom-game", async (req: Request, res: Response) => {
     const {
       player2Username,
       price_in_value,
-      gameID,
       title,
       description,
       answer,
@@ -2617,7 +2796,7 @@ GamesRouter.post("/custom-game", async (req: Request, res: Response) => {
     }
     const p2 = await PlayerModel.findOne({ playername: player2Username });
 
-    if (!p2 || p2.userID === decoded.id && (player2Username !== "")) {
+    if ((!p2 || (p2.userID === decoded.id)) && (player2Username !== "")) {
       res
         .status(409)
         .json({ message: "error found", error: "player 2 not found" });
@@ -2625,7 +2804,7 @@ GamesRouter.post("/custom-game", async (req: Request, res: Response) => {
     }
     await new GameModel({
       gameMemberCount: 2,
-      members: [decoded.id, p2.userID],
+      members: [decoded.id, p2?.userID],
       price_in_coin: cashRating * price_in_value,
       price_in_value,
       gameDetail: "A game created between friends",
@@ -2862,35 +3041,13 @@ GamesRouter.get("/requests", async (req: Request, res: Response) => {
       return;
     }
     await GameModel.find({
-      played: false,
+      isComplete: false,
       gameID: Games.custom_game,
+      members: decoded.id,
     })
       .sort({ date: -1 })
       .then((result) => {
-        let requests: any[] = [];
-        result.map((rels) => {
-          if (rels.members[0] === decoded.id) {
-            return;
-          }
-          requests.push({
-            date: rels.date,
-            gameDetail: rels.gameDetail,
-            gameID: rels.gameID,
-            gameMemberCount: rels.gameMemberCount,
-            gameType: rels.gameType,
-            members: rels.members,
-            playCount: rels.playCount,
-            price_in_coin: rels.price_in_coin,
-            price_in_value: rels.price_in_value,
-            _id: rels._id,
-            title: rels.battleScore.player1.title,
-            description: rels.battleScore.player1.description,
-            endDate: rels.battleScore.player1.endDate,
-            endGameTime: rels.battleScore.player1.endGameTime,
-            choice: rels.battleScore.player1.choice,
-          });
-        });
-        res.json({ message: "content found", requests });
+        res.json({ message: "content found", requests: result ?? [] });
       })
       .catch((error) => {
         res.status(500).json({ message: "error found", error });
@@ -2941,5 +3098,43 @@ GamesRouter.get("/custom-game/games", async (req: Request, res: Response) => {
     console.error(error);
   }
 });
+
+GamesRouter.get("/custom-game/judge", async (req: Request, res: Response) => {
+  try {
+    let auth = req.headers.authorization ?? "";
+    if (!auth) {
+      res.status(406).json({ message: "error found", error: "invalid auth" });
+      return;
+    }
+    let token: string = auth.replace("Bearer ", "");
+    if (!token || token === "") {
+      res.status(406).json({ message: "error found", error: "empty token" });
+      return;
+    }
+    let decoded = (verify(token, secret) as unknown) as {
+      id: string;
+    };
+    let found = await users.findById(decoded.id);
+    if (!found) {
+      res.status(406).json({
+        message: "error found",
+        error: "user no found",
+      } as errorResHint);
+      return;
+    }
+    await GameModel.find({
+      played: true,
+      gameID: Games.custom_game,
+      isComplete: false,
+    }).then(results => {
+      res.json({results})
+    }).catch(error => {
+      res.status(500).json({error, message: "error found"} as errorResHint)
+    })
+  } catch (error) {
+    res.status(500).json({error, message: "error found"} as errorResHint)
+    console.error(error);
+  }
+})
 
 export default GamesRouter;

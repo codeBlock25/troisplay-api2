@@ -28,6 +28,7 @@ server.use("/test", (_req, res) => {
 
 
 const whitelist: string[] = [
+  "http://192.168.43.41:3000",
   "http://localhost:3000",
   "http://localhost:1027",
   "http://troisplay.com",

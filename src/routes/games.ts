@@ -1417,7 +1417,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
     const { cashRating, commission_guess_mater } = defaultInstance;
     let winner = FindWinnerOnMatcher(game_?.battleScore.player1, gameInPut);
     if (payWith === PayType.coin) {
-      CashWalletModel.updateOne(
+      WalletModel.updateOne(
         { userID: decoded.id },
         {
           currentCash: PlayerCoinLeft(

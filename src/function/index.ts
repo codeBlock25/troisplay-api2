@@ -77,7 +77,7 @@ export function PlayerCash(
     ? playerCash + cashRating * commission.value * memberCount
     : commission.value_in === "%"
     ? playerCash +
-      (game_price - (commission.value / 100) * game_price) * memberCount
+      ((game_price - ((commission.value / 100) * game_price)) * memberCount)
     : playerCash;
 }
 

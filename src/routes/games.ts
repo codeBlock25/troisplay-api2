@@ -322,25 +322,26 @@ GamesRouter.get("/getter", async (req: Request, res: Response) => {
       .then(async (result: GameType[]) => {
         let r: any[] = []
         result.map((resl)=>{
-          if(resl.gameID === Games.custom_game) {
-            r.push(resl)
-          } else {
-            r.push({
-            _id: resl._id,
-            gameMemberCount: resl.gameMemberCount,
-            members:resl.members,
-            priceType: resl.priceType,
-            price_in_value: resl.price_in_value,
-            gameType: resl.gameType,
-            price_in_coin: resl.price_in_coin,
-            gameDetail: resl.gameDetail,
-            gameID: resl.gameID,
-            played: resl.played,
-            date: resl.date,
-            playCount: resl.playCount,
-            isComplete: resl.isComplete
-          })
-        }
+          console.log(resl);
+            if(resl.gameID === Games.custom_game) {
+              r.push(resl)
+            } else {
+              r.push({
+              _id: resl._id,
+              gameMemberCount: resl.gameMemberCount,
+              members:resl.members,
+              priceType: resl.priceType,
+              price_in_value: resl.price_in_value,
+              gameType: resl.gameType,
+              price_in_coin: resl.price_in_coin,
+              gameDetail: resl.gameDetail,
+              gameID: resl.gameID,
+              played: resl.played,
+              date: resl.date,
+              playCount: resl.playCount,
+              isComplete: resl.isComplete
+            })
+          }
         })
         // console.log(r)
         res.json({ games: r });

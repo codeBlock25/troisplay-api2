@@ -344,7 +344,7 @@ GamesRouter.get("/getter", async (req: Request, res: Response) => {
           }
         })
         // console.log(r)
-        res.json({ games: r });
+        res.json({ games: r, rr: result });
       })
       .catch((error) => {
         res.status(404).json({ message: "error found", error });

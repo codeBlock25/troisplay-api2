@@ -36,6 +36,77 @@ const GamesRouter: Router = Router();
 
 const secret: string = process.env.SECRET ?? "";
 
+GamesRouter.delete("/any/cancel", async (req: Request, res: Response) => {
+  try {
+    let auth: string = req.headers.authorization ?? "";
+    if (!auth) {
+      res.status(406).json({ message: "error found", error: "invalid auth" });
+      return;
+    }
+    let token: string = auth.replace("Bearer ", "");
+    if (!token || token === "") {
+      res.status(406).json({ message: "error found", error: "empty token" });
+      return;
+    }
+    let decoded = (verify(token, secret) as unknown) as {
+      id: string;
+    };
+    let found = await users.findById(decoded.id);
+    if (!found) {
+      res.status(406).json({ message: "error found", error: "invalid user" });
+      return;
+    }
+    const { gameID } = (req.query as unknown) as { gameID: string };
+    const game = await GameModel.findOne({ _id: gameID });
+    const defaults = await defaultModel.findOne();
+    const adminCash = await AdminCashModel.findOne({});
+    const cash = await CashWalletModel.findOne({ userID: decoded.id });
+    if (game) {
+      let commission: { value: number; value_in: "c" | "$" | "%" } =
+        game.gameID === Games.roshambo
+          ? defaults?.commission_roshambo ?? { value: 20, value_in: "%" }
+          : game.gameID === Games.penalth_card
+          ? defaults?.commission_penalty ?? { value: 20, value_in: "%" }
+          : game.gameID === Games.matcher
+          ? defaults?.commission_guess_mater ?? { value: 20, value_in: "%" }
+          : game.gameID === Games.custom_game
+          ? defaults?.commission_custom_game ?? { value: 20, value_in: "%" }
+          : { value: 20, value_in: "%" };
+      PlayAdmin(
+        commission,
+        game.price_in_value,
+        adminCash?.currentCash ?? 10,
+        defaults?.cashRating ?? 10,
+        1
+      );
+      await CashWalletModel.updateOne(
+        { userID: decoded.id },
+        {
+          currentCash: PlayerCashLeft(
+            commission,
+            cash?.currentCash ?? 100,
+            game.price_in_value,
+            1,
+            defaults?.cashRating ?? 10
+          ),
+        }
+      );
+      await GameModel.deleteOne({ _id: gameID })
+        .then(() => {
+          res.json({ message: "games cancel." });
+        })
+        .catch((error) => {
+          res.status(500).json({ message: "error found", error });
+          console.error(error);
+        });
+    } else {
+      res.status(400).json({ message: "This game does not exit." });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "error found", error });
+    console.error(error);
+  }
+});
 
 GamesRouter.post("/spin", async (req: Request, res: Response) => {
   try {

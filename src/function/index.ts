@@ -94,7 +94,7 @@ export function PlayerCashLeft(
     ? playerCash + cashRating * commission.value * memberCount
     : commission.value_in === "%"
     ? playerCash -
-      (game_price - (commission.value / 100) * game_price)
+    (game_price - ((commission.value / 100) * game_price))
     : playerCash;
 }
 
@@ -111,7 +111,7 @@ export function PlayerCoinLeft(
     ? playerCoin + cashRating * commission.value * memberCount
     : commission.value_in === "%"
     ? playerCoin -
-      (game_price - (commission.value / 100) * game_price)* cashRating
+    ((game_price - ((commission.value / 100) * game_price)) * memberCount)
     : playerCoin;
 }
 
@@ -127,7 +127,8 @@ export function PlayerDrawCash(
     : commission.value_in === "c"
     ? playerCash + cashRating * commission.value * memberCount
     : commission.value_in === "%"
-    ? playerCash + (game_price - (commission.value / 100) * game_price) * 1
+    ? playerCash + 
+    ((game_price - ((commission.value / 100) * game_price)) * 1)
     : playerCash;
 }
 

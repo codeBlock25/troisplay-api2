@@ -1417,7 +1417,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
     const { cashRating, commission_guess_mater } = defaultInstance;
     let winner = FindWinnerOnMatcher(game_?.battleScore.player1, gameInPut);
     if (payWith === PayType.coin) {
-      WalletModel.updateOne(
+    await  WalletModel.updateOne(
         { userID: decoded.id },
         {
           currentCash: PlayerCoinLeft(
@@ -1430,7 +1430,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
         }
       );
     } else {
-      CashWalletModel.updateOne(
+      await CashWalletModel.updateOne(
         { userID: decoded.id },
         {
           currentCash: PlayerCashLeft(
@@ -1612,18 +1612,22 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
           })
         })
         result.map((rels) => {
-          games.push({
-            date: rels.date,
-            gameDetail: rels.gameDetail,
-            gameID: rels.gameID,
-            gameMemberCount: rels.gameMemberCount,
-            gameType: rels.gameType,
-            members: rels.members,
-            playCount: rels.playCount,
-            price_in_coin: rels.price_in_coin,
-            price_in_value: rels.price_in_value,
-            _id: rels._id,
-          });
+          if (rels.gameID === Games.custom_game) {
+            games.push(rels);
+          } else {
+            games.push({
+              date: rels.date,
+              gameDetail: rels.gameDetail,
+              gameID: rels.gameID,
+              gameMemberCount: rels.gameMemberCount,
+              gameType: rels.gameType,
+              members: rels.members,
+              playCount: rels.playCount,
+              price_in_coin: rels.price_in_coin,
+              price_in_value: rels.price_in_value,
+              _id: rels._id,
+            });
+          }
         });
         res.json({ message: "content found", games });
       })

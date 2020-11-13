@@ -322,7 +322,10 @@ GamesRouter.get("/getter", async (req: Request, res: Response) => {
       .then(async (result: GameType[]) => {
         let r: any[] = []
         result.map((resl)=>{
-          r.push({
+          if(resl.gameID === Games.custom_game) {
+            r.push(resl)
+          } else {
+            r.push({
             _id: resl._id,
             gameMemberCount: resl.gameMemberCount,
             members:resl.members,
@@ -337,6 +340,7 @@ GamesRouter.get("/getter", async (req: Request, res: Response) => {
             playCount: resl.playCount,
             isComplete: resl.isComplete
           })
+        }
         })
         // console.log(r)
         res.json({ games: r });

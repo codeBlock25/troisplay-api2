@@ -344,7 +344,7 @@ GamesRouter.get("/getter", async (req: Request, res: Response) => {
           }
         })
         // console.log(r)
-        res.json({ games: r, rr: result });
+        res.json({ games: r });
       })
       .catch((error) => {
         res.status(404).json({ message: "error found", error });
@@ -923,9 +923,9 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
     const { currentCash: p2Cash } = p2CashInstance;
     const { currentCash: AdminCurrentCash } = adminCashInstance;
     const { cashRating, commission_penalty } = defaultInstance;
-    let winner = FindWinnerOnPenalty(game_?.battleScore.player1, gameInPut);
+    let winner = FindWinnerOnPenalty(game_?.battleScore.player1, gameInPut) ? GameRec.win : GameRec.lose;
     if (payWith === PayType.coin) {
-      CashWalletModel.updateOne(
+      await CashWalletModel.updateOne(
         { userID: decoded.id },
         {
           currentCash: PlayerCoinLeft(
@@ -938,7 +938,7 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
         }
       );
     } else {
-       CashWalletModel.updateOne(
+     await  CashWalletModel.updateOne(
          { userID: decoded.id },
          {
            currentCash: PlayerCashLeft(
@@ -989,7 +989,29 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
         .then(() => {
           res.json({
             message: "you won",
-            winner: true,
+            winner,
+            game_result: {
+              round1:
+                game_?.battleScore.player1.round1 ===
+                gameInPut.round1 ? GameRec.win : GameRec.lose
+              ,
+              round2:
+                game_?.battleScore.player1.round2 ===
+                gameInPut.round2 ? GameRec.win : GameRec.lose
+              ,
+              round3:
+                game_?.battleScore.player1.round3 ===
+                gameInPut.round3 ? GameRec.win : GameRec.lose
+              ,
+              round4:
+                game_?.battleScore.player1.round4 ===
+                gameInPut.round4 ? GameRec.win : GameRec.lose
+              ,
+              round5:
+                game_?.battleScore.player1.round5 ===
+                gameInPut.round5 ? GameRec.win : GameRec.lose
+              ,
+            },
             price: PlayerCash(
               commission_penalty,
               p1Cash,
@@ -1111,7 +1133,7 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
     const { cashRating, commission_roshambo } = defaultInstance;
     let winner = FindWinnerOnRoshambo(game_?.battleScore.player1, gameInPut);
      if (payWith === PayType.coin) {
-       CashWalletModel.updateOne(
+       await CashWalletModel.updateOne(
          { userID: decoded.id },
          {
            currentCash: PlayerCoinLeft(
@@ -1124,7 +1146,7 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
          }
        );
      } else {
-       CashWalletModel.updateOne(
+     await CashWalletModel.updateOne(
          { userID: decoded.id },
          {
            currentCash: PlayerCashLeft(

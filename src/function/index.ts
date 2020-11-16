@@ -38,7 +38,7 @@ export function FindWinnerOnPenalty(
     round4: number;
     round5: number;
   }
-) {
+): boolean {
   let count = 0;
   p1.round1 === p2.round1 ? count++ : count--;
   p1.round2 === p2.round2 ? count++ : count--;

@@ -503,7 +503,7 @@ GamesRouter.post("/roshambo", async (req: Request, res: Response) => {
         return;
       }
     }
-    if (isExiting) {
+    if (isExiting?.members.includes(decoded.id)) {
       res
         .status(404)
         .json({ message: "is Exiting", id: isExiting._id, isExiting: true });
@@ -622,7 +622,7 @@ GamesRouter.post("/penalty", async (req: Request, res: Response) => {
         return;
       }
     }
-    if (isExiting) {
+    if (isExiting?.members.includes(decoded.id)) {
       res.status(404).json({
         message: "is Exiting",
         id: isExiting._id,
@@ -743,7 +743,7 @@ GamesRouter.post("/guess-master", async (req: Request, res: Response) => {
       price_in_value: price_in_cash,
       gameID: Games.matcher,
     });
-    if (isExiting) {
+    if (isExiting?.members.includes(decoded.id)) {
       res.status(404).json({
         message: "is Exiting",
         id: isExiting._id,
@@ -923,7 +923,9 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
     const { currentCash: p2Cash } = p2CashInstance;
     const { currentCash: AdminCurrentCash } = adminCashInstance;
     const { cashRating, commission_penalty } = defaultInstance;
-    let winner = FindWinnerOnPenalty(game_?.battleScore.player1, gameInPut) ? GameRec.win : GameRec.lose;
+    let winner = FindWinnerOnPenalty(game_?.battleScore.player1, gameInPut)
+      ? GameRec.lose
+      : GameRec.win;
     if (payWith === PayType.coin) {
       await CashWalletModel.updateOne(
         { userID: decoded.id },
@@ -952,15 +954,17 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
        );
     }
     if (winner) {
-      await AdminCashModel.updateOne(
-        {},
-        {currentCash: AdminCash(commission_penalty, AdminCurrentCash, (game_?.price_in_value ?? 0), 2, cashRating)
-          })
       await new RecordModel({
         userID: decoded.id,
         game: Games.penalth_card,
         won: "yes",
-        earnings: PlayerCash(commission_penalty, p1Cash, game_?.price_in_value ?? 0, 1, cashRating)
+        earnings: PlayerCash(
+          commission_penalty,
+          p1Cash,
+          game_?.price_in_value ?? 0,
+          1,
+          cashRating
+        ),
       }).save();
       await new RecordModel({
         userID: game_?.members[0],
@@ -989,28 +993,28 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
         .then(() => {
           res.json({
             message: "you won",
-            winner,
+            winner: GameRec.win,
             game_result: {
               round1:
-                game_?.battleScore.player1.round1 ===
-                gameInPut.round1 ? GameRec.win : GameRec.lose
-              ,
+                game_?.battleScore.player1.round1 === gameInPut.round1
+                  ? GameRec.win
+                  : GameRec.lose,
               round2:
-                game_?.battleScore.player1.round2 ===
-                gameInPut.round2 ? GameRec.win : GameRec.lose
-              ,
+                game_?.battleScore.player1.round2 === gameInPut.round2
+                  ? GameRec.win
+                  : GameRec.lose,
               round3:
-                game_?.battleScore.player1.round3 ===
-                gameInPut.round3 ? GameRec.win : GameRec.lose
-              ,
+                game_?.battleScore.player1.round3 === gameInPut.round3
+                  ? GameRec.win
+                  : GameRec.lose,
               round4:
-                game_?.battleScore.player1.round4 ===
-                gameInPut.round4 ? GameRec.win : GameRec.lose
-              ,
+                game_?.battleScore.player1.round4 === gameInPut.round4
+                  ? GameRec.win
+                  : GameRec.lose,
               round5:
-                game_?.battleScore.player1.round5 ===
-                gameInPut.round5 ? GameRec.win : GameRec.lose
-              ,
+                game_?.battleScore.player1.round5 === gameInPut.round5
+                  ? GameRec.win
+                  : GameRec.lose,
             },
             price: PlayerCash(
               commission_penalty,
@@ -1029,7 +1033,13 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
         userID: decoded.id,
         game: Games.penalth_card,
         won: "no",
-        earnings: -PlayerCash(commission_penalty, p1Cash, game_?.price_in_value ?? 0, 1, cashRating)
+        earnings: -PlayerCash(
+          commission_penalty,
+          p1Cash,
+          game_?.price_in_value ?? 0,
+          1,
+          cashRating
+        ),
       }).save();
       await new RecordModel({
         userID: game_?.members[0],
@@ -1058,8 +1068,30 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
         .then(() => {
           res.json({
             message: "you lost",
-            winner: false,
+            winner: GameRec.lose,
             price: 0,
+            game_result: {
+              round1:
+                game_?.battleScore.player1.round1 === gameInPut.round1
+                  ? GameRec.win
+                  : GameRec.lose,
+              round2:
+                game_?.battleScore.player1.round2 === gameInPut.round2
+                  ? GameRec.win
+                  : GameRec.lose,
+              round3:
+                game_?.battleScore.player1.round3 === gameInPut.round3
+                  ? GameRec.win
+                  : GameRec.lose,
+              round4:
+                game_?.battleScore.player1.round4 === gameInPut.round4
+                  ? GameRec.win
+                  : GameRec.lose,
+              round5:
+                game_?.battleScore.player1.round5 === gameInPut.round5
+                  ? GameRec.win
+                  : GameRec.lose,
+            },
           });
         })
         .catch((error) => {

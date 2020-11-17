@@ -20,7 +20,6 @@ import {
   FindWinnerOnRoshambo,
   MarkRoshamboGame,
   FindWinnerOnPenalty,
-  AdminCash,
   FindWinnerOnMatcher,
   shuffle,
   PlayerCash,

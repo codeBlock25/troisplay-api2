@@ -17,7 +17,6 @@ export interface errorResHint<T = any> {
 defaultRouter.post("/init", async (req: Request, res: Response) => {
   try {
     const {
-      key,
       commission_value_custom,
       commission_value_guess_master,
       commission_value_in_custom,
@@ -33,7 +32,6 @@ defaultRouter.post("/init", async (req: Request, res: Response) => {
       min_stack_custom,
       referRating,
     }: {
-      key: string;
       commission_value_roshambo: number;
       commission_value_in_roshambo: "$" | "%" | "c";
       commission_value_penalty: number;
@@ -49,23 +47,6 @@ defaultRouter.post("/init", async (req: Request, res: Response) => {
       min_stack_custom: number;
       referRating: number;
     } = req.body;
-    // if (
-    //   key !== process.env.UP_KEY ||
-    //   key === undefined ||
-    //   key === null ||
-    //   key === ""
-    // ) {
-    //   res
-    //     .status
-    406;
-    //     .json({
-    //       message: "not allowed",
-    //       error: "#40010",
-    //       key: process.env.UP_KEY,
-    //       ty: typeof process.env.UP_KEY,
-    //     } as errorResHint);
-    //   return;
-    // }
     let count = await defaultModel.countDocuments({});
     if (count >= 1) {
       res

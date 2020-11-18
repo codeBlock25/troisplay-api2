@@ -625,13 +625,13 @@ GamesRouter.post("/penalty", async (req: Request, res: Response) => {
         return;
       }
     }
-    if (isExiting?.members.includes(decoded.id)) {
-      res.status(404).json({
-        message: "is Exiting",
-        id: isExiting._id,
-        isExiting: true,
-      });
-      return;
+    if (isExiting) {
+      if (isExiting.members[0] !== decoded.id) {
+        res
+          .status(404)
+          .json({ message: "is Exiting", id: isExiting._id, isExiting: true });
+        return;
+      }
     }
     await new GameModel({
       gameMemberCount: 2,
@@ -746,13 +746,13 @@ GamesRouter.post("/guess-master", async (req: Request, res: Response) => {
       price_in_value: price_in_cash,
       gameID: Games.matcher,
     });
-    if (isExiting?.members.includes(decoded.id)) {
-      res.status(404).json({
-        message: "is Exiting",
-        id: isExiting._id,
-        isExiting: true,
-      });
-      return;
+    if (isExiting) {
+      if (isExiting.members[0] !== decoded.id) {
+        res
+          .status(404)
+          .json({ message: "is Exiting", id: isExiting._id, isExiting: true });
+        return;
+      }
     }
     await new GameModel({
       gameMemberCount: 2,

@@ -29,7 +29,7 @@ import {
   PlayerCoinLeft,
 } from "../function";
 import { generate as randGenerate } from "randomstring";
-import { concat, sortBy } from "lodash";
+import { concat, filter, isEmpty, sortBy } from "lodash";
 
 envConfig();
 const GamesRouter: Router = Router();
@@ -3220,7 +3220,10 @@ GamesRouter.get("/requests", async (req: Request, res: Response) => {
     })
       .sort({ date: -1 })
       .then((result) => {
-        res.json({ message: "content found", requests: result ?? [] });
+        res.json({
+          message: "content found", requests: filter(result, (__game) => {
+          return !isEmpty(__game.battleScore.player2);
+        })});
       })
       .catch((error) => {
         res.status(500).json({ message: "error found", error });

@@ -997,6 +997,7 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
           res.json({
             message: "you won",
             winner: GameRec.win,
+            battlePlan: game_?.battleScore.player1,
             game_result: {
               round1:
                 game_?.battleScore.player1.round1 === gameInPut.round1
@@ -1073,6 +1074,7 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
             message: "you lost",
             winner: GameRec.lose,
             price: 0,
+            battlePlan: game_?.battleScore.player1,
             game_result: {
               round1:
                 game_?.battleScore.player1.round1 === gameInPut.round1
@@ -1235,12 +1237,28 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
           res.json({
             message: "you won",
             winner,
+            battlePlan: game_?.battleScore.player1,
             game_result: {
-              round1: MarkRoshamboGame(game_?.battleScore.player1.round1, gameInPut.round1),
-              round2: MarkRoshamboGame(game_?.battleScore.player1.round2, gameInPut.round2),
-              round3: MarkRoshamboGame(game_?.battleScore.player1.round3, gameInPut.round3),
-              round4: MarkRoshamboGame(game_?.battleScore.player1.round4, gameInPut.round4),
-              round5: MarkRoshamboGame(game_?.battleScore.player1.round5, gameInPut.round5),
+              round1: MarkRoshamboGame(
+                game_?.battleScore.player1.round1,
+                gameInPut.round1
+              ),
+              round2: MarkRoshamboGame(
+                game_?.battleScore.player1.round2,
+                gameInPut.round2
+              ),
+              round3: MarkRoshamboGame(
+                game_?.battleScore.player1.round3,
+                gameInPut.round3
+              ),
+              round4: MarkRoshamboGame(
+                game_?.battleScore.player1.round4,
+                gameInPut.round4
+              ),
+              round5: MarkRoshamboGame(
+                game_?.battleScore.player1.round5,
+                gameInPut.round5
+              ),
             },
             price: PlayerCash(
               commission_roshambo,
@@ -1305,8 +1323,9 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
       )
         .then(() => {
           res.json({
-            message: "you won",
+            message: "you drew",
             winner,
+            battlePlan: game_?.battleScore.player1,
             game_result: {
               round1: MarkRoshamboGame(
                 game_?.battleScore.player1.round1,
@@ -1382,6 +1401,7 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
           res.json({
             message: "you lost",
             winner,
+            battlePlan: game_?.battleScore.player1,
             price: 0,
             game_result: {
               round1: MarkRoshamboGame(

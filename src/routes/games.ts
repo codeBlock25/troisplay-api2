@@ -505,7 +505,7 @@ GamesRouter.post("/roshambo", async (req: Request, res: Response) => {
       }
     }
     if (isExiting) {
-      if (!(isExiting.members.includes(decoded.id))) {
+      if (isExiting.members.includes(decoded.id)) {
         res
           .status(404)
           .json({ message: "is Exiting", id: isExiting._id, isExiting: true });

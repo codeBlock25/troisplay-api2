@@ -1498,6 +1498,10 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
     const { currentCash: AdminCurrentCash } = adminCashInstance;
     const { cashRating, commission_guess_mater } = defaultInstance;
     let winner = FindWinnerOnMatcher(game_?.battleScore.player1, gameInPut);
+    let count = await UserPlay.countDocuments({
+      player2ID: decoded.id,
+      gameID: id,
+    });
     if (payWith === PayType.coin) {
       await WalletModel.updateOne(
         { userID: decoded.id },
@@ -1532,8 +1536,8 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
         won: "yes",
         earnings: PlayerCash(
           commission_guess_mater,
-          0,
-          game_?.price_in_value ?? 0,
+          0,(
+          game_?.price_in_value ?? 0) * count === 1 ? 1:count === 2 ? .8: count >= 3 ? .6: 1,
           1,
           cashRating
         ),
@@ -1545,7 +1549,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
         earnings: -PlayerCash(
           commission_guess_mater,
           0,
-          game_?.price_in_value ?? 0,
+          (game_?.price_in_value ?? 0) * count === 1 ? 1 : count === 2 ? .8 : count >= 3 ? .6 : 1,
           1,
           cashRating
         ),
@@ -1556,7 +1560,13 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
           currentCash: PlayerCash(
             commission_guess_mater,
             p1Cash,
-            game_?.price_in_value ?? 0,
+            (game_?.price_in_value ?? 0) * count === 1
+              ? 1
+              : count === 2
+              ? 0.8
+              : count >= 3
+              ? 0.6
+              : 1,
             2,
             cashRating
           ),
@@ -1569,7 +1579,13 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
             price: PlayerCash(
               commission_guess_mater,
               0,
-              game_?.price_in_value ?? 0,
+              (game_?.price_in_value ?? 0) * count === 1
+                ? 1
+                : count === 2
+                ? 0.8
+                : count >= 3
+                ? 0.6
+                : 1,
               1,
               cashRating
             ),
@@ -1584,10 +1600,6 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
         isWin: false,
         gameID: id,
       }).save();
-      let count = await UserPlay.countDocuments({
-        player2ID: decoded.id,
-        gameID: id,
-      });
       if (count >= 3) {
         await new RecordModel({
           userID: game_?.members[0],

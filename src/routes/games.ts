@@ -504,11 +504,13 @@ GamesRouter.post("/roshambo", async (req: Request, res: Response) => {
         return;
       }
     }
-    if (isExiting?.members.includes(decoded.id)) {
-      res
-        .status(404)
-        .json({ message: "is Exiting", id: isExiting._id, isExiting: true });
-      return;
+    if (isExiting) {
+      if (!(isExiting.members.includes(decoded.id))) {
+        res
+          .status(404)
+          .json({ message: "is Exiting", id: isExiting._id, isExiting: true });
+        return;
+      }
     }
     await new GameModel({
       gameMemberCount: 2,
@@ -3182,7 +3184,7 @@ GamesRouter.get("/requests", async (req: Request, res: Response) => {
     await GameModel.find({
       isComplete: false,
       gameID: Games.custom_game,
-      "members[1]": decoded.id,
+      "members[1]": decoded.id
     })
       .sort({ date: -1 })
       .then((result) => {

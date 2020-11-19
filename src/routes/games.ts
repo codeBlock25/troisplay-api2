@@ -56,22 +56,22 @@ GamesRouter.delete("/any/cancel", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
     }
-    const { gameID } = (req.query as unknown) as { gameID: string; };
+    const { gameID } = (req.query as unknown) as { gameID: string };
     const game = await GameModel.findOne({ _id: gameID });
     const defaults = await defaultModel.findOne();
     const adminCash = await AdminCashModel.findOne({});
     const cash = await CashWalletModel.findOne({ userID: decoded.id });
     if (game) {
-      let commission: { value: number; value_in: "c" | "$" | "%"; } =
+      let commission: { value: number; value_in: "c" | "$" | "%" } =
         game.gameID === Games.roshambo
           ? defaults?.commission_roshambo ?? { value: 20, value_in: "%" }
           : game.gameID === Games.penalth_card
-            ? defaults?.commission_penalty ?? { value: 20, value_in: "%" }
-            : game.gameID === Games.matcher
-              ? defaults?.commission_guess_mater ?? { value: 20, value_in: "%" }
-              : game.gameID === Games.custom_game
-                ? defaults?.commission_custom_game ?? { value: 20, value_in: "%" }
-                : { value: 20, value_in: "%" };
+          ? defaults?.commission_penalty ?? { value: 20, value_in: "%" }
+          : game.gameID === Games.matcher
+          ? defaults?.commission_guess_mater ?? { value: 20, value_in: "%" }
+          : game.gameID === Games.custom_game
+          ? defaults?.commission_custom_game ?? { value: 20, value_in: "%" }
+          : { value: 20, value_in: "%" };
       PlayAdmin(
         commission,
         game.price_in_value,
@@ -339,7 +339,7 @@ GamesRouter.get("/getter", async (req: Request, res: Response) => {
               played: resl.played,
               date: resl.date,
               playCount: resl.playCount,
-              isComplete: resl.isComplete
+              isComplete: resl.isComplete,
             });
           }
         });
@@ -361,7 +361,7 @@ GamesRouter.post("/play", async (req: Request, res: Response) => {
     const {
       gameID,
       playWith,
-    }: { gameID: string; playWith: PayType; } = req.body;
+    }: { gameID: string; playWith: PayType } = req.body;
     if (!auth) {
       res.status(406).json({ message: "error found", error: "invalid auth" });
       return;
@@ -397,7 +397,10 @@ GamesRouter.post("/play", async (req: Request, res: Response) => {
         .then(async (_) => {
           CashWalletModel.updateOne(
             { userID: decoded.id },
-            { currentCash: (cash_wallet?.currentCash ?? 0) - (game_?.price_in_value ?? 0) }
+            {
+              currentCash:
+                (cash_wallet?.currentCash ?? 0) - (game_?.price_in_value ?? 0),
+            }
           )
             .then(() => {
               res.json({ message: "play", price: game_?.price_in_value });
@@ -427,11 +430,15 @@ GamesRouter.post("/play", async (req: Request, res: Response) => {
         .then(async (_) => {
           await WalletModel.updateOne(
             { userID: decoded.id },
-            { currentCoin: (coin_wallet?.currentCoin ?? 0) - (game_?.price_in_coin ?? 0) }
+            {
+              currentCoin:
+                (coin_wallet?.currentCoin ?? 0) - (game_?.price_in_coin ?? 0),
+            }
           )
             .then(() => {
               res.json({
-                message: "play", price: game_?.price_in_coin
+                message: "play",
+                price: game_?.price_in_coin,
               });
             })
             .catch((error) => {
@@ -455,7 +462,7 @@ GamesRouter.post("/roshambo", async (req: Request, res: Response) => {
       price_in_cash,
       gameInPut,
       payWith,
-    }: roshamboHint & { payWith: PayType; } = req.body;
+    }: roshamboHint & { payWith: PayType } = req.body;
     if (!auth) {
       res.status(406).json({ message: "error found", error: "invalid auth" });
       return;
@@ -479,7 +486,7 @@ GamesRouter.post("/roshambo", async (req: Request, res: Response) => {
     if (!coinInstance || !cashInstance || !defaultInstance) {
       res.status(500).json({ error: "internal error", message: "error found" });
       return;
-    };
+    }
     const { currentCash } = cashInstance;
     const { currentCoin } = coinInstance;
     const { cashRating } = defaultInstance;
@@ -572,7 +579,7 @@ GamesRouter.post("/penalty", async (req: Request, res: Response) => {
       price_in_cash,
       gameInPut,
       payWith,
-    }: roshamboHint & { payWith: PayType; } = req.body;
+    }: roshamboHint & { payWith: PayType } = req.body;
     if (!auth) {
       res.status(406).json({ message: "error found", error: "invalid auth" });
       return;
@@ -693,7 +700,7 @@ GamesRouter.post("/guess-master", async (req: Request, res: Response) => {
       price_in_cash,
       gameInPut,
       payWith,
-    }: matcherHint & { payWith: PayType; } = req.body;
+    }: matcherHint & { payWith: PayType } = req.body;
     if (!auth) {
       res.status(406).json({ message: "error found", error: "invalid auth" });
       return;
@@ -849,19 +856,19 @@ GamesRouter.get("/check", async (req: Request, res: Response) => {
       message: "is Exiting",
       gamer_: isExiting
         ? {
-          _id: isExiting._id,
-          gameMemberCount: isExiting.gameMemberCount,
-          members: isExiting.members,
-          priceType: isExiting.priceType,
-          price_in_coin: isExiting.price_in_coin,
-          price_in_value: isExiting.price_in_value,
-          gameType: isExiting.gameType,
-          gameDetail: isExiting.gameDetail,
-          gameID: isExiting.gameID,
-          played: isExiting.played,
-          date: isExiting.date,
-          playCount: isExiting.playCount,
-        }
+            _id: isExiting._id,
+            gameMemberCount: isExiting.gameMemberCount,
+            members: isExiting.members,
+            priceType: isExiting.priceType,
+            price_in_coin: isExiting.price_in_coin,
+            price_in_value: isExiting.price_in_value,
+            gameType: isExiting.gameType,
+            gameDetail: isExiting.gameDetail,
+            gameID: isExiting.gameID,
+            played: isExiting.played,
+            date: isExiting.date,
+            playCount: isExiting.playCount,
+          }
         : null,
       isExiting: Boolean(isExiting),
     });
@@ -876,7 +883,7 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
     let {
       id,
       gameInPut,
-      payWith
+      payWith,
     }: {
       id: string;
       gameInPut: {
@@ -917,7 +924,13 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
     }
-    if (!coinInstance || !cashInstance || !defaultInstance || !p2CashInstance || !adminCashInstance) {
+    if (
+      !coinInstance ||
+      !cashInstance ||
+      !defaultInstance ||
+      !p2CashInstance ||
+      !adminCashInstance
+    ) {
       res.status(500).json({ error: "internal error", message: "error found" });
       return;
     }
@@ -1103,7 +1116,13 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
           res.status(500).json({ message: "error found", error });
         });
     }
-    await PlayAdmin(commission_penalty, game_?.price_in_value ?? 0, AdminCurrentCash, cashRating, 2);
+    await PlayAdmin(
+      commission_penalty,
+      game_?.price_in_value ?? 0,
+      AdminCurrentCash,
+      cashRating,
+      2
+    );
   } catch (error) {
     res.status(500).json({ message: "error found", error });
     console.error(error);
@@ -1116,7 +1135,7 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
     let {
       id,
       gameInPut,
-      payWith
+      payWith,
     }: {
       id: string;
       gameInPut: {
@@ -1451,7 +1470,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
     let {
       id,
       gameInPut,
-      payWith
+      payWith,
     }: {
       id: string;
       gameInPut: number;
@@ -1536,8 +1555,14 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
         won: "yes",
         earnings: PlayerCash(
           commission_guess_mater,
-          0,(
-          game_?.price_in_value ?? 0) * count === 1 ? 1:count === 2 ? .8: count >= 3 ? .6: 1,
+          0,
+          (game_?.price_in_value ?? 0) * count === 1
+            ? 1
+            : count === 2
+            ? 0.8
+            : count >= 3
+            ? 0.6
+            : 1,
           1,
           cashRating
         ),
@@ -1549,7 +1574,13 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
         earnings: -PlayerCash(
           commission_guess_mater,
           0,
-          (game_?.price_in_value ?? 0) * count === 1 ? 1 : count === 2 ? .8 : count >= 3 ? .6 : 1,
+          (game_?.price_in_value ?? 0) * count === 1
+            ? 1
+            : count === 2
+            ? 0.8
+            : count >= 3
+            ? 0.6
+            : 1,
           1,
           cashRating
         ),
@@ -1651,6 +1682,14 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
         res.json({ count: 4 - count, winner: false, price: 0 });
       }
     }
+    await GameModel.updateOne(
+      {
+        _id: game_?._id ?? "",
+      },
+      {
+        played: true,
+      }
+    );
     await PlayAdmin(
       commission_guess_mater,
       game_?.price_in_value ?? 0,
@@ -1658,7 +1697,6 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
       cashRating,
       2
     );
-
   } catch (error) {
     res.status(500).json({ message: "error found", error });
     console.error(error);
@@ -1686,7 +1724,11 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
       return;
     }
     let roomgames = await roomModel.find({ players: [decoded.id] });
-    let customgames = await GameModel.find({ members: decoded.id, gameID: Games.custom_game, isComplete: false });
+    let customgames = await GameModel.find({
+      members: decoded.id,
+      gameID: Games.custom_game,
+      isComplete: false,
+    });
     await GameModel.find({ played: false, members: decoded.id })
       .sort({ date: -1 })
       .limit(45)
@@ -1725,7 +1767,10 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
             });
           }
         });
-        res.json({ message: "content found", games: sortBy(games, {date: 1}) });
+        res.json({
+          message: "content found",
+          games: sortBy(games, { date: 1 }),
+        });
       })
       .catch((error) => {
         res.status(500).json({ message: "error found", error });
@@ -1745,7 +1790,7 @@ GamesRouter.post(
         id,
         gameInPut,
         round,
-        payWith
+        payWith,
       }: {
         id: string;
         gameInPut: RoshamboOption;
@@ -1846,22 +1891,22 @@ GamesRouter.post(
         gameID: id,
         isWin: GameRec.draw,
       });
-      if ((drawCount >= 5)) {
+      if (drawCount >= 5) {
         await new RecordModel({
           userID: game_.members[0],
           game: Games.roshambo,
           won: "draw",
           earnings: -(commission_roshambo.value_in === "$"
             ? game_.price_in_value +
-            (game_.price_in_value - commission_roshambo.value)
+              (game_.price_in_value - commission_roshambo.value)
             : commission_roshambo.value_in === "c"
-              ? game_.price_in_value +
+            ? game_.price_in_value +
               (game_.price_in_value - cashRating * commission_roshambo.value)
-              : commission_roshambo.value_in === "%"
-                ? game_.price_in_value +
-                (game_.price_in_value -
-                  game_.price_in_value / commission_roshambo.value)
-                : 0),
+            : commission_roshambo.value_in === "%"
+            ? game_.price_in_value +
+              (game_.price_in_value -
+                game_.price_in_value / commission_roshambo.value)
+            : 0),
         }).save();
         await new RecordModel({
           userID: decoded.id,
@@ -1869,49 +1914,45 @@ GamesRouter.post(
           won: "draw",
           earnings: -(commission_roshambo.value_in === "$"
             ? game_.price_in_value +
-            (game_.price_in_value - commission_roshambo.value)
+              (game_.price_in_value - commission_roshambo.value)
             : commission_roshambo.value_in === "c"
-              ? game_.price_in_value +
+            ? game_.price_in_value +
               (game_.price_in_value - cashRating * commission_roshambo.value)
-              : commission_roshambo.value_in === "%"
-                ? game_.price_in_value +
-                (game_.price_in_value -
-                  game_.price_in_value / commission_roshambo.value)
-                : 0),
+            : commission_roshambo.value_in === "%"
+            ? game_.price_in_value +
+              (game_.price_in_value -
+                game_.price_in_value / commission_roshambo.value)
+            : 0),
         }).save();
 
         await CashWalletModel.updateOne(
           { userID: decoded.id },
           {
             currentCash:
-              p1Cash + (commission_roshambo.value_in === "$"
-                ?
-                (game_.price_in_value - commission_roshambo.value)
+              p1Cash +
+              (commission_roshambo.value_in === "$"
+                ? game_.price_in_value - commission_roshambo.value
                 : commission_roshambo.value_in === "c"
-                  ?
-                  (game_.price_in_value - cashRating * commission_roshambo.value)
-                  : commission_roshambo.value_in === "%"
-                    ?
-                    (game_.price_in_value -
-                      game_.price_in_value / commission_roshambo.value)
-                    : 0)
+                ? game_.price_in_value - cashRating * commission_roshambo.value
+                : commission_roshambo.value_in === "%"
+                ? game_.price_in_value -
+                  game_.price_in_value / commission_roshambo.value
+                : 0),
           }
         );
         await CashWalletModel.updateOne(
           { userID: game_.members[0] },
           {
             currentCash:
-              p2Cash + (commission_roshambo.value_in === "$"
-                ?
-                (game_.price_in_value - commission_roshambo.value)
+              p2Cash +
+              (commission_roshambo.value_in === "$"
+                ? game_.price_in_value - commission_roshambo.value
                 : commission_roshambo.value_in === "c"
-                  ?
-                  (game_.price_in_value - cashRating * commission_roshambo.value)
-                  : commission_roshambo.value_in === "%"
-                    ?
-                    (game_.price_in_value -
-                      game_.price_in_value / commission_roshambo.value)
-                    : 0)
+                ? game_.price_in_value - cashRating * commission_roshambo.value
+                : commission_roshambo.value_in === "%"
+                ? game_.price_in_value -
+                  game_.price_in_value / commission_roshambo.value
+                : 0),
           }
         );
         res.json({
@@ -1922,36 +1963,39 @@ GamesRouter.post(
           price:
             commission_roshambo.value_in === "$"
               ? game_.price_in_value +
-              (game_.price_in_value - commission_roshambo.value)
+                (game_.price_in_value - commission_roshambo.value)
               : commission_roshambo.value_in === "c"
-                ? game_.price_in_value +
+              ? game_.price_in_value +
                 (game_.price_in_value - cashRating * commission_roshambo.value)
-                : commission_roshambo.value_in === "%"
-                  ? game_.price_in_value +
-                  (game_.price_in_value -
-                    game_.price_in_value / commission_roshambo.value)
-                  : 0,
+              : commission_roshambo.value_in === "%"
+              ? game_.price_in_value +
+                (game_.price_in_value -
+                  game_.price_in_value / commission_roshambo.value)
+              : 0,
           final: "draw",
           finalWin: true,
         });
         return;
-      }
-      else if (winCount >= 3 || (drawCount >= 4 && winCount >= 1) || (drawCount >= 3 && winCount >= 2)) {
+      } else if (
+        winCount >= 3 ||
+        (drawCount >= 4 && winCount >= 1) ||
+        (drawCount >= 3 && winCount >= 2)
+      ) {
         await new RecordModel({
           userID: game_.members[0],
           game: Games.roshambo,
           won: "no",
           earnings: -(commission_roshambo.value_in === "$"
             ? game_.price_in_value +
-            (game_.price_in_value - commission_roshambo.value)
+              (game_.price_in_value - commission_roshambo.value)
             : commission_roshambo.value_in === "c"
-              ? game_.price_in_value +
+            ? game_.price_in_value +
               (game_.price_in_value - cashRating * commission_roshambo.value)
-              : commission_roshambo.value_in === "%"
-                ? game_.price_in_value +
-                (game_.price_in_value -
-                  game_.price_in_value / commission_roshambo.value)
-                : 0),
+            : commission_roshambo.value_in === "%"
+            ? game_.price_in_value +
+              (game_.price_in_value -
+                game_.price_in_value / commission_roshambo.value)
+            : 0),
         }).save();
         await new RecordModel({
           userID: decoded.id,
@@ -1960,67 +2004,76 @@ GamesRouter.post(
           earnings:
             commission_roshambo.value_in === "$"
               ? game_.price_in_value +
-              (game_.price_in_value - commission_roshambo.value)
+                (game_.price_in_value - commission_roshambo.value)
               : commission_roshambo.value_in === "c"
-                ? game_.price_in_value +
+              ? game_.price_in_value +
                 (game_.price_in_value - cashRating * commission_roshambo.value)
-                : commission_roshambo.value_in === "%"
-                  ? game_.price_in_value +
-                  (game_.price_in_value -
-                    game_.price_in_value / commission_roshambo.value)
-                  : 0,
+              : commission_roshambo.value_in === "%"
+              ? game_.price_in_value +
+                (game_.price_in_value -
+                  game_.price_in_value / commission_roshambo.value)
+              : 0,
         }).save();
         await CashWalletModel.updateOne(
           { userID: decoded.id },
           {
             currentCash:
-              p1Cash + (commission_roshambo.value_in === "$"
+              p1Cash +
+              (commission_roshambo.value_in === "$"
                 ? game_.price_in_value +
-                (game_.price_in_value - commission_roshambo.value)
+                  (game_.price_in_value - commission_roshambo.value)
                 : commission_roshambo.value_in === "c"
-                  ? game_.price_in_value +
-                  (game_.price_in_value - cashRating * commission_roshambo.value)
-                  : commission_roshambo.value_in === "%"
-                    ? game_.price_in_value +
-                    (game_.price_in_value -
-                      game_.price_in_value / commission_roshambo.value)
-                    : 0),
+                ? game_.price_in_value +
+                  (game_.price_in_value -
+                    cashRating * commission_roshambo.value)
+                : commission_roshambo.value_in === "%"
+                ? game_.price_in_value +
+                  (game_.price_in_value -
+                    game_.price_in_value / commission_roshambo.value)
+                : 0),
           }
         );
         res.json({
-          winner: MarkRoshamboGame(game_.battleScore.player1[`round${round}`], gameInPut),
+          winner: MarkRoshamboGame(
+            game_.battleScore.player1[`round${round}`],
+            gameInPut
+          ),
           price:
             commission_roshambo.value_in === "$"
               ? game_.price_in_value +
-              (game_.price_in_value - commission_roshambo.value)
+                (game_.price_in_value - commission_roshambo.value)
               : commission_roshambo.value_in === "c"
-                ? game_.price_in_value +
+              ? game_.price_in_value +
                 (game_.price_in_value - cashRating * commission_roshambo.value)
-                : commission_roshambo.value_in === "%"
-                  ? game_.price_in_value +
-                  (game_.price_in_value -
-                    game_.price_in_value / commission_roshambo.value)
-                  : 0,
+              : commission_roshambo.value_in === "%"
+              ? game_.price_in_value +
+                (game_.price_in_value -
+                  game_.price_in_value / commission_roshambo.value)
+              : 0,
           final: "won",
           finalWin: true,
         });
         return;
-      } else if (loseCount >= 3 || (drawCount >= 4 && loseCount >= 1) || (drawCount >= 3 && loseCount >= 2)) {
+      } else if (
+        loseCount >= 3 ||
+        (drawCount >= 4 && loseCount >= 1) ||
+        (drawCount >= 3 && loseCount >= 2)
+      ) {
         await new RecordModel({
           userID: decoded.id,
           game: Games.roshambo,
           won: "no",
           earnings: -(commission_roshambo.value_in === "$"
             ? game_.price_in_value +
-            (game_.price_in_value - commission_roshambo.value)
+              (game_.price_in_value - commission_roshambo.value)
             : commission_roshambo.value_in === "c"
-              ? game_.price_in_value +
+            ? game_.price_in_value +
               (game_.price_in_value - cashRating * commission_roshambo.value)
-              : commission_roshambo.value_in === "%"
-                ? game_.price_in_value +
-                (game_.price_in_value -
-                  game_.price_in_value / commission_roshambo.value)
-                : 0),
+            : commission_roshambo.value_in === "%"
+            ? game_.price_in_value +
+              (game_.price_in_value -
+                game_.price_in_value / commission_roshambo.value)
+            : 0),
         }).save();
         await new RecordModel({
           userID: game_.members[0],
@@ -2029,31 +2082,33 @@ GamesRouter.post(
           earnings:
             commission_roshambo.value_in === "$"
               ? game_.price_in_value +
-              (game_.price_in_value - commission_roshambo.value)
+                (game_.price_in_value - commission_roshambo.value)
               : commission_roshambo.value_in === "c"
-                ? game_.price_in_value +
+              ? game_.price_in_value +
                 (game_.price_in_value - cashRating * commission_roshambo.value)
-                : commission_roshambo.value_in === "%"
-                  ? game_.price_in_value +
-                  (game_.price_in_value -
-                    game_.price_in_value / commission_roshambo.value)
-                  : 0,
+              : commission_roshambo.value_in === "%"
+              ? game_.price_in_value +
+                (game_.price_in_value -
+                  game_.price_in_value / commission_roshambo.value)
+              : 0,
         }).save();
         await CashWalletModel.updateOne(
           { userID: game_.members[0] },
           {
             currentCash:
-              p2Cash + (commission_roshambo.value_in === "$"
+              p2Cash +
+              (commission_roshambo.value_in === "$"
                 ? game_.price_in_value +
-                (game_.price_in_value - commission_roshambo.value)
+                  (game_.price_in_value - commission_roshambo.value)
                 : commission_roshambo.value_in === "c"
-                  ? game_.price_in_value +
-                  (game_.price_in_value - cashRating * commission_roshambo.value)
-                  : commission_roshambo.value_in === "%"
-                    ? game_.price_in_value +
-                    (game_.price_in_value -
-                      game_.price_in_value / commission_roshambo.value)
-                    : 0),
+                ? game_.price_in_value +
+                  (game_.price_in_value -
+                    cashRating * commission_roshambo.value)
+                : commission_roshambo.value_in === "%"
+                ? game_.price_in_value +
+                  (game_.price_in_value -
+                    game_.price_in_value / commission_roshambo.value)
+                : 0),
           }
         );
         res.json({
@@ -2073,7 +2128,7 @@ GamesRouter.post(
             gameInPut
           ),
           price: 0,
-          final: "no"
+          final: "no",
         });
       }
     } catch (error) {
@@ -2092,7 +2147,7 @@ GamesRouter.post(
         id,
         gameInPut,
         round,
-        payWith
+        payWith,
       }: {
         id: string;
         gameInPut: number;
@@ -2189,15 +2244,16 @@ GamesRouter.post(
               won: "no",
               earnings: -(commission_penalty.value_in === "$"
                 ? (game_?.price_in_value ?? 0) +
-                ((game_?.price_in_value ?? 0) - commission_penalty.value)
+                  ((game_?.price_in_value ?? 0) - commission_penalty.value)
                 : commission_penalty.value_in === "c"
-                  ? (game_?.price_in_value ?? 0) +
-                  ((game_?.price_in_value ?? 0) - cashRating * commission_penalty.value)
-                  : commission_penalty.value_in === "%"
-                    ? (game_?.price_in_value ?? 0) +
-                    ((game_?.price_in_value ?? 0) -
-                      (game_?.price_in_value ?? 0) / commission_penalty.value)
-                    : 0),
+                ? (game_?.price_in_value ?? 0) +
+                  ((game_?.price_in_value ?? 0) -
+                    cashRating * commission_penalty.value)
+                : commission_penalty.value_in === "%"
+                ? (game_?.price_in_value ?? 0) +
+                  ((game_?.price_in_value ?? 0) -
+                    (game_?.price_in_value ?? 0) / commission_penalty.value)
+                : 0),
             }).save();
             await new RecordModel({
               userID: decoded.id,
@@ -2206,33 +2262,34 @@ GamesRouter.post(
               earnings:
                 commission_penalty.value_in === "$"
                   ? (game_?.price_in_value ?? 0) +
-                  ((game_?.price_in_value ?? 0) - commission_penalty.value)
+                    ((game_?.price_in_value ?? 0) - commission_penalty.value)
                   : commission_penalty.value_in === "c"
-                    ? (game_?.price_in_value ?? 0) +
+                  ? (game_?.price_in_value ?? 0) +
                     ((game_?.price_in_value ?? 0) -
                       cashRating * commission_penalty.value)
-                    : commission_penalty.value_in === "%"
-                      ? (game_?.price_in_value ?? 0) +
-                      ((game_?.price_in_value ?? 0) -
-                        (game_?.price_in_value ?? 0) / commission_penalty.value)
-                      : 0,
+                  : commission_penalty.value_in === "%"
+                  ? (game_?.price_in_value ?? 0) +
+                    ((game_?.price_in_value ?? 0) -
+                      (game_?.price_in_value ?? 0) / commission_penalty.value)
+                  : 0,
             }).save();
             await CashWalletModel.updateOne(
               { userID: decoded.id },
               {
                 currentCash:
-                  p1Cash + (commission_penalty.value_in === "$"
+                  p1Cash +
+                  (commission_penalty.value_in === "$"
                     ? (game_?.price_in_value ?? 0) +
-                    ((game_?.price_in_value ?? 0) - commission_penalty.value)
+                      ((game_?.price_in_value ?? 0) - commission_penalty.value)
                     : commission_penalty.value_in === "c"
-                      ? (game_?.price_in_value ?? 0) +
+                    ? (game_?.price_in_value ?? 0) +
                       ((game_?.price_in_value ?? 0) -
                         cashRating * commission_penalty.value)
-                      : commission_penalty.value_in === "%"
-                        ? (game_?.price_in_value ?? 0) +
-                        ((game_?.price_in_value ?? 0) -
-                          (game_?.price_in_value ?? 0) / commission_penalty.value)
-                        : 0),
+                    : commission_penalty.value_in === "%"
+                    ? (game_?.price_in_value ?? 0) +
+                      ((game_?.price_in_value ?? 0) -
+                        (game_?.price_in_value ?? 0) / commission_penalty.value)
+                    : 0),
               }
             );
             res.json({
@@ -2240,16 +2297,16 @@ GamesRouter.post(
               price:
                 commission_penalty.value_in === "$"
                   ? (game_?.price_in_value ?? 0) +
-                  ((game_?.price_in_value ?? 0) - commission_penalty.value)
+                    ((game_?.price_in_value ?? 0) - commission_penalty.value)
                   : commission_penalty.value_in === "c"
-                    ? (game_?.price_in_value ?? 0) +
+                  ? (game_?.price_in_value ?? 0) +
                     ((game_?.price_in_value ?? 0) -
                       cashRating * commission_penalty.value)
-                    : commission_penalty.value_in === "%"
-                      ? (game_?.price_in_value ?? 0) +
-                      ((game_?.price_in_value ?? 0) -
-                        (game_?.price_in_value ?? 0) / commission_penalty.value)
-                      : 0,
+                  : commission_penalty.value_in === "%"
+                  ? (game_?.price_in_value ?? 0) +
+                    ((game_?.price_in_value ?? 0) -
+                      (game_?.price_in_value ?? 0) / commission_penalty.value)
+                  : 0,
               final: true,
               finalWin: true,
             });
@@ -2261,15 +2318,16 @@ GamesRouter.post(
               won: "no",
               earnings: -(commission_penalty.value_in === "$"
                 ? (game_?.price_in_value ?? 0) +
-                ((game_?.price_in_value ?? 0) - commission_penalty.value)
+                  ((game_?.price_in_value ?? 0) - commission_penalty.value)
                 : commission_penalty.value_in === "c"
-                  ? (game_?.price_in_value ?? 0) +
-                  ((game_?.price_in_value ?? 0) - cashRating * commission_penalty.value)
-                  : commission_penalty.value_in === "%"
-                    ? (game_?.price_in_value ?? 0) +
-                    ((game_?.price_in_value ?? 0) -
-                      (game_?.price_in_value ?? 0) / commission_penalty.value)
-                    : 0),
+                ? (game_?.price_in_value ?? 0) +
+                  ((game_?.price_in_value ?? 0) -
+                    cashRating * commission_penalty.value)
+                : commission_penalty.value_in === "%"
+                ? (game_?.price_in_value ?? 0) +
+                  ((game_?.price_in_value ?? 0) -
+                    (game_?.price_in_value ?? 0) / commission_penalty.value)
+                : 0),
             }).save();
             await new RecordModel({
               userID: game_?.members[0],
@@ -2278,33 +2336,34 @@ GamesRouter.post(
               earnings:
                 commission_penalty.value_in === "$"
                   ? (game_?.price_in_value ?? 0) +
-                  ((game_?.price_in_value ?? 0) - commission_penalty.value)
+                    ((game_?.price_in_value ?? 0) - commission_penalty.value)
                   : commission_penalty.value_in === "c"
-                    ? (game_?.price_in_value ?? 0) +
+                  ? (game_?.price_in_value ?? 0) +
                     ((game_?.price_in_value ?? 0) -
                       cashRating * commission_penalty.value)
-                    : commission_penalty.value_in === "%"
-                      ? (game_?.price_in_value ?? 0) +
-                      ((game_?.price_in_value ?? 0) -
-                        (game_?.price_in_value ?? 0) / commission_penalty.value)
-                      : 0,
+                  : commission_penalty.value_in === "%"
+                  ? (game_?.price_in_value ?? 0) +
+                    ((game_?.price_in_value ?? 0) -
+                      (game_?.price_in_value ?? 0) / commission_penalty.value)
+                  : 0,
             }).save();
             await CashWalletModel.updateOne(
               { userID: game_?.members[0] },
               {
                 currentCash:
-                  p2Cash + (commission_penalty.value_in === "$"
+                  p2Cash +
+                  (commission_penalty.value_in === "$"
                     ? (game_?.price_in_value ?? 0) +
-                    ((game_?.price_in_value ?? 0) - commission_penalty.value)
+                      ((game_?.price_in_value ?? 0) - commission_penalty.value)
                     : commission_penalty.value_in === "c"
-                      ? (game_?.price_in_value ?? 0) +
+                    ? (game_?.price_in_value ?? 0) +
                       ((game_?.price_in_value ?? 0) -
                         cashRating * commission_penalty.value)
-                      : commission_penalty.value_in === "%"
-                        ? (game_?.price_in_value ?? 0) +
-                        ((game_?.price_in_value ?? 0) -
-                          (game_?.price_in_value ?? 0) / commission_penalty.value)
-                        : 0),
+                    : commission_penalty.value_in === "%"
+                    ? (game_?.price_in_value ?? 0) +
+                      ((game_?.price_in_value ?? 0) -
+                        (game_?.price_in_value ?? 0) / commission_penalty.value)
+                    : 0),
               }
             );
             res.json({
@@ -2363,13 +2422,13 @@ GamesRouter.post("/lucky-geoge", async (req: Request, res: Response) => {
       price,
       winnerPrice,
       winnerCount,
-      endDateTime
+      endDateTime,
     }: {
       title: string;
       description: string;
       memberCount: number;
       price: number;
-      winnerPrice: number,
+      winnerPrice: number;
       winnerCount: number;
       endDateTime: Date;
     } = req.body;
@@ -2381,7 +2440,9 @@ GamesRouter.post("/lucky-geoge", async (req: Request, res: Response) => {
       price_in_value: price,
       gameDetail: "Lucky geoge.",
       gameID: Games.lucky_geoge,
-      battleScore: { player1: { title, description, winnerCount, winnerPrice, endDateTime } },
+      battleScore: {
+        player1: { title, description, winnerCount, winnerPrice, endDateTime },
+      },
     })
       .save()
       .then((result) => {
@@ -2414,21 +2475,38 @@ GamesRouter.get("/lucky-geoge", async (req: Request, res: Response) => {
     let user = await users.findById(decoded.id);
     let admin = await AdminModel.findById(decoded?.adminID);
     if (admin) {
-      await GameModel.find({ gameID: Games.lucky_geoge, played: false }).then((games) => {
-        res.json({ games });
-      }).catch((error) => {
-        res.status(500).json({ message: "error found", error });
-      });
+      await GameModel.find({ gameID: Games.lucky_geoge, played: false })
+        .then((games) => {
+          res.json({ games });
+        })
+        .catch((error) => {
+          res.status(500).json({ message: "error found", error });
+        });
       return;
     } else if (user) {
-      let currentCash = (await CashWalletModel.findOne({ userID: decoded.id }))?.currentCash ?? 0;
-      let currentCoin = (await WalletModel.findOne({ userID: decoded.id }))?.currentCoin ?? 0;
-      let allG = await GameModel.find({ gameID: Games.lucky_geoge, played: false });
-      await GameModel.find({ gameID: Games.lucky_geoge, played: false, $or: [{ price_in_value: { $lte: currentCash } }, { price_in_coin: { $lte: currentCoin } }] }).then((games) => {
-        res.json(admin ? { games: allG } : { games });
-      }).catch((error) => {
-        res.status(500).json({ message: "error found", error });
+      let currentCash =
+        (await CashWalletModel.findOne({ userID: decoded.id }))?.currentCash ??
+        0;
+      let currentCoin =
+        (await WalletModel.findOne({ userID: decoded.id }))?.currentCoin ?? 0;
+      let allG = await GameModel.find({
+        gameID: Games.lucky_geoge,
+        played: false,
       });
+      await GameModel.find({
+        gameID: Games.lucky_geoge,
+        played: false,
+        $or: [
+          { price_in_value: { $lte: currentCash } },
+          { price_in_coin: { $lte: currentCoin } },
+        ],
+      })
+        .then((games) => {
+          res.json(admin ? { games: allG } : { games });
+        })
+        .catch((error) => {
+          res.status(500).json({ message: "error found", error });
+        });
       return;
     } else {
       res.status(419).json({ message: "error found", error: "User not found" });
@@ -2460,8 +2538,7 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
       return;
     }
     let currentCash =
-      (await CashWalletModel.findOne({ userID: decoded.id }))?.currentCash ??
-      0;
+      (await CashWalletModel.findOne({ userID: decoded.id }))?.currentCash ?? 0;
     let currentCoin =
       (await WalletModel.findOne({ userID: decoded.id }))?.currentCoin ?? 0;
     const {
@@ -2471,7 +2548,9 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
       id: string;
       payWith: PayType;
     } = req.body;
-    let { price_in_coin: stack, price_in_value } = await GameModel.findById(id) ?? { price_in_coin: 0, price_in_value: 0 };
+    let { price_in_coin: stack, price_in_value } = (await GameModel.findById(
+      id
+    )) ?? { price_in_coin: 0, price_in_value: 0 };
     if (payWith === PayType.cash) {
       if (price_in_value > currentCash) {
         res
@@ -2502,13 +2581,23 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
     await GameModel.findOneAndUpdate(
       { _id: id },
       {
-        $push: { members: decoded.id, players: { player_name: user.full_name, phone_number: user.phone_number, winner: false, ticket, date: new Date(), id: user._id } },
+        $push: {
+          members: decoded.id,
+          players: {
+            player_name: user.full_name,
+            phone_number: user.phone_number,
+            winner: false,
+            ticket,
+            date: new Date(),
+            id: user._id,
+          },
+        },
       }
     )
       .then(async (result) => {
         res.json({ message: "successful", price: result?.price_in_value });
         if ((result?.members.length ?? 0) >= (result?.gameMemberCount ?? 0)) {
-          let winners = shuffle((result?.members ?? [""])).slice(
+          let winners = shuffle(result?.members ?? [""]).slice(
             0,
             result?.battleScore.player1.winnerCount
           );
@@ -2527,7 +2616,9 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
             }
           }
           for (let winner in winners) {
-            let { currentCash } = await CashWalletModel.findById(winner) ?? { currentCash: 0 };
+            let { currentCash } = (await CashWalletModel.findById(winner)) ?? {
+              currentCash: 0,
+            };
 
             await RecordModel.updateOne(
               {
@@ -2541,10 +2632,15 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
             );
             await CashWalletModel.updateOne(
               { _id: winner },
-              { currentCash: (currentCash ?? 0) + result?.battleScore.player1.winnerPrice }
+              {
+                currentCash:
+                  (currentCash ?? 0) + result?.battleScore.player1.winnerPrice,
+              }
             );
           }
-          await GameModel.updateOne({ _id: id }, { played: true }).then(() => { }).catch(console.error);
+          await GameModel.updateOne({ _id: id }, { played: true })
+            .then(() => {})
+            .catch(console.error);
         }
       })
       .catch((error) => {
@@ -2582,17 +2678,19 @@ GamesRouter.post("/lucky-judge/update", async (req: Request, res: Response) => {
       id: string;
       newGameTime: Date;
     } = req.body;
-    let { battleScore } = await GameModel.findOne({ _id: id }) ?? { battleScore: { player1: {}, player2: {} } };
+    let { battleScore } = (await GameModel.findOne({ _id: id })) ?? {
+      battleScore: { player1: {}, player2: {} },
+    };
     await GameModel.findOneAndUpdate(
       { _id: id },
       {
         battleScore: {
           player1: {
             ...battleScore.player1,
-            endDateTime: newGameTime
+            endDateTime: newGameTime,
           },
-          player2: {}
-        }
+          player2: {},
+        },
       }
     )
       .then(async () => {
@@ -2618,7 +2716,7 @@ GamesRouter.delete("/lucky-judge", async (req: Request, res: Response) => {
       res.status(406).json({ message: "invalid auth" });
       return;
     }
-    let decoded = verify(token, secret) as { adminID: string; };
+    let decoded = verify(token, secret) as { adminID: string };
     let admin = await AdminModel.findById(decoded.adminID);
 
     if (!admin) {
@@ -2626,8 +2724,7 @@ GamesRouter.delete("/lucky-judge", async (req: Request, res: Response) => {
       return;
     }
     const id = (req.query.id as unknown) as string;
-    await GameModel
-      .deleteOne({ _id: id })
+    await GameModel.deleteOne({ _id: id })
       .then(() => {
         res.json({ message: "deleted successfully" });
       })
@@ -2660,11 +2757,13 @@ GamesRouter.post("/penalty/exit", async (req: Request, res: Response) => {
       id: string;
     };
     let found = await users.findById(decoded.id);
-    const { cashRating, commission_penalty } = await defaultModel.findOne({}) ?? { cashRating: 0, commission_penalty: { value: 0, value_in: "$" } };
+    const { cashRating, commission_penalty } = (await defaultModel.findOne(
+      {}
+    )) ?? { cashRating: 0, commission_penalty: { value: 0, value_in: "$" } };
     let game_ = await GameModel.findById(id);
-    let { currentCash: p1Cash } = await CashWalletModel.findOne({
+    let { currentCash: p1Cash } = (await CashWalletModel.findOne({
       userID: game_?.members[0],
-    }) ?? { currentCash: 0 };
+    })) ?? { currentCash: 0 };
     if (!found) {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
@@ -2682,15 +2781,16 @@ GamesRouter.post("/penalty/exit", async (req: Request, res: Response) => {
       earnings:
         commission_penalty.value_in === "$"
           ? (game_?.price_in_value ?? 0) +
-          ((game_?.price_in_value ?? 0) - commission_penalty.value)
+            ((game_?.price_in_value ?? 0) - commission_penalty.value)
           : commission_penalty.value_in === "c"
-            ? (game_?.price_in_value ?? 0) +
-            ((game_?.price_in_value ?? 0) - cashRating * commission_penalty.value)
-            : commission_penalty.value_in === "%"
-              ? (game_?.price_in_value ?? 0) +
-              ((game_?.price_in_value ?? 0) -
-                (game_?.price_in_value ?? 0) / commission_penalty.value)
-              : p1Cash,
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) -
+              cashRating * commission_penalty.value)
+          : commission_penalty.value_in === "%"
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) -
+              (game_?.price_in_value ?? 0) / commission_penalty.value)
+          : p1Cash,
     }).save();
     await CashWalletModel.updateOne(
       { userID: game_?.members[0] },
@@ -2698,18 +2798,19 @@ GamesRouter.post("/penalty/exit", async (req: Request, res: Response) => {
         p1Cash:
           commission_penalty.value_in === "$"
             ? p1Cash +
-            (game_?.price_in_value ?? 0) +
-            ((game_?.price_in_value ?? 0) - commission_penalty.value)
+              (game_?.price_in_value ?? 0) +
+              ((game_?.price_in_value ?? 0) - commission_penalty.value)
             : commission_penalty.value_in === "c"
-              ? (game_?.price_in_value ?? 0) +
+            ? (game_?.price_in_value ?? 0) +
               p1Cash +
-              ((game_?.price_in_value ?? 0) - cashRating * commission_penalty.value)
-              : commission_penalty.value_in === "%"
-                ? (game_?.price_in_value ?? 0) +
-                p1Cash +
-                ((game_?.price_in_value ?? 0) -
-                  (game_?.price_in_value ?? 0) / commission_penalty.value)
-                : p1Cash,
+              ((game_?.price_in_value ?? 0) -
+                cashRating * commission_penalty.value)
+            : commission_penalty.value_in === "%"
+            ? (game_?.price_in_value ?? 0) +
+              p1Cash +
+              ((game_?.price_in_value ?? 0) -
+                (game_?.price_in_value ?? 0) / commission_penalty.value)
+            : p1Cash,
       }
     )
       .then(() => {
@@ -2747,11 +2848,13 @@ GamesRouter.post("/roshambo/exit", async (req: Request, res: Response) => {
       id: string;
     };
     let found = await users.findById(decoded.id);
-    const { cashRating, commission_roshambo } = await defaultModel.findOne({}) ?? { cashRating: 0, commission_roshambo: { value: 0, value_in: "$" } };
+    const { cashRating, commission_roshambo } = (await defaultModel.findOne(
+      {}
+    )) ?? { cashRating: 0, commission_roshambo: { value: 0, value_in: "$" } };
     let game_ = await GameModel.findById(id);
-    let { currentCash: p1Cash } = await CashWalletModel.findOne({
+    let { currentCash: p1Cash } = (await CashWalletModel.findOne({
       userID: game_?.members[0],
-    }) ?? { currentCash: 0 };
+    })) ?? { currentCash: 0 };
     if (!found) {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
@@ -2763,15 +2866,16 @@ GamesRouter.post("/roshambo/exit", async (req: Request, res: Response) => {
       earnings:
         commission_roshambo.value_in === "$"
           ? (game_?.price_in_value ?? 0) +
-          ((game_?.price_in_value ?? 0) - commission_roshambo.value)
+            ((game_?.price_in_value ?? 0) - commission_roshambo.value)
           : commission_roshambo.value_in === "c"
-            ? (game_?.price_in_value ?? 0) +
-            ((game_?.price_in_value ?? 0) - cashRating * commission_roshambo.value)
-            : commission_roshambo.value_in === "%"
-              ? (game_?.price_in_value ?? 0) +
-              ((game_?.price_in_value ?? 0) -
-                (game_?.price_in_value ?? 0) / commission_roshambo.value)
-              : p1Cash,
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) -
+              cashRating * commission_roshambo.value)
+          : commission_roshambo.value_in === "%"
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) -
+              (game_?.price_in_value ?? 0) / commission_roshambo.value)
+          : p1Cash,
     }).save();
     await new RecordModel({
       userID: decoded.id,
@@ -2785,18 +2889,19 @@ GamesRouter.post("/roshambo/exit", async (req: Request, res: Response) => {
         p1Cash:
           commission_roshambo.value_in === "$"
             ? p1Cash +
-            (game_?.price_in_value ?? 0) +
-            ((game_?.price_in_value ?? 0) - commission_roshambo.value)
+              (game_?.price_in_value ?? 0) +
+              ((game_?.price_in_value ?? 0) - commission_roshambo.value)
             : commission_roshambo.value_in === "c"
-              ? (game_?.price_in_value ?? 0) +
+            ? (game_?.price_in_value ?? 0) +
               p1Cash +
-              ((game_?.price_in_value ?? 0) - cashRating * commission_roshambo.value)
-              : commission_roshambo.value_in === "%"
-                ? (game_?.price_in_value ?? 0) +
-                p1Cash +
-                ((game_?.price_in_value ?? 0) -
-                  (game_?.price_in_value ?? 0) / commission_roshambo.value)
-                : p1Cash,
+              ((game_?.price_in_value ?? 0) -
+                cashRating * commission_roshambo.value)
+            : commission_roshambo.value_in === "%"
+            ? (game_?.price_in_value ?? 0) +
+              p1Cash +
+              ((game_?.price_in_value ?? 0) -
+                (game_?.price_in_value ?? 0) / commission_roshambo.value)
+            : p1Cash,
       }
     )
       .then(() => {
@@ -2834,13 +2939,16 @@ GamesRouter.post("/matcher/exit", async (req: Request, res: Response) => {
       id: string;
     };
     let found = await users.findById(decoded.id);
-    const { cashRating, commission_guess_mater } = await defaultModel.findOne(
+    const { cashRating, commission_guess_mater } = (await defaultModel.findOne(
       {}
-    ) ?? { cashRating: 0, commission_guess_mater: { value: 0, value_in: "$" } };
+    )) ?? {
+      cashRating: 0,
+      commission_guess_mater: { value: 0, value_in: "$" },
+    };
     let game_ = await GameModel.findById(id);
-    let { currentCash: p1Cash } = await CashWalletModel.findOne({
+    let { currentCash: p1Cash } = (await CashWalletModel.findOne({
       userID: game_?.members[0],
-    }) ?? { currentCash: 0 };
+    })) ?? { currentCash: 0 };
     if (!found) {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
@@ -2852,15 +2960,16 @@ GamesRouter.post("/matcher/exit", async (req: Request, res: Response) => {
       earnings:
         commission_guess_mater.value_in === "$"
           ? (game_?.price_in_value ?? 0) +
-          ((game_?.price_in_value ?? 0) - commission_guess_mater.value)
+            ((game_?.price_in_value ?? 0) - commission_guess_mater.value)
           : commission_guess_mater.value_in === "c"
-            ? (game_?.price_in_value ?? 0) +
-            ((game_?.price_in_value ?? 0) - cashRating * commission_guess_mater.value)
-            : commission_guess_mater.value_in === "%"
-              ? (game_?.price_in_value ?? 0) +
-              ((game_?.price_in_value ?? 0) -
-                (game_?.price_in_value ?? 0) / commission_guess_mater.value)
-              : p1Cash,
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) -
+              cashRating * commission_guess_mater.value)
+          : commission_guess_mater.value_in === "%"
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) -
+              (game_?.price_in_value ?? 0) / commission_guess_mater.value)
+          : p1Cash,
     }).save();
     await new RecordModel({
       userID: decoded.id,
@@ -2869,15 +2978,16 @@ GamesRouter.post("/matcher/exit", async (req: Request, res: Response) => {
       earnings:
         commission_guess_mater.value_in === "$"
           ? (game_?.price_in_value ?? 0) +
-          ((game_?.price_in_value ?? 0) - commission_guess_mater.value)
+            ((game_?.price_in_value ?? 0) - commission_guess_mater.value)
           : commission_guess_mater.value_in === "c"
-            ? (game_?.price_in_value ?? 0) +
-            ((game_?.price_in_value ?? 0) - cashRating * commission_guess_mater.value)
-            : commission_guess_mater.value_in === "%"
-              ? (game_?.price_in_value ?? 0) +
-              ((game_?.price_in_value ?? 0) -
-                (game_?.price_in_value ?? 0) / commission_guess_mater.value)
-              : p1Cash,
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) -
+              cashRating * commission_guess_mater.value)
+          : commission_guess_mater.value_in === "%"
+          ? (game_?.price_in_value ?? 0) +
+            ((game_?.price_in_value ?? 0) -
+              (game_?.price_in_value ?? 0) / commission_guess_mater.value)
+          : p1Cash,
     }).save();
     await CashWalletModel.updateOne(
       { userID: game_?.members[0] },
@@ -2885,18 +2995,19 @@ GamesRouter.post("/matcher/exit", async (req: Request, res: Response) => {
         p1Cash:
           commission_guess_mater.value_in === "$"
             ? p1Cash +
-            (game_?.price_in_value ?? 0) +
-            ((game_?.price_in_value ?? 0) - commission_guess_mater.value)
+              (game_?.price_in_value ?? 0) +
+              ((game_?.price_in_value ?? 0) - commission_guess_mater.value)
             : commission_guess_mater.value_in === "c"
-              ? (game_?.price_in_value ?? 0) +
+            ? (game_?.price_in_value ?? 0) +
               p1Cash +
-              ((game_?.price_in_value ?? 0) - cashRating * commission_guess_mater.value)
-              : commission_guess_mater.value_in === "%"
-                ? (game_?.price_in_value ?? 0) +
-                p1Cash +
-                ((game_?.price_in_value ?? 0) -
-                  (game_?.price_in_value ?? 0) / commission_guess_mater.value)
-                : p1Cash,
+              ((game_?.price_in_value ?? 0) -
+                cashRating * commission_guess_mater.value)
+            : commission_guess_mater.value_in === "%"
+            ? (game_?.price_in_value ?? 0) +
+              p1Cash +
+              ((game_?.price_in_value ?? 0) -
+                (game_?.price_in_value ?? 0) / commission_guess_mater.value)
+            : p1Cash,
       }
     )
       .then(() => {
@@ -2936,10 +3047,12 @@ GamesRouter.post("/custom-game", async (req: Request, res: Response) => {
       } as errorResHint);
       return;
     }
-    const { cashRating } = await defaultModel.findOne({}) ?? { cashRating: 0 };
-    const { currentCash } = await CashWalletModel.findOne({
+    const { cashRating } = (await defaultModel.findOne({})) ?? {
+      cashRating: 0,
+    };
+    const { currentCash } = (await CashWalletModel.findOne({
       userID: decoded.id,
-    }) ?? { currentCash: 0 };
+    })) ?? { currentCash: 0 };
 
     const {
       player2Username,
@@ -2967,7 +3080,7 @@ GamesRouter.post("/custom-game", async (req: Request, res: Response) => {
     }
     const p2 = await PlayerModel.findOne({ playername: player2Username });
 
-    if ((!p2 || (p2.userID === decoded.id)) && (player2Username !== "")) {
+    if ((!p2 || p2.userID === decoded.id) && player2Username !== "") {
       res
         .status(409)
         .json({ message: "error found", error: "player 2 not found" });
@@ -3041,16 +3154,23 @@ GamesRouter.get(
         answer: string;
       };
       const paywith: PayType = parseInt(payWith, 10);
-      const { currentCash } = await CashWalletModel.findOne({
+      const { currentCash } = (await CashWalletModel.findOne({
         userID: decoded.id,
-      }) ?? { currentCash: 0 };
-      const { currentCoin } = await WalletModel.findOne({ userID: decoded.id }) ?? { currentCoin: 0 };
+      })) ?? { currentCash: 0 };
+      const { currentCoin } = (await WalletModel.findOne({
+        userID: decoded.id,
+      })) ?? { currentCoin: 0 };
       const {
         price_in_value,
         price_in_coin,
         battleScore,
-        members
-      } = await GameModel.findById(gameID) ?? { price_in_coin: 0, price_in_value: 0, battleScore: { player1: {}, player2: {} }, members: [] };
+        members,
+      } = (await GameModel.findById(gameID)) ?? {
+        price_in_coin: 0,
+        price_in_value: 0,
+        battleScore: { player1: {}, player2: {} },
+        members: [],
+      };
       if (paywith === PayType.cash) {
         if (price_in_value > currentCash) {
           res.status(402).json({
@@ -3138,13 +3258,16 @@ GamesRouter.post("/custom-game/exit", async (req: Request, res: Response) => {
       id: string;
     };
     let found = await users.findById(decoded.id);
-    const { cashRating, commission_custom_game } = await defaultModel.findOne(
+    const { cashRating, commission_custom_game } = (await defaultModel.findOne(
       {}
-    ) ?? { cashRating: 0, commission_custom_game: { value: 0, value_in: "$" } };
+    )) ?? {
+      cashRating: 0,
+      commission_custom_game: { value: 0, value_in: "$" },
+    };
     let game_ = await GameModel.findById(id);
-    let { currentCash: p1Cash } = await CashWalletModel.findOne({
+    let { currentCash: p1Cash } = (await CashWalletModel.findOne({
       userID: game_?.members[0],
-    }) ?? { currentCash: 0 };
+    })) ?? { currentCash: 0 };
     if (!found) {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
@@ -3162,18 +3285,19 @@ GamesRouter.post("/custom-game/exit", async (req: Request, res: Response) => {
         p1Cash:
           commission_custom_game.value_in === "$"
             ? p1Cash +
-            (game_?.price_in_value ?? 0) +
-            ((game_?.price_in_value ?? 0) - commission_custom_game.value)
+              (game_?.price_in_value ?? 0) +
+              ((game_?.price_in_value ?? 0) - commission_custom_game.value)
             : commission_custom_game.value_in === "c"
-              ? (game_?.price_in_value ?? 0) +
+            ? (game_?.price_in_value ?? 0) +
               p1Cash +
-              ((game_?.price_in_value ?? 0) - cashRating * commission_custom_game.value)
-              : commission_custom_game.value_in === "%"
-                ? (game_?.price_in_value ?? 0) +
-                p1Cash +
-                ((game_?.price_in_value ?? 0) -
-                  (game_?.price_in_value ?? 0) / commission_custom_game.value)
-                : p1Cash,
+              ((game_?.price_in_value ?? 0) -
+                cashRating * commission_custom_game.value)
+            : commission_custom_game.value_in === "%"
+            ? (game_?.price_in_value ?? 0) +
+              p1Cash +
+              ((game_?.price_in_value ?? 0) -
+                (game_?.price_in_value ?? 0) / commission_custom_game.value)
+            : p1Cash,
       }
     )
       .then(() => {
@@ -3214,16 +3338,18 @@ GamesRouter.get("/requests", async (req: Request, res: Response) => {
       return;
     }
     await GameModel.find({
-      isComplete: false,
-      gameID: Games.custom_game,
-      "members[1]": decoded.id
+      "isComplete": false,
+      "gameID": Games.custom_game,
+      "members[1]": decoded.id,
     })
       .sort({ date: -1 })
       .then((result) => {
         res.json({
-          message: "content found", requests: filter(result, (__game) => {
-          return !isEmpty(__game.battleScore.player2);
-        })});
+          message: "content found",
+          requests: filter(result, (__game) => {
+            return !isEmpty(__game.battleScore.player2);
+          }),
+        });
       })
       .catch((error) => {
         res.status(500).json({ message: "error found", error });
@@ -3298,8 +3424,8 @@ GamesRouter.post("/custom-game/judge", async (req: Request, res: Response) => {
       } as errorResHint);
       return;
     }
-    const { choice, game_id }: { choice: string, game_id: string; } = req.body;
-    let game_played = await GameModel.findOne({ _id: game_id })
+    const { choice, game_id }: { choice: string; game_id: string } = req.body;
+    let game_played = await GameModel.findOne({ _id: game_id });
     let defaultInstance = await defaultModel.findOne({});
     let cashInstance = await CashWalletModel.findOne({ userID: decoded.id });
     let p2CashInstance = await CashWalletModel.findOne({
@@ -3309,210 +3435,222 @@ GamesRouter.post("/custom-game/judge", async (req: Request, res: Response) => {
     const { currentCash: p1Cash } = cashInstance;
     const { currentCash: p2Cash } = p2CashInstance;
     const { cashRating, commission_custom_game } = defaultInstance;
-    if(game_played?.members[0] === decoded.id) {
-      await GameModel.updateOne({_id: game_id}, {
-        battleScore:{
-          player1:{
-            ...game_played.battleScore.player1,
-            correct_answer: choice
+    if (game_played?.members[0] === decoded.id) {
+      await GameModel.updateOne(
+        { _id: game_id },
+        {
+          battleScore: {
+            player1: {
+              ...game_played.battleScore.player1,
+              correct_answer: choice,
+            },
+            player2: {
+              ...game_played.battleScore.player2,
+            },
           },
-          player2:{
-            ...game_played.battleScore.player2,
-          }
         }
-      })
-    } else if(game_played?.members[1] === decoded.id) {
-      await GameModel.updateOne({_id: game_id}, {
-        battleScore:{
-          player1:{
-            ...game_played.battleScore.player1,
+      );
+    } else if (game_played?.members[1] === decoded.id) {
+      await GameModel.updateOne(
+        { _id: game_id },
+        {
+          battleScore: {
+            player1: {
+              ...game_played.battleScore.player1,
+            },
+            player2: {
+              ...game_played.battleScore.player2,
+              correct_answer: choice,
+            },
           },
-          player2:{
-            ...game_played.battleScore.player2,
-            correct_answer: choice
-          }
         }
-      })
+      );
     } else {
-      res.status(500).json({ error: "not your game"})
+      res.status(500).json({ error: "not your game" });
     }
-    let game_played_final = await GameModel.findOne({ _id: game_id })
-    if (game_played_final?.battleScore.player1.correct_answer && game_played_final?.battleScore.player2.correct_answer) {
-      if (game_played_final?.battleScore.player1.correct_answer.toLowerCase() === game_played_final?.battleScore.player2.correct_answer.toLowerCase()) {
+    let game_played_final = await GameModel.findOne({ _id: game_id });
+    if (
+      game_played_final?.battleScore.player1.correct_answer &&
+      game_played_final?.battleScore.player2.correct_answer
+    ) {
+      if (
+        game_played_final?.battleScore.player1.correct_answer.toLowerCase() ===
+        game_played_final?.battleScore.player2.correct_answer.toLowerCase()
+      ) {
         if (
           game_played_final?.battleScore.player1.correct_answer.toLowerCase() ===
           game_played_final?.battleScore.player1.answer.toLowerCase()
         ) {
-            await new RecordModel({
-              userID: game_played_final.members[0],
-              game: Games.custom_game,
-              won: "yes",
-              earnings: PlayerCash(
+          await new RecordModel({
+            userID: game_played_final.members[0],
+            game: Games.custom_game,
+            won: "yes",
+            earnings: PlayerCash(
+              commission_custom_game,
+              p1Cash,
+              game_played_final?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
+          }).save();
+          await new RecordModel({
+            userID: game_played_final.members[1],
+            game: Games.custom_game,
+            won: "no",
+            earnings: -PlayerCash(
+              commission_custom_game,
+              p2Cash,
+              game_played_final?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
+          }).save();
+          await CashWalletModel.updateOne(
+            { userID: game_played_final.members[0] },
+            {
+              currentCash: PlayerCash(
                 commission_custom_game,
                 p1Cash,
                 game_played_final?.price_in_value ?? 0,
                 1,
                 cashRating
               ),
-            }).save();
-            await new RecordModel({
-              userID: game_played_final.members[1],
-              game: Games.custom_game,
-              won: "no",
-              earnings: -PlayerCash(
-                commission_custom_game,
-                p2Cash,
-                game_played_final?.price_in_value ?? 0,
-                1,
-                cashRating
-              ),
-            }).save();
-            await CashWalletModel.updateOne(
-              { userID: game_played_final.members[0] },
-              {
-                currentCash: PlayerCash(
+            }
+          )
+            .then(() => {
+              res.json({
+                message: "you won",
+                winner: true,
+                price: PlayerCash(
                   commission_custom_game,
                   p1Cash,
                   game_played_final?.price_in_value ?? 0,
                   1,
                   cashRating
                 ),
-              }
-            )
-              .then(() => {
-                res.json({
-                  message: "you won",
-                  winner: true,
-                  price: PlayerCash(
-                    commission_custom_game,
-                    p1Cash,
-                    game_played_final?.price_in_value ?? 0,
-                    1,
-                    cashRating
-                  ),
-                });
-              })
-              .catch((error) => {
-                res
-                  .status(500)
-                  .json({ message: "error found", error } as errorResHint);
               });
+            })
+            .catch((error) => {
+              res
+                .status(500)
+                .json({ message: "error found", error } as errorResHint);
+            });
         } else if (
           game_played_final?.battleScore.player2.correct_answer.toLowerCase() ===
           game_played_final?.battleScore.player2.answer.toLowerCase()
         ) {
-            await new RecordModel({
-              userID: game_played_final.members[1],
-              game: Games.custom_game,
-              won: "yes",
-              earnings: PlayerCash(
+          await new RecordModel({
+            userID: game_played_final.members[1],
+            game: Games.custom_game,
+            won: "yes",
+            earnings: PlayerCash(
+              commission_custom_game,
+              p1Cash,
+              game_played_final?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
+          }).save();
+          await new RecordModel({
+            userID: game_played_final.members[0],
+            game: Games.custom_game,
+            won: "no",
+            earnings: -PlayerCash(
+              commission_custom_game,
+              p2Cash,
+              game_played_final?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
+          }).save();
+          await CashWalletModel.updateOne(
+            { userID: game_played_final.members[1] },
+            {
+              currentCash: PlayerCash(
                 commission_custom_game,
                 p1Cash,
                 game_played_final?.price_in_value ?? 0,
                 1,
                 cashRating
               ),
-            }).save();
-            await new RecordModel({
-              userID: game_played_final.members[0],
-              game: Games.custom_game,
-              won: "no",
-              earnings: -PlayerCash(
-                commission_custom_game,
-                p2Cash,
-                game_played_final?.price_in_value ?? 0,
-                1,
-                cashRating
-              ),
-            }).save();
-            await CashWalletModel.updateOne(
-              { userID: game_played_final.members[1] },
-              {
-                currentCash: PlayerCash(
+            }
+          )
+            .then(() => {
+              res.json({
+                message: "you won",
+                winner: true,
+                price: PlayerCash(
                   commission_custom_game,
                   p1Cash,
                   game_played_final?.price_in_value ?? 0,
                   1,
                   cashRating
                 ),
-              }
-            )
-              .then(() => {
-                res.json({
-                  message: "you won",
-                  winner: true,
-                  price: PlayerCash(
-                    commission_custom_game,
-                    p1Cash,
-                    game_played_final?.price_in_value ?? 0,
-                    1,
-                    cashRating
-                  ),
-                });
-              })
-              .catch((error) => {
-                res
-                  .status(500)
-                  .json({ message: "error found", error } as errorResHint);
               });
+            })
+            .catch((error) => {
+              res
+                .status(500)
+                .json({ message: "error found", error } as errorResHint);
+            });
         } else {
-            await new RecordModel({
-              userID: game_played_final.members[1],
-              game: Games.custom_game,
-              won: "yes",
-              earnings: PlayerDrawCash(
+          await new RecordModel({
+            userID: game_played_final.members[1],
+            game: Games.custom_game,
+            won: "yes",
+            earnings: PlayerDrawCash(
+              commission_custom_game,
+              p1Cash,
+              game_played_final?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
+          }).save();
+          await new RecordModel({
+            userID: game_played_final.members[0],
+            game: Games.custom_game,
+            won: "no",
+            earnings: -PlayerDrawCash(
+              commission_custom_game,
+              p2Cash,
+              game_played_final?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
+          }).save();
+          await CashWalletModel.updateOne(
+            { userID: game_played_final.members[1] },
+            {
+              currentCash: PlayerDrawCash(
                 commission_custom_game,
                 p1Cash,
                 game_played_final?.price_in_value ?? 0,
                 1,
                 cashRating
               ),
-            }).save();
-            await new RecordModel({
-              userID: game_played_final.members[0],
-              game: Games.custom_game,
-              won: "no",
-              earnings: -PlayerDrawCash(
-                commission_custom_game,
-                p2Cash,
-                game_played_final?.price_in_value ?? 0,
-                1,
-                cashRating
-              ),
-            }).save();
-            await CashWalletModel.updateOne(
-              { userID: game_played_final.members[1] },
-              {
-                currentCash: PlayerDrawCash(
+            }
+          )
+            .then(() => {
+              res.json({
+                message: "you won",
+                winner: true,
+                price: PlayerCash(
                   commission_custom_game,
                   p1Cash,
                   game_played_final?.price_in_value ?? 0,
                   1,
                   cashRating
                 ),
-              }
-            )
-              .then(() => {
-                res.json({
-                  message: "you won",
-                  winner: true,
-                  price: PlayerCash(
-                    commission_custom_game,
-                    p1Cash,
-                    game_played_final?.price_in_value ?? 0,
-                    1,
-                    cashRating
-                  ),
-                });
-              })
-              .catch((error) => {
-                res
-                  .status(500)
-                  .json({ message: "error found", error } as errorResHint);
               });
+            })
+            .catch((error) => {
+              res
+                .status(500)
+                .json({ message: "error found", error } as errorResHint);
+            });
         }
       } else {
-         res.json({message: "done"})
+        res.json({ message: "done" });
       }
     }
   } catch (error) {

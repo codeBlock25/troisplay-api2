@@ -1749,12 +1749,7 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
             _id: g._id,
           });
         });
-        let allGames = concat(
-          result,
-          filter(customgames, (__game) => {
-            return !isEmpty(__game.battleScore.player2);
-          })
-        );
+        let allGames = concat(result, customgames);
         allGames.map((rels) => {
           if (rels.gameID === Games.custom_game) {
             games.push(rels);

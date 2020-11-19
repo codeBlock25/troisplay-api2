@@ -1728,6 +1728,7 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
       members: decoded.id,
       gameID: Games.custom_game,
       isComplete: false,
+      played: true,
     });
     await GameModel.find({ played: false, members: decoded.id })
       .sort({ date: -1 })
@@ -1748,7 +1749,12 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
             _id: g._id,
           });
         });
-        let allGames = concat(result, customgames);
+        let allGames = concat(
+          result,
+          filter(customgames, (__game) => {
+            return !isEmpty(__game.battleScore.player2);
+          })
+        );
         allGames.map((rels) => {
           if (rels.gameID === Games.custom_game) {
             games.push(rels);
@@ -3347,7 +3353,7 @@ GamesRouter.get("/requests", async (req: Request, res: Response) => {
         res.json({
           message: "content found",
           requests: filter(result, (__game) => {
-            return !isEmpty(__game.battleScore.player2);
+            return isEmpty(__game.battleScore.player2);
           }),
         });
       })

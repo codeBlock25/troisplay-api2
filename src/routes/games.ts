@@ -1730,7 +1730,11 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
       isComplete: false,
       played: true,
     });
-    await GameModel.find({ played: false, members: decoded.id })
+    await GameModel.find({
+      played: false,
+      gameID: { $not: { $eq: Games.custom_game } },
+      members: decoded.id,
+    })
       .sort({ date: -1 })
       .limit(45)
       .then((result) => {

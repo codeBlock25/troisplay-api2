@@ -28,6 +28,12 @@ export interface GameType extends Document {
   };
   playCount: number;
   isComplete: boolean;
+  players: {
+    player_name: String;
+    phone_number: String;
+    ticket: String;
+    winner: Boolean;
+  }[];
 }
 export interface GameDocType {
   gameMemberCount: number;

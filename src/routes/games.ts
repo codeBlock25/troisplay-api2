@@ -1562,7 +1562,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
             : count >= 3
             ? 0.6
             : 1,
-          1,
+          2,
           cashRating
         ),
       }).save();
@@ -1580,7 +1580,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
             : count >= 3
             ? 0.6
             : 1,
-          1,
+          2,
           cashRating
         ),
       }).save();
@@ -1609,14 +1609,9 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
             price: PlayerCash(
               commission_guess_mater,
               0,
-              (game_?.price_in_value ?? 0) * (count === 1
-                ? 1
-                : count === 2
-                ? 0.8
-                : count >= 3
-                ? 0.6
-                : 1),
-              1,
+              (game_?.price_in_value ?? 0) *
+                (count === 1 ? 1 : count === 2 ? 0.8 : count >= 3 ? 0.6 : 1),
+              2,
               cashRating
             ),
           });

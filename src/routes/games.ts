@@ -322,7 +322,6 @@ GamesRouter.get("/getter", async (req: Request, res: Response) => {
       .then(async (result: GameType[]) => {
         let r: any[] = [];
         result.map((resl) => {
-          console.log(resl);
           if (resl.gameID === Games.custom_game) {
             r.push(resl);
           } else {

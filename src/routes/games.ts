@@ -3339,16 +3339,17 @@ GamesRouter.get("/requests", async (req: Request, res: Response) => {
       return;
     }
     await GameModel.find({
-      "isComplete": false,
-      "gameID": Games.custom_game,
-      "members[1]": decoded.id,
+      isComplete: false,
+      gameID: Games.custom_game,
+      members: decoded.id,
+      played: false,
     })
       .sort({ date: -1 })
       .then((result) => {
         res.json({
           message: "content found",
           requests: filter(result, (__game) => {
-            return isEmpty(__game.battleScore.player2);
+            return __game.members[0] !== decoded.id;
           }),
         });
       })

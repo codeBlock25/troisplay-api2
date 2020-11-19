@@ -3424,17 +3424,23 @@ GamesRouter.post("/custom-game/judge", async (req: Request, res: Response) => {
       } as errorResHint);
       return;
     }
-    const { choice, game_id }: { choice: string; game_id: string } = req.body;
+    const { choice, game_id }: { choice: string; game_id: string; } = req.body;
     let game_played = await GameModel.findOne({ _id: game_id });
     let defaultInstance = await defaultModel.findOne({});
     let cashInstance = await CashWalletModel.findOne({ userID: decoded.id });
     let p2CashInstance = await CashWalletModel.findOne({
       userID: game_played?.members[0],
     });
-    if (!defaultInstance || !cashInstance || !p2CashInstance) return;
-    const { currentCash: p1Cash } = cashInstance;
-    const { currentCash: p2Cash } = p2CashInstance;
-    const { cashRating, commission_custom_game } = defaultInstance;
+    if (!defaultInstance || !cashInstance || !p2CashInstance) {
+      res.status(406).json({
+        message: "error found",
+        error: "Bad instance",
+      } as errorResHint);
+      return;
+    };
+    // const { currentCash: p1Cash } = cashInstance;
+    // const { currentCash: p2Cash } = p2CashInstance;
+    // const { cashRating, commission_custom_game } = defaultInstance;
     if (game_played?.members[0] === decoded.id) {
       await GameModel.updateOne(
         { _id: game_id },
@@ -3449,7 +3455,11 @@ GamesRouter.post("/custom-game/judge", async (req: Request, res: Response) => {
             },
           },
         }
-      );
+      ).then(() => {
+        res.json({ message: "done" });
+      }).catch(() => {
+        res.status(500).json({ error: "not your game" });
+      });
     } else if (game_played?.members[1] === decoded.id) {
       await GameModel.updateOne(
         { _id: game_id },
@@ -3464,11 +3474,23 @@ GamesRouter.post("/custom-game/judge", async (req: Request, res: Response) => {
             },
           },
         }
-      );
+      ).then(() => {
+        res.json({ message: "done" });
+      }).catch(() => {
+        res.status(500).json({ error: "not your game" });
+      });
     } else {
       res.status(500).json({ error: "not your game" });
     }
-    let game_played_final = await GameModel.findOne({ _id: game_id });
+  } catch (error) {
+    res.status(500).json({ error, message: "error found" } as errorResHint);
+    console.error(error);
+  }
+});
+
+
+/*
+   let game_played_final = await GameModel.findOne({ _id: game_id });
     if (
       game_played_final?.battleScore.player1.correct_answer &&
       game_played_final?.battleScore.player2.correct_answer
@@ -3653,10 +3675,6 @@ GamesRouter.post("/custom-game/judge", async (req: Request, res: Response) => {
         res.json({ message: "done" });
       }
     }
-  } catch (error) {
-    res.status(500).json({ error, message: "error found" } as errorResHint);
-    console.error(error);
-  }
-});
+*/
 
 export default GamesRouter;

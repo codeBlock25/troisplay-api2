@@ -738,8 +738,7 @@ GamesRouter.post("/guess-master", async (req: Request, res: Response) => {
           .json({ message: "error found", error: "insufficient fund" });
         return;
       }
-    }
-    if (payWith === PayType.coin) {
+    } else {
       if (currentCoin < price_in_cash * cashRating) {
         res
           .status(401)
@@ -1521,15 +1520,14 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
       gameID: id,
     });
     if (payWith === PayType.cash) {
-      if (p1Cash < (game_?.price_in_value??0)) {
+      if (p1Cash < (game_?.price_in_value ?? 0)) {
         res
           .status(401)
           .json({ message: "error found", error: "insufficient fund" });
         return;
       }
-    }
-    if (payWith === PayType.coin) {
-      if (currentCoin < ((game_?.price_in_value ?? 0) * cashRating)) {
+    } else {
+      if (currentCoin < (game_?.price_in_value ?? 0) * cashRating) {
         res
           .status(401)
           .json({ message: "error found", error: "insufficient fund" });

@@ -1562,77 +1562,202 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
       );
     }
     if (winner) {
-      await new RecordModel({
-        userID: game_?.members[0],
-        game: Games.matcher,
-        won: "yes",
-        earnings: PlayerCash(
-          commission_guess_mater,
-          0,
-          (game_?.price_in_value ?? 0) * count === 1
-            ? 1
-            : count === 2
-            ? 0.8
-            : count >= 3
-            ? 0.6
-            : 1,
-          2,
-          cashRating
-        ),
-      }).save();
-      await new RecordModel({
-        userID: decoded.id,
-        game: Games.matcher,
-        won: "no",
-        earnings: -PlayerCash(
-          commission_guess_mater,
-          0,
-          (game_?.price_in_value ?? 0) * count === 1
-            ? 1
-            : count === 2
-            ? 0.8
-            : count >= 3
-            ? 0.6
-            : 1,
-          2,
-          cashRating
-        ),
-      }).save();
-      await CashWalletModel.updateOne(
-        { userID: decoded.id },
-        {
-          currentCash: PlayerCash(
+      if (count === 1) {
+        await new RecordModel({
+          userID: decoded.id,
+          game: Games.matcher,
+          won: "yes",
+          earnings: PlayerCash(
             commission_guess_mater,
-            p1Cash,
-            (game_?.price_in_value ?? 0) * (count === 1
-              ? 1
-              : count === 2
-              ? 0.8
-              : count >= 3
-              ? 0.6
-              : 1),
+            0,
+            (game_?.price_in_value ?? 0) * 1,
             2,
             cashRating
           ),
-        }
-      )
-        .then(() => {
-          res.json({
-            message: "you won",
-            winner: true,
-            price: PlayerCash(
+        }).save();
+        await new RecordModel({
+          userID: game_?.members[0],
+          game: Games.matcher,
+          won: "no",
+          earnings: -PlayerCash(
+            commission_guess_mater,
+            0,
+            (game_?.price_in_value ?? 0)-(game_?.price_in_value ?? 0) * 1,
+            2,
+            cashRating
+          ),
+        }).save();
+        await CashWalletModel.updateOne(
+          { userID: game_?.members[0] },
+          {
+            currentCash: PlayerCash(
               commission_guess_mater,
-              0,
-              (game_?.price_in_value ?? 0) *
-                (count === 1 ? 1 : count === 2 ? 0.8 : count >= 3 ? 0.6 : 1),
+              p2Cash,
+              (game_?.price_in_value ?? 0) - (game_?.price_in_value ?? 0) * 1,
               2,
               cashRating
             ),
+          }
+        );
+        await CashWalletModel.updateOne(
+          { userID: decoded.id },
+          {
+            currentCash: PlayerCash(
+              commission_guess_mater,
+              p1Cash,
+              (game_?.price_in_value ?? 0) * 1,
+              2,
+              cashRating
+            ),
+          }
+        )
+          .then(() => {
+            res.json({
+              message: "you won",
+              winner: true,
+              price: PlayerCash(
+                commission_guess_mater,
+                0,
+                (game_?.price_in_value ?? 0) * 1,
+                2,
+                cashRating
+              ),
+            });
+          })
+          .catch((error) => {
+            res.status(500).json({ message: "error found", error });
           });
-        })
-        .catch((error) => {
-          res.status(500).json({ message: "error found", error });
-        });
+      } else if (count === 2) {
+        await new RecordModel({
+          userID: decoded.id,
+          game: Games.matcher,
+          won: "yes",
+          earnings: PlayerCash(
+            commission_guess_mater,
+            0,
+            (game_?.price_in_value ?? 0) * 0.8,
+            2,
+            cashRating
+          ),
+        }).save();
+        await new RecordModel({
+          userID: game_?.members[0],
+          game: Games.matcher,
+          won: "no",
+          earnings: -PlayerCash(
+            commission_guess_mater,
+            0,
+            (game_?.price_in_value ?? 0)-(game_?.price_in_value ?? 0) * 0.8,
+            2,
+            cashRating
+          ),
+        }).save();
+        await CashWalletModel.updateOne(
+          { userID: game_?.members[0] },
+          {
+            currentCash: PlayerCash(
+              commission_guess_mater,
+              p2Cash,
+              (game_?.price_in_value ?? 0)-(game_?.price_in_value ?? 0) * 0.8,
+              2,
+              cashRating
+            ),
+          }
+        )
+        await CashWalletModel.updateOne(
+          { userID: decoded.id },
+          {
+            currentCash: PlayerCash(
+              commission_guess_mater,
+              p1Cash,
+              (game_?.price_in_value ?? 0) * 0.8,
+              2,
+              cashRating
+            ),
+          }
+        )
+          .then(() => {
+            res.json({
+              message: "you won",
+              winner: true,
+              price: PlayerCash(
+                commission_guess_mater,
+                0,
+                (game_?.price_in_value ?? 0) * 0.8,
+                2,
+                cashRating
+              ),
+            });
+          })
+          .catch((error) => {
+            res.status(500).json({ message: "error found", error });
+          });
+      } else {
+        await new RecordModel({
+          userID: decoded.id,
+          game: Games.matcher,
+          won: "yes",
+          earnings: PlayerCash(
+            commission_guess_mater,
+            0,
+            (game_?.price_in_value ?? 0) * 0.6,
+            2,
+            cashRating
+          ),
+        }).save();
+        await new RecordModel({
+          userID: game_?.members[0],
+          game: Games.matcher,
+          won: "no",
+          earnings: -PlayerCash(
+            commission_guess_mater,
+            0,
+            (game_?.price_in_value ?? 0) * 0.6,
+            2,
+            cashRating
+          ),
+        }).save();
+        await CashWalletModel.updateOne(
+          { userID: game_?.members[0] },
+          {
+            currentCash: PlayerCash(
+              commission_guess_mater,
+              p2Cash,
+              (game_?.price_in_value ?? 0)-(game_?.price_in_value ?? 0) * 0.6,
+              2,
+              cashRating
+            ),
+          }
+        )
+        await CashWalletModel.updateOne(
+          { userID: decoded.id },
+          {
+            currentCash: PlayerCash(
+              commission_guess_mater,
+              p1Cash,
+              (game_?.price_in_value ?? 0) * 0.6,
+              2,
+              cashRating
+            ),
+          }
+        )
+          .then(() => {
+            res.json({
+              message: "you won",
+              winner: true,
+              price: PlayerCash(
+                commission_guess_mater,
+                0,
+                (game_?.price_in_value ?? 0) * 0.6,
+                2,
+                cashRating
+              ),
+            });
+          })
+          .catch((error) => {
+            res.status(500).json({ message: "error found", error });
+          });
+      }
     } else {
       await new UserPlay({
         player2ID: decoded.id,

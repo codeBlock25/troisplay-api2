@@ -728,7 +728,7 @@ GamesRouter.post("/guess-master", async (req: Request, res: Response) => {
     const { currentCoin } = coinInstance;
     const { cashRating } = defaultInstance;
     if (!found) {
-      res.status(406).json({ message: "error found", error: "invalid user" });
+      res.status (406).json({ message: "error found", error: "invalid user" });
       return;
     }
     if (payWith === PayType.cash) {
@@ -1520,6 +1520,22 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
       player2ID: decoded.id,
       gameID: id,
     });
+    if (payWith === PayType.cash) {
+      if (p1Cash < (game_?.price_in_value??0)) {
+        res
+          .status(401)
+          .json({ message: "error found", error: "insufficient fund" });
+        return;
+      }
+    }
+    if (payWith === PayType.coin) {
+      if (currentCoin < ((game_?.price_in_value ?? 0) * cashRating)) {
+        res
+          .status(401)
+          .json({ message: "error found", error: "insufficient fund" });
+        return;
+      }
+    }
     if (payWith === PayType.coin) {
       await WalletModel.updateOne(
         { userID: decoded.id },

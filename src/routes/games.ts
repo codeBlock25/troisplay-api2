@@ -732,14 +732,14 @@ GamesRouter.post("/guess-master", async (req: Request, res: Response) => {
       return;
     }
     if (payWith === PayType.cash) {
-      if (currentCash < price_in_cash) {
+      if (price_in_cash > currentCash) {
         res
           .status(401)
           .json({ message: "error found", error: "insufficient fund" });
         return;
       }
     } else {
-      if (currentCoin < price_in_cash * cashRating) {
+      if (price_in_cash * cashRating > currentCoin) {
         res
           .status(401)
           .json({ message: "error found", error: "insufficient fund" });

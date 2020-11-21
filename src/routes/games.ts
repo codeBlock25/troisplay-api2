@@ -3627,6 +3627,85 @@ GamesRouter.post("/custom-game/judge", async (req: Request, res: Response) => {
   }
 });
 
+GamesRouter.get("/custom-game/disputes", async (req: Request, res: Response) => {
+  try {
+    let auth = req.headers.authorization ?? "";
+    if (!auth) {
+      res.status(406).json({ message: "error found", error: "invalid auth" });
+      return;
+    }
+    let token: string = auth.replace("Bearer ", "");
+    if (!token || token === "") {
+      res.status(406).json({ message: "error found", error: "empty token" });
+      return;
+    }
+    let decoded = (verify(token, secret) as unknown) as {
+      adminID: string;
+    };
+    let found = await AdminModel.findById(decoded.adminID);
+    if (!found) {
+      res.status(406).json({
+        message: "error found",
+        error: "user no found",
+      } as errorResHint);
+      return;
+    }
+    let judgableGames = (
+      await GameModel.find({ played: true, isComplete: false })
+    ).filter((game) => {
+      return (
+        isEmpty(game.battleScore.player1.correct_answer) ||
+        !isEmpty(game.battleScore.player2.correct_answer)
+      );
+    });
+    res.json({ games: judgableGames });
+  } catch (error) {
+    res.status(500).json({ error, message: "breakdown" });
+    console.log(error);
+  }
+});
+
+
+GamesRouter.get(
+  "/custom-game/disputes/oversea",
+  async (req: Request, res: Response) => {
+    try {
+      let auth = req.headers.authorization ?? "";
+      if (!auth) {
+        res.status(406).json({ message: "error found", error: "invalid auth" });
+        return;
+      }
+      let token: string = auth.replace("Bearer ", "");
+      if (!token || token === "") {
+        res.status(406).json({ message: "error found", error: "empty token" });
+        return;
+      }
+      let decoded = (verify(token, secret) as unknown) as {
+        adminID: string;
+      };
+      let found = await AdminModel.findById(decoded.adminID);
+      if (!found) {
+        res.status(406).json({
+          message: "error found",
+          error: "user no found",
+        } as errorResHint);
+        return;
+      }
+      const {id} = req.query as unknown as {id: string}
+      let judgableGame = await GameModel.findOne({ _id: id })
+      if (!judgableGame) {
+        res.status(404).json({ message: "error", error: "not found" })
+        return
+      }
+      let player1 = users.findOne({_id: judgableGame.members[0]})
+      let player2 = users.findOne({ _id: judgableGame.members[1] })
+      res.json({gameDetail: {...judgableGame, player1, player2}})
+    } catch (error) {
+      res.status(500).json({ error, message: "breakdown" });
+      console.log(error);
+    }
+  }
+);
 
 /*
    let game_played_final = await GameModel.findOne({ _id: game_id });

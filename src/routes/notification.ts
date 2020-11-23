@@ -28,7 +28,7 @@ notificationRoute.get("/all", async (req: Request, res: Response) => {
       return;
     }
     await notificationModel
-      .find({ userID: decoded.id })
+      .findOne({ userID: decoded.id })
       .sort({ date: -1 })
       .then((notifications) => {
         res.json({ notifications });

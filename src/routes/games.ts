@@ -774,7 +774,7 @@ GamesRouter.post("/guess-master", async (req: Request, res: Response) => {
     const { currentCoin } = coinInstance;
     const { cashRating } = defaultInstance;
     if (!found) {
-      res.status (406).json({ message: "error found", error: "invalid user" });
+      res.status(406).json({ message: "error found", error: "invalid user" });
       return;
     }
     if (payWith === PayType.cash) {
@@ -1015,9 +1015,11 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
     }
     if (winner) {
       await NotificationAction.add({
-        message: `you have just won a game from playing a penalty card game and have earned ${game_?.price_in_value ?? 0}.`,
+        message: `you have just won a game from playing a penalty card game and have earned ${
+          game_?.price_in_value ?? 0
+        }.`,
         userID: decoded.id,
-      })
+      });
       await NotificationAction.add({
         message: `you have just lost a game from playing a penalty card game and have lost ${
           game_?.price_in_value ?? 0
@@ -1283,8 +1285,9 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
     }
     if (winner === GameRec.win) {
       await NotificationAction.add({
-        message: `you have just won a game from playing a roshambo game and have earned ${game_?.price_in_value ?? 0
-          }.`,
+        message: `you have just won a game from playing a roshambo game and have earned ${
+          game_?.price_in_value ?? 0
+        }.`,
         userID: decoded.id,
       });
       await NotificationAction.add({
@@ -1665,18 +1668,18 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
     }
     if (winner) {
       if (count === 1) {
-      await NotificationAction.add({
-        message: `you have just won a game from playing a guess master game and have earned ${
-          (game_?.price_in_value ?? 0) * 1
-        }.`,
-        userID: decoded.id,
-      });
-      await NotificationAction.add({
-        message: `you have just lost a game from playing a guess master game and have earned ${
-          (game_?.price_in_value ?? 0) * 1
-        }.`,
-        userID: game_?.members[0] ?? "",
-      });
+        await NotificationAction.add({
+          message: `you have just won a game from playing a guess master game and have earned ${
+            (game_?.price_in_value ?? 0) * 1
+          }.`,
+          userID: decoded.id,
+        });
+        await NotificationAction.add({
+          message: `you have just lost a game from playing a guess master game and have earned ${
+            (game_?.price_in_value ?? 0) * 1
+          }.`,
+          userID: game_?.members[0] ?? "",
+        });
         await new RecordModel({
           userID: decoded.id,
           game: Games.matcher,
@@ -1696,7 +1699,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
           earnings: -PlayerCash(
             commission_guess_mater,
             0,
-            (game_?.price_in_value ?? 0)-(game_?.price_in_value ?? 0) * 1,
+            (game_?.price_in_value ?? 0) - (game_?.price_in_value ?? 0) * 1,
             2,
             cashRating
           ),
@@ -1742,18 +1745,18 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
             res.status(500).json({ message: "error found", error });
           });
       } else if (count === 2) {
-      await NotificationAction.add({
-        message: `you have just won a game from playing a guess master game and have earned ${
-          (game_?.price_in_value ?? 0) * 0.8
-        }.`,
-        userID: decoded.id,
-      });
-      await NotificationAction.add({
-        message: `you have just lost a game from playing a guess master game and have earned ${
-          (game_?.price_in_value ?? 0) * 0.8
-        }.`,
-        userID: game_?.members[0] ?? "",
-      });
+        await NotificationAction.add({
+          message: `you have just won a game from playing a guess master game and have earned ${
+            (game_?.price_in_value ?? 0) * 0.8
+          }.`,
+          userID: decoded.id,
+        });
+        await NotificationAction.add({
+          message: `you have just lost a game from playing a guess master game and have earned ${
+            (game_?.price_in_value ?? 0) * 0.8
+          }.`,
+          userID: game_?.members[0] ?? "",
+        });
         await new RecordModel({
           userID: decoded.id,
           game: Games.matcher,
@@ -1773,7 +1776,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
           earnings: -PlayerCash(
             commission_guess_mater,
             0,
-            (game_?.price_in_value ?? 0)-(game_?.price_in_value ?? 0) * 0.8,
+            (game_?.price_in_value ?? 0) - (game_?.price_in_value ?? 0) * 0.8,
             2,
             cashRating
           ),
@@ -1784,12 +1787,12 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
             currentCash: PlayerCash(
               commission_guess_mater,
               p2Cash,
-              (game_?.price_in_value ?? 0)-(game_?.price_in_value ?? 0) * 0.8,
+              (game_?.price_in_value ?? 0) - (game_?.price_in_value ?? 0) * 0.8,
               2,
               cashRating
             ),
           }
-        )
+        );
         await CashWalletModel.updateOne(
           { userID: decoded.id },
           {
@@ -1819,18 +1822,18 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
             res.status(500).json({ message: "error found", error });
           });
       } else {
-      await NotificationAction.add({
-        message: `you have just won a game from playing a guess master game and have earned ${
-          (game_?.price_in_value ?? 0) * 0.6
-        }.`,
-        userID: decoded.id,
-      });
-      await NotificationAction.add({
-        message: `you have just lost a game from playing a guess master game and have earned ${
-          (game_?.price_in_value ?? 0) * 0.6
-        }.`,
-        userID: game_?.members[0] ?? "",
-      });
+        await NotificationAction.add({
+          message: `you have just won a game from playing a guess master game and have earned ${
+            (game_?.price_in_value ?? 0) * 0.6
+          }.`,
+          userID: decoded.id,
+        });
+        await NotificationAction.add({
+          message: `you have just lost a game from playing a guess master game and have earned ${
+            (game_?.price_in_value ?? 0) * 0.6
+          }.`,
+          userID: game_?.members[0] ?? "",
+        });
         await new RecordModel({
           userID: decoded.id,
           game: Games.matcher,
@@ -1861,12 +1864,12 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
             currentCash: PlayerCash(
               commission_guess_mater,
               p2Cash,
-              (game_?.price_in_value ?? 0)-(game_?.price_in_value ?? 0) * 0.6,
+              (game_?.price_in_value ?? 0) - (game_?.price_in_value ?? 0) * 0.6,
               2,
               cashRating
             ),
           }
-        )
+        );
         await CashWalletModel.updateOne(
           { userID: decoded.id },
           {
@@ -3713,7 +3716,7 @@ GamesRouter.post("/custom-game/judge", async (req: Request, res: Response) => {
       } as errorResHint);
       return;
     }
-    const { choice, game_id }: { choice: string; game_id: string; } = req.body;
+    const { choice, game_id }: { choice: string; game_id: string } = req.body;
     let game_played = await GameModel.findOne({ _id: game_id });
     let defaultInstance = await defaultModel.findOne({});
     let cashInstance = await CashWalletModel.findOne({ userID: decoded.id });
@@ -3726,7 +3729,7 @@ GamesRouter.post("/custom-game/judge", async (req: Request, res: Response) => {
         error: "Bad instance",
       } as errorResHint);
       return;
-    };
+    }
     // const { currentCash: p1Cash } = cashInstance;
     // const { currentCash: p2Cash } = p2CashInstance;
     // const { cashRating, commission_custom_game } = defaultInstance;
@@ -3744,11 +3747,13 @@ GamesRouter.post("/custom-game/judge", async (req: Request, res: Response) => {
             },
           },
         }
-      ).then(() => {
-        res.json({ message: "done" });
-      }).catch(() => {
-        res.status(500).json({ error: "not your game" });
-      });
+      )
+        .then(() => {
+          res.json({ message: "done" });
+        })
+        .catch(() => {
+          res.status(500).json({ error: "not your game" });
+        });
     } else if (game_played?.members[1] === decoded.id) {
       await GameModel.updateOne(
         { _id: game_id },
@@ -3763,11 +3768,13 @@ GamesRouter.post("/custom-game/judge", async (req: Request, res: Response) => {
             },
           },
         }
-      ).then(() => {
-        res.json({ message: "done" });
-      }).catch(() => {
-        res.status(500).json({ error: "not your game" });
-      });
+      )
+        .then(() => {
+          res.json({ message: "done" });
+        })
+        .catch(() => {
+          res.status(500).json({ error: "not your game" });
+        });
     } else {
       res.status(500).json({ error: "not your game" });
     }
@@ -3777,43 +3784,47 @@ GamesRouter.post("/custom-game/judge", async (req: Request, res: Response) => {
   }
 });
 
-GamesRouter.get("/custom-game/disputes", async (req: Request, res: Response) => {
-  try {
-    let auth = req.headers.authorization ?? "";
-    if (!auth) {
-      res.status(406).json({ message: "error found", error: "invalid auth" });
-      return;
-    }
-    let token: string = auth.replace("Bearer ", "");
-    if (!token || token === "") {
-      res.status(406).json({ message: "error found", error: "empty token" });
-      return;
-    }
-    let decoded = (verify(token, secret) as unknown) as {
-      adminID: string;
-    };
-    let found = await AdminModel.findById(decoded.adminID);
-    if (!found) {
-      res.status(406).json({
-        message: "error found",
-        error: "user no found",
-      } as errorResHint);
-      return;
-    }
-    let judgableGames = (
-      await GameModel.find({ played: true, isComplete: false })
-    ).filter((game) => {
-      return (
-        isEmpty(game.battleScore.player1.correct_answer) ||
-        !isEmpty(game.battleScore.player2.correct_answer)
+GamesRouter.get(
+  "/custom-game/disputes",
+  async (req: Request, res: Response) => {
+    try {
+      let auth = req.headers.authorization ?? "";
+      if (!auth) {
+        res.status(406).json({ message: "error found", error: "invalid auth" });
+        return;
+      }
+      let token: string = auth.replace("Bearer ", "");
+      if (!token || token === "") {
+        res.status(406).json({ message: "error found", error: "empty token" });
+        return;
+      }
+      let decoded = (verify(token, secret) as unknown) as {
+        adminID: string;
+      };
+      let found = await AdminModel.findById(decoded.adminID);
+      if (!found) {
+        res.status(406).json({
+          message: "error found",
+          error: "user no found",
+        } as errorResHint);
+        return;
+      }
+      let judgableGames = filter(
+        await GameModel.find({ played: true, isComplete: false }),
+        (game) => {
+          return (
+            isEmpty(game.battleScore.player1.correct_answer) ||
+            !isEmpty(game.battleScore.player2.correct_answer)
+          );
+        }
       );
-    });
-    res.json({ games: judgableGames });
-  } catch (error) {
-    res.status(500).json({ error, message: "breakdown" });
-    console.log(error);
+      res.json({ games: judgableGames });
+    } catch (error) {
+      res.status(500).json({ error, message: "breakdown" });
+      console.log(error);
+    }
   }
-});
+);
 
 GamesRouter.get(
   "/custom-game/disputes/oversea",
@@ -3840,21 +3851,20 @@ GamesRouter.get(
         } as errorResHint);
         return;
       }
-      const {id} = req.query as unknown as {id: string}
-      let judgableGame = await GameModel.findOne({ _id: id })
+      const { id } = (req.query as unknown) as { id: string };
+      let judgableGame = await GameModel.findOne({ _id: id });
       if (!judgableGame) {
-        res.status(404).json({ message: "error", error: "not found" })
-        return
+        res.status(404).json({ message: "error", error: "not found" });
+        return;
       }
-      let player1 = users.findOne({_id: judgableGame.members[0]})
-      let player2 = users.findOne({ _id: judgableGame.members[1] })
-      res.json({gameDetail: {...judgableGame, player1, player2}})
+      let player1 = users.findOne({ _id: judgableGame.members[0] });
+      let player2 = users.findOne({ _id: judgableGame.members[1] });
+      res.json({ gameDetail: { ...judgableGame, player1, player2 } });
     } catch (error) {
       res.status(500).json({ error, message: "breakdown" });
       console.log(error);
     }
   }
 );
-
 
 export default GamesRouter;

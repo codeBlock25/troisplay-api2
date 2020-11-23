@@ -31,7 +31,7 @@ notificationRoute.get("/all", async (req: Request, res: Response) => {
       .find({ userID: decoded.id })
       .sort({ date: -1 })
       .then((notifications) => {
-        res.json({ notifications: notifications ?? [] });
+        res.json({ notifications });
       })
       .catch((error) => {
         res.status(500).json({ error, msssage: "error occured" });

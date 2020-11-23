@@ -3810,10 +3810,16 @@ GamesRouter.get(
         return;
       }
       let judgableGames = filter(
-        await GameModel.find({ played: true, isComplete: false }),
+        await GameModel.find({
+          played: true,
+          isComplete: false,
+          gameID: Games.custom_game,
+        }),
         (game) => {
-          console.log(game)
-          return true;
+          return (
+            isEmpty(game.battleScore.player1.correct_answer) ||
+            !isEmpty(game.battleScore.player2.correct_answer)
+          );
         }
       );
       res.json({ games: judgableGames });

@@ -27,9 +27,11 @@ import {
   PlayerDrawCash,
   PlayerCashLeft,
   PlayerCoinLeft,
+  NotificationAction,
 } from "../function";
 import { generate as randGenerate } from "randomstring";
 import { concat, filter, isEmpty, sortBy } from "lodash";
+import notificationModel from "../model/notification";
 
 envConfig();
 const GamesRouter: Router = Router();
@@ -1012,6 +1014,16 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
       );
     }
     if (winner) {
+      await NotificationAction.add({
+        message: `you have just won a game from playing a penalty card game and have earned ${game_?.price_in_value ?? 0}.`,
+        userID: decoded.id,
+      })
+      await NotificationAction.add({
+        message: `you have just lost a game from playing a penalty card game and have lost ${
+          game_?.price_in_value ?? 0
+        }.`,
+        userID: game_?.members[0] ?? "",
+      });
       await new RecordModel({
         userID: decoded.id,
         game: Games.penalth_card,
@@ -1088,6 +1100,18 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
           res.status(500).json({ message: "error found", error });
         });
     } else {
+      await NotificationAction.add({
+        message: `you have just won a game from playing a penalty card game and have earned ${
+          game_?.price_in_value ?? 0
+        }.`,
+        userID: game_?.members[0] ?? "",
+      });
+      await NotificationAction.add({
+        message: `you have just lost a game from playing a penalty card game and have earned ${
+          game_?.price_in_value ?? 0
+        }.`,
+        userID: decoded.id,
+      });
       await new RecordModel({
         userID: decoded.id,
         game: Games.penalth_card,
@@ -1258,6 +1282,17 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
       );
     }
     if (winner === GameRec.win) {
+      await NotificationAction.add({
+        message: `you have just won a game from playing a roshambo game and have earned ${game_?.price_in_value ?? 0
+          }.`,
+        userID: decoded.id,
+      });
+      await NotificationAction.add({
+        message: `you have just lost a game from playing a roshambo game and have earned ${
+          game_?.price_in_value ?? 0
+        }.`,
+        userID: game_?.members[0] ?? "",
+      });
       await new RecordModel({
         userID: decoded.id,
         game: Games.roshambo,
@@ -1334,6 +1369,18 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
           res.status(500).json({ message: "error found", error });
         });
     } else if (winner === GameRec.draw) {
+      await NotificationAction.add({
+        message: `you have just drawn in a game from playing a roshambo game and have recieved ${
+          game_?.price_in_value ?? 0
+        }.`,
+        userID: decoded.id,
+      });
+      await NotificationAction.add({
+        message: `you have just drawn in a game from playing a roshambo game and have recieved ${
+          game_?.price_in_value ?? 0
+        }.`,
+        userID: game_?.members[0] ?? "",
+      });
       await new RecordModel({
         userID: decoded.id,
         game: Games.roshambo,
@@ -1422,6 +1469,18 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
           res.status(500).json({ message: "error found", error });
         });
     } else {
+      await NotificationAction.add({
+        message: `you have just won a game from playing a roshambo game and have earned ${
+          game_?.price_in_value ?? 0
+        }.`,
+        userID: decoded.id,
+      });
+      await NotificationAction.add({
+        message: `you have just lost a game from playing a roshambo game and have earned ${
+          game_?.price_in_value ?? 0
+        }.`,
+        userID: game_?.members[0] ?? "",
+      });
       await new RecordModel({
         userID: game_?.members[0],
         game: Games.roshambo,
@@ -1492,7 +1551,6 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
           res.status(500).json({ message: "error found", error });
         });
     }
-
     await PlayAdmin(
       commission_roshambo,
       game_?.price_in_value ?? 0,
@@ -1607,6 +1665,18 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
     }
     if (winner) {
       if (count === 1) {
+      await NotificationAction.add({
+        message: `you have just won a game from playing a guess master game and have earned ${
+          (game_?.price_in_value ?? 0) * 1
+        }.`,
+        userID: decoded.id,
+      });
+      await NotificationAction.add({
+        message: `you have just lost a game from playing a guess master game and have earned ${
+          (game_?.price_in_value ?? 0) * 1
+        }.`,
+        userID: game_?.members[0] ?? "",
+      });
         await new RecordModel({
           userID: decoded.id,
           game: Games.matcher,
@@ -1672,6 +1742,18 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
             res.status(500).json({ message: "error found", error });
           });
       } else if (count === 2) {
+      await NotificationAction.add({
+        message: `you have just won a game from playing a guess master game and have earned ${
+          (game_?.price_in_value ?? 0) * 0.8
+        }.`,
+        userID: decoded.id,
+      });
+      await NotificationAction.add({
+        message: `you have just lost a game from playing a guess master game and have earned ${
+          (game_?.price_in_value ?? 0) * 0.8
+        }.`,
+        userID: game_?.members[0] ?? "",
+      });
         await new RecordModel({
           userID: decoded.id,
           game: Games.matcher,
@@ -1737,6 +1819,18 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
             res.status(500).json({ message: "error found", error });
           });
       } else {
+      await NotificationAction.add({
+        message: `you have just won a game from playing a guess master game and have earned ${
+          (game_?.price_in_value ?? 0) * 0.6
+        }.`,
+        userID: decoded.id,
+      });
+      await NotificationAction.add({
+        message: `you have just lost a game from playing a guess master game and have earned ${
+          (game_?.price_in_value ?? 0) * 0.6
+        }.`,
+        userID: game_?.members[0] ?? "",
+      });
         await new RecordModel({
           userID: decoded.id,
           game: Games.matcher,
@@ -1803,6 +1897,18 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
           });
       }
     } else {
+      await NotificationAction.add({
+        message: `you have just won a game from playing a guess master game and have earned ${
+          (game_?.price_in_value ?? 0) * 1
+        }.`,
+        userID: game_?.members[0] ?? "",
+      });
+      await NotificationAction.add({
+        message: `you have just lost a game from playing a guess master game and have earned ${
+          (game_?.price_in_value ?? 0) * 1
+        }.`,
+        userID: decoded.id,
+      });
       await new UserPlay({
         player2ID: decoded.id,
         isWin: false,
@@ -3709,7 +3815,6 @@ GamesRouter.get("/custom-game/disputes", async (req: Request, res: Response) => 
   }
 });
 
-
 GamesRouter.get(
   "/custom-game/disputes/oversea",
   async (req: Request, res: Response) => {
@@ -3751,192 +3856,5 @@ GamesRouter.get(
   }
 );
 
-/*
-   let game_played_final = await GameModel.findOne({ _id: game_id });
-    if (
-      game_played_final?.battleScore.player1.correct_answer &&
-      game_played_final?.battleScore.player2.correct_answer
-    ) {
-      if (
-        game_played_final?.battleScore.player1.correct_answer.toLowerCase() ===
-        game_played_final?.battleScore.player2.correct_answer.toLowerCase()
-      ) {
-        if (
-          game_played_final?.battleScore.player1.correct_answer.toLowerCase() ===
-          game_played_final?.battleScore.player1.answer.toLowerCase()
-        ) {
-          await new RecordModel({
-            userID: game_played_final.members[0],
-            game: Games.custom_game,
-            won: "yes",
-            earnings: PlayerCash(
-              commission_custom_game,
-              p1Cash,
-              game_played_final?.price_in_value ?? 0,
-              1,
-              cashRating
-            ),
-          }).save();
-          await new RecordModel({
-            userID: game_played_final.members[1],
-            game: Games.custom_game,
-            won: "no",
-            earnings: -PlayerCash(
-              commission_custom_game,
-              p2Cash,
-              game_played_final?.price_in_value ?? 0,
-              1,
-              cashRating
-            ),
-          }).save();
-          await CashWalletModel.updateOne(
-            { userID: game_played_final.members[0] },
-            {
-              currentCash: PlayerCash(
-                commission_custom_game,
-                p1Cash,
-                game_played_final?.price_in_value ?? 0,
-                1,
-                cashRating
-              ),
-            }
-          )
-            .then(() => {
-              res.json({
-                message: "you won",
-                winner: true,
-                price: PlayerCash(
-                  commission_custom_game,
-                  p1Cash,
-                  game_played_final?.price_in_value ?? 0,
-                  1,
-                  cashRating
-                ),
-              });
-            })
-            .catch((error) => {
-              res
-                .status(500)
-                .json({ message: "error found", error } as errorResHint);
-            });
-        } else if (
-          game_played_final?.battleScore.player2.correct_answer.toLowerCase() ===
-          game_played_final?.battleScore.player2.answer.toLowerCase()
-        ) {
-          await new RecordModel({
-            userID: game_played_final.members[1],
-            game: Games.custom_game,
-            won: "yes",
-            earnings: PlayerCash(
-              commission_custom_game,
-              p1Cash,
-              game_played_final?.price_in_value ?? 0,
-              1,
-              cashRating
-            ),
-          }).save();
-          await new RecordModel({
-            userID: game_played_final.members[0],
-            game: Games.custom_game,
-            won: "no",
-            earnings: -PlayerCash(
-              commission_custom_game,
-              p2Cash,
-              game_played_final?.price_in_value ?? 0,
-              1,
-              cashRating
-            ),
-          }).save();
-          await CashWalletModel.updateOne(
-            { userID: game_played_final.members[1] },
-            {
-              currentCash: PlayerCash(
-                commission_custom_game,
-                p1Cash,
-                game_played_final?.price_in_value ?? 0,
-                1,
-                cashRating
-              ),
-            }
-          )
-            .then(() => {
-              res.json({
-                message: "you won",
-                winner: true,
-                price: PlayerCash(
-                  commission_custom_game,
-                  p1Cash,
-                  game_played_final?.price_in_value ?? 0,
-                  1,
-                  cashRating
-                ),
-              });
-            })
-            .catch((error) => {
-              res
-                .status(500)
-                .json({ message: "error found", error } as errorResHint);
-            });
-        } else {
-          await new RecordModel({
-            userID: game_played_final.members[1],
-            game: Games.custom_game,
-            won: "yes",
-            earnings: PlayerDrawCash(
-              commission_custom_game,
-              p1Cash,
-              game_played_final?.price_in_value ?? 0,
-              1,
-              cashRating
-            ),
-          }).save();
-          await new RecordModel({
-            userID: game_played_final.members[0],
-            game: Games.custom_game,
-            won: "no",
-            earnings: -PlayerDrawCash(
-              commission_custom_game,
-              p2Cash,
-              game_played_final?.price_in_value ?? 0,
-              1,
-              cashRating
-            ),
-          }).save();
-          await CashWalletModel.updateOne(
-            { userID: game_played_final.members[1] },
-            {
-              currentCash: PlayerDrawCash(
-                commission_custom_game,
-                p1Cash,
-                game_played_final?.price_in_value ?? 0,
-                1,
-                cashRating
-              ),
-            }
-          )
-            .then(() => {
-              res.json({
-                message: "you won",
-                winner: true,
-                price: PlayerCash(
-                  commission_custom_game,
-                  p1Cash,
-                  game_played_final?.price_in_value ?? 0,
-                  1,
-                  cashRating
-                ),
-              });
-            })
-            .catch((error) => {
-              res
-                .status(500)
-                .json({ message: "error found", error } as errorResHint);
-            });
-        }
-      } else {
-        res.json({ message: "done" });
-      }
-    }
-*/
 
 export default GamesRouter;

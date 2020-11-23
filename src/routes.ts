@@ -3,6 +3,7 @@ import BillRouter from "./routes/bill";
 import defaultRouter from "./routes/default";
 import GamesRouter from "./routes/games";
 import MonitorRouter from "./routes/monitor";
+import notificationRoute from "./routes/notification";
 import PlayerRouter from "./routes/player";
 import RecordRouter from "./routes/records";
 import RoomRoute from "./routes/rooms";
@@ -20,7 +21,8 @@ customRoute.use("/records", RecordRouter);
 customRoute.use("/default", defaultRouter);
 customRoute.use("/rooms", RoomRoute);
 customRoute.use("/video", VideoRoute);
-customRoute.use("/wallet", WalletRouter)
-customRoute.use("/bill", BillRouter)
+customRoute.use("/wallet", WalletRouter);
+customRoute.use("/notifications", notificationRoute);
+customRoute.use("/bill", BillRouter);
 
 export default customRoute;

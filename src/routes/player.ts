@@ -168,7 +168,7 @@ try {
      .sort({ date_mark: -1 })
      .limit(10);
    let referal = await ReferalModel.findOne({ userID: decoded.id });
-   let wallet = await WalletModel.findOne({ userID: decoded.id });
+  let wallet = await WalletModel.findOne({ userID: decoded.id });
   let cashwallet = await CashWalletModel.findOne({ userID: decoded.id });
    if (!found) {
      res.status(410).json({ message: "error found", error: "invalid user" });

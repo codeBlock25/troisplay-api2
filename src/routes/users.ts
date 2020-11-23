@@ -13,9 +13,10 @@ import RecordModel from "../model/gamerecord";
 import CashWalletModel from "../model/cash_wallet";
 import LogModel from "../model/log";
 import AdminModel, { AdminLevel } from "../model/admin";
+import notificationModel from "../model/notification";
 
 config();
-const secret = process.env.SECRET ?? ""
+const secret = process.env.SECRET ?? "";
 
 const os = [
   { name: "Windows Phone", value: "Windows Phone", version: "OS" },
@@ -94,7 +95,9 @@ userRoute.post("/", async (req: Request, res: Response) => {
     phone_number: phone_number.replace(/(\s)|[+]/g, ""),
     key: hashedKey,
   });
-  let referee: any = await ReferalModel.findOne({ refer_code: refer_code.toLowerCase() });
+  let referee: any = await ReferalModel.findOne({
+    refer_code: refer_code.toLowerCase(),
+  });
   new_user
     .save()
     .then(async (result) => {
@@ -113,6 +116,10 @@ userRoute.post("/", async (req: Request, res: Response) => {
         }).save(),
         await new WalletModel({
           userID: result._id,
+        }).save(),
+        await new notificationModel({
+          userID: result._id,
+          notifications: [],
         }).save(),
         await new CashWalletModel({
           userID: result._id,
@@ -170,7 +177,7 @@ userRoute.post("/login", async (req: Request, res: Response) => {
     let token = sign({ id: user._id }, secret, {
       expiresIn: "30 days",
     });
-    var agent = req.headers["user-agent"]??"";
+    var agent = req.headers["user-agent"] ?? "";
     var os_ = matchItem(agent, os).name;
     var browser_ = matchItem(agent, browser).name;
     var device_type = matchItem(agent, os).value;
@@ -279,7 +286,7 @@ userRoute.post("/admin/login", async (req: Request, res: Response) => {
     if (!admin) {
       res.status(404).json({ message: "error found", error: "User not found" });
     }
-    let confirmedAdmin: boolean = compareSync(password, admin?.password??"");
+    let confirmedAdmin: boolean = compareSync(password, admin?.password ?? "");
     if (!confirmedAdmin) {
       res
         .status(401)

@@ -308,46 +308,90 @@ GamesRouter.get("/getter", async (req: Request, res: Response) => {
       return;
     }
     const { min, max, game }: any = req.query;
-    await GameModel.find({
-      members: { $not: { $eq: decoded.id } },
-      played: false,
-      gameID: parseInt(game, 10),
-      price_in_value: {
-        $lte: parseInt(max, 10) !== 0 ? parseInt(max, 10) : 10000000000000,
-        $gte: parseInt(min, 10),
-      },
-    })
-      .sort({ date: -1 })
-      .limit(15)
-      .then(async (result: GameType[]) => {
-        let r: any[] = [];
-        result.map((resl) => {
-          if (resl.gameID === Games.custom_game) {
-            r.push(resl);
-          } else {
-            r.push({
-              _id: resl._id,
-              gameMemberCount: resl.gameMemberCount,
-              members: resl.members,
-              priceType: resl.priceType,
-              price_in_value: resl.price_in_value,
-              gameType: resl.gameType,
-              price_in_coin: resl.price_in_coin,
-              gameDetail: resl.gameDetail,
-              gameID: resl.gameID,
-              played: resl.played,
-              date: resl.date,
-              playCount: resl.playCount,
-              isComplete: resl.isComplete,
-            });
-          }
-        });
-        // console.log(r)
-        res.json({ games: r });
+    if (
+      game === Games.roshambo ||
+      game === Games.penalth_card ||
+      game === Games.matcher
+    ) {
+      await GameModel.find({
+        members: { $not: { $eq: decoded.id } },
+        played: false,
+        gameID: parseInt(game, 10),
+        price_in_value: max,
       })
-      .catch((error) => {
-        res.status(404).json({ message: "error found", error });
-      });
+        .sort({ date: -1 })
+        .limit(15)
+        .then(async (result: GameType[]) => {
+          let r: any[] = [];
+          result.map((resl) => {
+            if (resl.gameID === Games.custom_game) {
+              r.push(resl);
+            } else {
+              r.push({
+                _id: resl._id,
+                gameMemberCount: resl.gameMemberCount,
+                members: resl.members,
+                priceType: resl.priceType,
+                price_in_value: resl.price_in_value,
+                gameType: resl.gameType,
+                price_in_coin: resl.price_in_coin,
+                gameDetail: resl.gameDetail,
+                gameID: resl.gameID,
+                played: resl.played,
+                date: resl.date,
+                playCount: resl.playCount,
+                isComplete: resl.isComplete,
+              });
+            }
+          });
+          // console.log(r)
+          res.json({ games: r });
+        })
+        .catch((error) => {
+          res.status(404).json({ message: "error found", error });
+        });
+    } else {
+      await GameModel.find({
+        members: { $not: { $eq: decoded.id } },
+        played: false,
+        gameID: parseInt(game, 10),
+        price_in_value: {
+          $lte: parseInt(max, 10) !== 0 ? parseInt(max, 10) : 10000000000000,
+          $gte: parseInt(min, 10),
+        },
+      })
+        .sort({ date: -1 })
+        .limit(15)
+        .then(async (result: GameType[]) => {
+          let r: any[] = [];
+          result.map((resl) => {
+            if (resl.gameID === Games.custom_game) {
+              r.push(resl);
+            } else {
+              r.push({
+                _id: resl._id,
+                gameMemberCount: resl.gameMemberCount,
+                members: resl.members,
+                priceType: resl.priceType,
+                price_in_value: resl.price_in_value,
+                gameType: resl.gameType,
+                price_in_coin: resl.price_in_coin,
+                gameDetail: resl.gameDetail,
+                gameID: resl.gameID,
+                played: resl.played,
+                date: resl.date,
+                playCount: resl.playCount,
+                isComplete: resl.isComplete,
+              });
+            }
+          });
+          // console.log(r)
+          res.json({ games: r });
+        })
+        .catch((error) => {
+          res.status(404).json({ message: "error found", error });
+        });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "error found", error });

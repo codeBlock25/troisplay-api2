@@ -3812,10 +3812,8 @@ GamesRouter.get(
       let judgableGames = filter(
         await GameModel.find({ played: true, isComplete: false }),
         (game) => {
-          return (
-            isEmpty(game.battleScore.player1.correct_answer) ||
-            !isEmpty(game.battleScore.player2.correct_answer)
-          );
+          console.log(game)
+          return true;
         }
       );
       res.json({ games: judgableGames });

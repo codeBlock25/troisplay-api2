@@ -1,7 +1,7 @@
 import AdminCashModel from "../model/admin_model";
-import notificationModel, { notificationType } from "../model/notification";
+import notificationModel from "../model/notification";
 import { GameRec } from "../model/plays";
-import { RoshamboOption } from "../types/enum";
+import { notificationHintType, RoshamboOption } from "../types/enum";
 
 export const NotificationAction = {
   add: async ({
@@ -11,7 +11,7 @@ export const NotificationAction = {
   }: {
     message: string;
     userID: string;
-    type?: notificationType;
+    type?: notificationHintType;
   }) =>
     await notificationModel.updateOne(
       { userID },
@@ -19,7 +19,7 @@ export const NotificationAction = {
         $push: {
           notifications: {
             message,
-            type: type ?? notificationType.game,
+            type: type ?? notificationHintType.win,
             time: new Date(),
             hasNew: true,
           },

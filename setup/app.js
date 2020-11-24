@@ -1,16 +1,18 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = require("tslib");
-var express_1 = tslib_1.__importDefault(require("express"));
+var express_1 = __importDefault(require("express"));
 var body_parser_1 = require("body-parser");
-var mongoose_1 = tslib_1.__importDefault(require("mongoose"));
-var cors_1 = tslib_1.__importDefault(require("cors"));
+var mongoose_1 = __importDefault(require("mongoose"));
+var cors_1 = __importDefault(require("cors"));
 var dotenv_1 = require("dotenv");
-var routes_1 = tslib_1.__importDefault(require("./routes"));
-var path_1 = tslib_1.__importDefault(require("path"));
-var fs_1 = tslib_1.__importDefault(require("fs"));
-var lodash_1 = tslib_1.__importDefault(require("lodash"));
+var routes_1 = __importDefault(require("./routes"));
+var path_1 = __importDefault(require("path"));
+var lodash_1 = __importDefault(require("lodash"));
+var fs_1 = __importDefault(require("fs"));
 dotenv_1.config();
 var server = express_1.default();
 var port = (_a = process.env.PORT) !== null && _a !== void 0 ? _a : NaN;

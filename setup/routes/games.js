@@ -1,22 +1,110 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spread = (this && this.__spread) || function () {
+    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
+    return ar;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = require("tslib");
 var express_1 = require("express");
 var jsonwebtoken_1 = require("jsonwebtoken");
-var games_1 = tslib_1.__importStar(require("../model/games"));
-var users_1 = tslib_1.__importDefault(require("../model/users"));
-var moment_1 = tslib_1.__importDefault(require("moment"));
-var walltet_1 = tslib_1.__importDefault(require("../model/walltet"));
-var gamerecord_1 = tslib_1.__importDefault(require("../model/gamerecord"));
+var games_1 = __importStar(require("../model/games"));
+var users_1 = __importDefault(require("../model/users"));
+var moment_1 = __importDefault(require("moment"));
+var walltet_1 = __importDefault(require("../model/walltet"));
+var gamerecord_1 = __importDefault(require("../model/gamerecord"));
 var dotenv_1 = require("dotenv");
-var player_1 = tslib_1.__importDefault(require("../model/player"));
-var cash_wallet_1 = tslib_1.__importDefault(require("../model/cash_wallet"));
-var plays_1 = tslib_1.__importStar(require("../model/plays"));
-var admin_1 = tslib_1.__importDefault(require("../model/admin"));
-var default_1 = tslib_1.__importDefault(require("../model/default"));
-var rooms_1 = tslib_1.__importDefault(require("../model/rooms"));
-var admin_model_1 = tslib_1.__importDefault(require("../model/admin_model"));
+var player_1 = __importDefault(require("../model/player"));
+var cash_wallet_1 = __importDefault(require("../model/cash_wallet"));
+var plays_1 = __importStar(require("../model/plays"));
+var admin_1 = __importDefault(require("../model/admin"));
+var default_1 = __importDefault(require("../model/default"));
+var rooms_1 = __importDefault(require("../model/rooms"));
+var admin_model_1 = __importDefault(require("../model/admin_model"));
 var enum_1 = require("../types/enum");
 var function_1 = require("../function");
 var randomstring_1 = require("randomstring");
@@ -24,10 +112,10 @@ var lodash_1 = require("lodash");
 dotenv_1.config();
 var GamesRouter = express_1.Router();
 var secret = (_a = process.env.SECRET) !== null && _a !== void 0 ? _a : "";
-GamesRouter.delete("/any/cancel", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.delete("/any/cancel", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded, found, gameID, game, defaults, adminCash, cash, commission, error_1;
     var _a, _b, _c, _d, _e, _f, _g, _h, _j;
-    return tslib_1.__generator(this, function (_k) {
+    return __generator(this, function (_k) {
         switch (_k.label) {
             case 0:
                 _k.trys.push([0, 10, , 11]);
@@ -98,10 +186,10 @@ GamesRouter.delete("/any/cancel", function (req, res) { return tslib_1.__awaiter
         }
     });
 }); });
-GamesRouter.post("/spin", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/spin", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var price_in_coin_1, auth, token, decoded_1, found, foundRecord_1, wallet_1, error_2;
     var _a;
-    return tslib_1.__generator(this, function (_b) {
+    return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 _b.trys.push([0, 5, , 6]);
@@ -144,14 +232,14 @@ GamesRouter.post("/spin", function (req, res) { return tslib_1.__awaiter(void 0,
                         played: true,
                     })
                         .save()
-                        .then(function () { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+                        .then(function () { return __awaiter(void 0, void 0, void 0, function () {
                         var _a, _b;
-                        return tslib_1.__generator(this, function (_c) {
+                        return __generator(this, function (_c) {
                             switch (_c.label) {
                                 case 0:
                                     _b = (_a = Promise).all;
-                                    return [4, walltet_1.default.updateOne({ userID: decoded_1.id }, { currentCoin: price_in_coin_1 + wallet_1.currentCoin }).then(function (_) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
-                                            return tslib_1.__generator(this, function (_a) {
+                                    return [4, walltet_1.default.updateOne({ userID: decoded_1.id }, { currentCoin: price_in_coin_1 + wallet_1.currentCoin }).then(function (_) { return __awaiter(void 0, void 0, void 0, function () {
+                                            return __generator(this, function (_a) {
                                                 switch (_a.label) {
                                                     case 0:
                                                         if (!foundRecord_1) return [3, 2];
@@ -202,10 +290,10 @@ GamesRouter.post("/spin", function (req, res) { return tslib_1.__awaiter(void 0,
         }
     });
 }); });
-GamesRouter.get("/spin/check-time", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.get("/spin/check-time", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded, found, error_3;
     var _a;
-    return tslib_1.__generator(this, function (_b) {
+    return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 _b.trys.push([0, 3, , 4]);
@@ -265,10 +353,10 @@ GamesRouter.get("/spin/check-time", function (req, res) { return tslib_1.__await
         }
     });
 }); });
-GamesRouter.get("/search", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.get("/search", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded, found, _a, price, game, error_4;
     var _b;
-    return tslib_1.__generator(this, function (_c) {
+    return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
                 _c.trys.push([0, 3, , 4]);
@@ -297,8 +385,8 @@ GamesRouter.get("/search", function (req, res) { return tslib_1.__awaiter(void 0
                         price_in_coin: parseInt(price, 10),
                         gameID: parseInt(game, 10),
                     })
-                        .then(function (result) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
-                        return tslib_1.__generator(this, function (_a) {
+                        .then(function (result) { return __awaiter(void 0, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0: return [4, player_1.default.findOne({ userID: result === null || result === void 0 ? void 0 : result.members[0] }).then(function (result2) {
                                         res.json({
@@ -334,10 +422,10 @@ GamesRouter.get("/search", function (req, res) { return tslib_1.__awaiter(void 0
         }
     });
 }); });
-GamesRouter.get("/getter", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.get("/getter", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded, found, _a, min, max, game, error_5;
     var _b;
-    return tslib_1.__generator(this, function (_c) {
+    return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
                 _c.trys.push([0, 6, , 7]);
@@ -371,9 +459,9 @@ GamesRouter.get("/getter", function (req, res) { return tslib_1.__awaiter(void 0
                     })
                         .sort({ date: 1 })
                         .limit(15)
-                        .then(function (result) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+                        .then(function (result) { return __awaiter(void 0, void 0, void 0, function () {
                         var r;
-                        return tslib_1.__generator(this, function (_a) {
+                        return __generator(this, function (_a) {
                             r = [];
                             result.map(function (resl) {
                                 if (resl.gameID === games_1.Games.custom_game) {
@@ -418,9 +506,9 @@ GamesRouter.get("/getter", function (req, res) { return tslib_1.__awaiter(void 0
                 })
                     .sort({ date: 1 })
                     .limit(15)
-                    .then(function (result) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+                    .then(function (result) { return __awaiter(void 0, void 0, void 0, function () {
                     var r;
-                    return tslib_1.__generator(this, function (_a) {
+                    return __generator(this, function (_a) {
                         r = [];
                         result.map(function (resl) {
                             if (resl.gameID === games_1.Games.custom_game) {
@@ -464,10 +552,10 @@ GamesRouter.get("/getter", function (req, res) { return tslib_1.__awaiter(void 0
         }
     });
 }); });
-GamesRouter.post("/play", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/play", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, _a, gameID, playWith, token, decoded_2, found, game_1, coin_wallet_1, cash_wallet_2, error_6;
     var _b, _c, _d, _e, _f;
-    return tslib_1.__generator(this, function (_g) {
+    return __generator(this, function (_g) {
         switch (_g.label) {
             case 0:
                 _g.trys.push([0, 9, , 10]);
@@ -510,9 +598,9 @@ GamesRouter.post("/play", function (req, res) { return tslib_1.__awaiter(void 0,
                         played: true,
                         members: [game_1 === null || game_1 === void 0 ? void 0 : game_1.members[0], decoded_2.id],
                     })
-                        .then(function (_) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+                        .then(function (_) { return __awaiter(void 0, void 0, void 0, function () {
                         var _a, _b;
-                        return tslib_1.__generator(this, function (_c) {
+                        return __generator(this, function (_c) {
                             cash_wallet_1.default.updateOne({ userID: decoded_2.id }, {
                                 currentCash: ((_a = cash_wallet_2 === null || cash_wallet_2 === void 0 ? void 0 : cash_wallet_2.currentCash) !== null && _a !== void 0 ? _a : 0) - ((_b = game_1 === null || game_1 === void 0 ? void 0 : game_1.price_in_value) !== null && _b !== void 0 ? _b : 0),
                             })
@@ -544,9 +632,9 @@ GamesRouter.post("/play", function (req, res) { return tslib_1.__awaiter(void 0,
                         played: true,
                         members: [game_1 === null || game_1 === void 0 ? void 0 : game_1.members[0], decoded_2.id],
                     })
-                        .then(function (_) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+                        .then(function (_) { return __awaiter(void 0, void 0, void 0, function () {
                         var _a, _b;
-                        return tslib_1.__generator(this, function (_c) {
+                        return __generator(this, function (_c) {
                             switch (_c.label) {
                                 case 0: return [4, walltet_1.default.updateOne({ userID: decoded_2.id }, {
                                         currentCoin: ((_a = coin_wallet_1 === null || coin_wallet_1 === void 0 ? void 0 : coin_wallet_1.currentCoin) !== null && _a !== void 0 ? _a : 0) - ((_b = game_1 === null || game_1 === void 0 ? void 0 : game_1.price_in_coin) !== null && _b !== void 0 ? _b : 0),
@@ -582,10 +670,10 @@ GamesRouter.post("/play", function (req, res) { return tslib_1.__awaiter(void 0,
         }
     });
 }); });
-GamesRouter.post("/roshambo", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/roshambo", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, _a, price_in_cash, gameInPut, payWith_1, token, decoded_3, found, cashInstance, coinInstance, defaultInstance, currentCash_1, currentCoin_1, cashRating, isExiting, error_7;
     var _b, _c;
-    return tslib_1.__generator(this, function (_d) {
+    return __generator(this, function (_d) {
         switch (_d.label) {
             case 0:
                 _d.trys.push([0, 7, , 8]);
@@ -666,8 +754,8 @@ GamesRouter.post("/roshambo", function (req, res) { return tslib_1.__awaiter(voi
                         battleScore: { player1: gameInPut },
                     })
                         .save()
-                        .then(function (result) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
-                        return tslib_1.__generator(this, function (_a) {
+                        .then(function (result) { return __awaiter(void 0, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
                                     if (!(payWith_1 === enum_1.PayType.cash)) return [3, 2];
@@ -718,10 +806,10 @@ GamesRouter.post("/roshambo", function (req, res) { return tslib_1.__awaiter(voi
         }
     });
 }); });
-GamesRouter.post("/penalty", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/penalty", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, _a, price_in_cash, gameInPut, payWith_2, token, decoded_4, found, cashInstance, coinInstance, defaultInstance, currentCash_2, currentCoin_2, cashRating, isExiting, error_8;
     var _b, _c;
-    return tslib_1.__generator(this, function (_d) {
+    return __generator(this, function (_d) {
         switch (_d.label) {
             case 0:
                 _d.trys.push([0, 7, , 8]);
@@ -806,8 +894,8 @@ GamesRouter.post("/penalty", function (req, res) { return tslib_1.__awaiter(void
                         battleScore: { player1: gameInPut },
                     })
                         .save()
-                        .then(function (result) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
-                        return tslib_1.__generator(this, function (_a) {
+                        .then(function (result) { return __awaiter(void 0, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
                                     if (!(payWith_2 === enum_1.PayType.cash)) return [3, 2];
@@ -858,10 +946,10 @@ GamesRouter.post("/penalty", function (req, res) { return tslib_1.__awaiter(void
         }
     });
 }); });
-GamesRouter.post("/guess-master", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/guess-master", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, _a, price_in_cash, gameInPut, payWith_3, token, decoded_5, found, cashInstance, coinInstance, defaultInstance, currentCash_3, currentCoin_3, cashRating, isExiting, error_9;
     var _b, _c;
-    return tslib_1.__generator(this, function (_d) {
+    return __generator(this, function (_d) {
         switch (_d.label) {
             case 0:
                 _d.trys.push([0, 7, , 8]);
@@ -946,8 +1034,8 @@ GamesRouter.post("/guess-master", function (req, res) { return tslib_1.__awaiter
                         battleScore: { player1: gameInPut },
                     })
                         .save()
-                        .then(function (result) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
-                        return tslib_1.__generator(this, function (_a) {
+                        .then(function (result) { return __awaiter(void 0, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
                                     if (!(payWith_3 === enum_1.PayType.cash)) return [3, 2];
@@ -998,10 +1086,10 @@ GamesRouter.post("/guess-master", function (req, res) { return tslib_1.__awaiter
         }
     });
 }); });
-GamesRouter.get("/check", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.get("/check", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded, user, _a, price, gameID, isExiting, error_10;
     var _b, _c;
-    return tslib_1.__generator(this, function (_d) {
+    return __generator(this, function (_d) {
         switch (_d.label) {
             case 0:
                 _d.trys.push([0, 3, , 4]);
@@ -1069,10 +1157,10 @@ GamesRouter.get("/check", function (req, res) { return tslib_1.__awaiter(void 0,
         }
     });
 }); });
-GamesRouter.post("/penalty/challange", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/penalty/challange", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, _a, id, gameInPut_1, payWith, token, decoded, found, game_2, cashInstance, coinInstance, defaultInstance, adminCashInstance, p2CashInstance, p1Cash_1, currentCoin, p2Cash, AdminCurrentCash, cashRating_1, commission_penalty_1, winner, error_11;
     var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
-    return tslib_1.__generator(this, function (_t) {
+    return __generator(this, function (_t) {
         switch (_t.label) {
             case 0:
                 _t.trys.push([0, 25, , 26]);
@@ -1292,10 +1380,10 @@ GamesRouter.post("/penalty/challange", function (req, res) { return tslib_1.__aw
         }
     });
 }); });
-GamesRouter.post("/roshambo/challange", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/roshambo/challange", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, _a, id, gameInPut_2, payWith, token, decoded, found, game_3, cashInstance, coinInstance, defaultInstance, adminCashInstance, p2CashInstance, p1Cash_2, p2Cash, currentCoin, AdminCurrentCash, cashRating_2, commission_roshambo_1, winner_1, error_12;
     var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
-    return tslib_1.__generator(this, function (_0) {
+    return __generator(this, function (_0) {
         switch (_0.label) {
             case 0:
                 _0.trys.push([0, 32, , 33]);
@@ -1551,10 +1639,10 @@ GamesRouter.post("/roshambo/challange", function (req, res) { return tslib_1.__a
         }
     });
 }); });
-GamesRouter.post("/matcher/challange", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/matcher/challange", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, _a, id, gameInPut, payWith, token, decoded, found, game_4, cashInstance, coinInstance, defaultInstance, adminCashInstance, p2CashInstance, p1Cash, currentCoin, p2Cash, AdminCurrentCash, cashRating_3, commission_guess_mater_1, winner, count, error_13;
     var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15;
-    return tslib_1.__generator(this, function (_16) {
+    return __generator(this, function (_16) {
         switch (_16.label) {
             case 0:
                 _16.trys.push([0, 45, , 46]);
@@ -1879,10 +1967,10 @@ GamesRouter.post("/matcher/challange", function (req, res) { return tslib_1.__aw
         }
     });
 }); });
-GamesRouter.get("/mine", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.get("/mine", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded, found, roomgames_1, customgames_1, error_14;
     var _a;
-    return tslib_1.__generator(this, function (_b) {
+    return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 _b.trys.push([0, 5, , 6]);
@@ -1978,10 +2066,10 @@ GamesRouter.get("/mine", function (req, res) { return tslib_1.__awaiter(void 0, 
         }
     });
 }); });
-GamesRouter.post("/roshambo/challange/one-on-one", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/roshambo/challange/one-on-one", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, _a, id, gameInPut, round, payWith, token, decoded, found, game_, cashInstance, coinInstance, defaultInstance, adminCashInstance, p2CashInstance, p1Cash, currentCoin, p2Cash, cashRating, commission_roshambo, winCount, loseCount, drawCount, error_15;
     var _b, _c, _d, _e;
-    return tslib_1.__generator(this, function (_f) {
+    return __generator(this, function (_f) {
         switch (_f.label) {
             case 0:
                 _f.trys.push([0, 28, , 29]);
@@ -2336,10 +2424,10 @@ GamesRouter.post("/roshambo/challange/one-on-one", function (req, res) { return 
         }
     });
 }); });
-GamesRouter.post("/penalty/challange/one-on-one", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/penalty/challange/one-on-one", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, _a, id_1, gameInPut_3, round_1, payWith, token, decoded_6, found, game_5, cashInstance, coinInstance, defaultInstance, adminCashInstance, p2CashInstance, p1Cash_3, currentCoin, p2Cash_1, cashRating_4, commission_penalty_2, error_16;
     var _b;
-    return tslib_1.__generator(this, function (_c) {
+    return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
                 _c.trys.push([0, 9, , 10]);
@@ -2418,10 +2506,10 @@ GamesRouter.post("/penalty/challange/one-on-one", function (req, res) { return t
                     }
                 }
                 return [4, games_1.default.findOne({ _id: id_1 })
-                        .then(function (result) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+                        .then(function (result) { return __awaiter(void 0, void 0, void 0, function () {
                         var winCount, loseCount;
                         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24;
-                        return tslib_1.__generator(this, function (_25) {
+                        return __generator(this, function (_25) {
                             switch (_25.label) {
                                 case 0: return [4, new plays_1.default({
                                         player2ID: decoded_6.id,
@@ -2608,10 +2696,10 @@ GamesRouter.post("/penalty/challange/one-on-one", function (req, res) { return t
         }
     });
 }); });
-GamesRouter.post("/lucky-geoge", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/lucky-geoge", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded, admin, defaultInstance, cashRating, _a, title, description, memberCount, price, winnerPrice, winnerCount, endDateTime, error_17;
     var _b, _c, _d;
-    return tslib_1.__generator(this, function (_e) {
+    return __generator(this, function (_e) {
         switch (_e.label) {
             case 0:
                 _e.trys.push([0, 4, , 5]);
@@ -2670,10 +2758,10 @@ GamesRouter.post("/lucky-geoge", function (req, res) { return tslib_1.__awaiter(
         }
     });
 }); });
-GamesRouter.get("/lucky-geoge", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.get("/lucky-geoge", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded, user, admin_2, currentCash, currentCoin, allG_1, error_18;
     var _a, _b, _c, _d, _e, _f;
-    return tslib_1.__generator(this, function (_g) {
+    return __generator(this, function (_g) {
         switch (_g.label) {
             case 0:
                 _g.trys.push([0, 11, , 12]);
@@ -2749,10 +2837,10 @@ GamesRouter.get("/lucky-geoge", function (req, res) { return tslib_1.__awaiter(v
         }
     });
 }); });
-GamesRouter.post("/lucky-geoge/play", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/lucky-geoge/play", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded, user, currentCash, currentCoin, _a, id_2, payWith, _b, stack, price_in_value, ticket, error_19;
     var _c, _d, _e, _f, _g, _h, _j;
-    return tslib_1.__generator(this, function (_k) {
+    return __generator(this, function (_k) {
         switch (_k.label) {
             case 0:
                 _k.trys.push([0, 10, , 11]);
@@ -2824,10 +2912,10 @@ GamesRouter.post("/lucky-geoge/play", function (req, res) { return tslib_1.__awa
                             },
                         },
                     })
-                        .then(function (result) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+                        .then(function (result) { return __awaiter(void 0, void 0, void 0, function () {
                         var winners, _a, _b, _i, member, _c, _d, _e, winner, currentCash_4;
                         var _f, _g, _h, _j;
-                        return tslib_1.__generator(this, function (_k) {
+                        return __generator(this, function (_k) {
                             switch (_k.label) {
                                 case 0:
                                     res.json({ message: "successful", price: result === null || result === void 0 ? void 0 : result.price_in_value });
@@ -2911,10 +2999,10 @@ GamesRouter.post("/lucky-geoge/play", function (req, res) { return tslib_1.__awa
         }
     });
 }); });
-GamesRouter.post("/lucky-judge/update", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/lucky-judge/update", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded, user, _a, id, newGameTime, battleScore, error_20;
     var _b, _c, _d;
-    return tslib_1.__generator(this, function (_e) {
+    return __generator(this, function (_e) {
         switch (_e.label) {
             case 0:
                 _e.trys.push([0, 4, , 5]);
@@ -2944,12 +3032,12 @@ GamesRouter.post("/lucky-judge/update", function (req, res) { return tslib_1.__a
                 }).battleScore;
                 return [4, games_1.default.findOneAndUpdate({ _id: id }, {
                         battleScore: {
-                            player1: tslib_1.__assign(tslib_1.__assign({}, battleScore.player1), { endDateTime: newGameTime }),
+                            player1: __assign(__assign({}, battleScore.player1), { endDateTime: newGameTime }),
                             player2: {},
                         },
                     })
-                        .then(function () { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
-                        return tslib_1.__generator(this, function (_a) {
+                        .then(function () { return __awaiter(void 0, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
                             res.json({ message: "successful" });
                             return [2];
                         });
@@ -2968,9 +3056,9 @@ GamesRouter.post("/lucky-judge/update", function (req, res) { return tslib_1.__a
         }
     });
 }); });
-GamesRouter.delete("/lucky-judge", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.delete("/lucky-judge", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded, admin, id, error_21;
-    return tslib_1.__generator(this, function (_a) {
+    return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 3, , 4]);
@@ -3011,10 +3099,10 @@ GamesRouter.delete("/lucky-judge", function (req, res) { return tslib_1.__awaite
         }
     });
 }); });
-GamesRouter.post("/penalty/exit", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/penalty/exit", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, id, token, decoded, found, _a, cashRating, commission_penalty, game_, p1Cash, error_22;
     var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t;
-    return tslib_1.__generator(this, function (_u) {
+    return __generator(this, function (_u) {
         switch (_u.label) {
             case 0:
                 _u.trys.push([0, 8, , 9]);
@@ -3112,10 +3200,10 @@ GamesRouter.post("/penalty/exit", function (req, res) { return tslib_1.__awaiter
         }
     });
 }); });
-GamesRouter.post("/roshambo/exit", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/roshambo/exit", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, id, token, decoded, found, _a, cashRating, commission_roshambo, game_, p1Cash, error_23;
     var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t;
-    return tslib_1.__generator(this, function (_u) {
+    return __generator(this, function (_u) {
         switch (_u.label) {
             case 0:
                 _u.trys.push([0, 8, , 9]);
@@ -3213,10 +3301,10 @@ GamesRouter.post("/roshambo/exit", function (req, res) { return tslib_1.__awaite
         }
     });
 }); });
-GamesRouter.post("/matcher/exit", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/matcher/exit", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, id, token, decoded, found, _a, cashRating, commission_guess_mater, game_, p1Cash, error_24;
     var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
-    return tslib_1.__generator(this, function (_1) {
+    return __generator(this, function (_1) {
         switch (_1.label) {
             case 0:
                 _1.trys.push([0, 8, , 9]);
@@ -3328,10 +3416,10 @@ GamesRouter.post("/matcher/exit", function (req, res) { return tslib_1.__awaiter
         }
     });
 }); });
-GamesRouter.post("/custom-game", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/custom-game", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded_7, found, cashRating, currentCash_5, _a, player2Username, price_in_value, title, description, answer, endDate, endGameTime, choice, p2, error_25;
     var _b, _c, _d;
-    return tslib_1.__generator(this, function (_e) {
+    return __generator(this, function (_e) {
         switch (_e.label) {
             case 0:
                 _e.trys.push([0, 6, , 7]);
@@ -3403,8 +3491,8 @@ GamesRouter.post("/custom-game", function (req, res) { return tslib_1.__awaiter(
                         playCount: 0,
                     })
                         .save()
-                        .then(function (result) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
-                        return tslib_1.__generator(this, function (_a) {
+                        .then(function (result) { return __awaiter(void 0, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0: return [4, cash_wallet_1.default.updateOne({ userID: decoded_7.id }, { currentCash: currentCash_5 - result.price_in_value })];
                                 case 1:
@@ -3429,10 +3517,10 @@ GamesRouter.post("/custom-game", function (req, res) { return tslib_1.__awaiter(
         }
     });
 }); });
-GamesRouter.get("/custom-game/challange", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.get("/custom-game/challange", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded, found, _a, gameID, payWith, answer, paywith, currentCash, currentCoin, _b, price_in_value, price_in_coin, battleScore, members, error_26;
     var _c, _d, _e, _f;
-    return tslib_1.__generator(this, function (_g) {
+    return __generator(this, function (_g) {
         switch (_g.label) {
             case 0:
                 _g.trys.push([0, 11, , 12]);
@@ -3491,7 +3579,7 @@ GamesRouter.get("/custom-game/challange", function (req, res) { return tslib_1._
                 return [4, games_1.default.updateOne({ _id: gameID }, {
                         played: true,
                         date: new Date(),
-                        members: tslib_1.__spread(members, [decoded.id]),
+                        members: __spread(members, [decoded.id]),
                         battleScore: { player1: battleScore.player1, player2: { answer: answer } },
                     })
                         .then(function () {
@@ -3543,10 +3631,10 @@ GamesRouter.get("/custom-game/challange", function (req, res) { return tslib_1._
         }
     });
 }); });
-GamesRouter.post("/custom-game/exit", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/custom-game/exit", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, id, token, decoded, found, _a, cashRating, commission_custom_game, game_, p1Cash, error_27;
     var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
-    return tslib_1.__generator(this, function (_m) {
+    return __generator(this, function (_m) {
         switch (_m.label) {
             case 0:
                 _m.trys.push([0, 8, , 9]);
@@ -3631,10 +3719,10 @@ GamesRouter.post("/custom-game/exit", function (req, res) { return tslib_1.__awa
         }
     });
 }); });
-GamesRouter.get("/requests", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.get("/requests", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded_8, found, error_28;
     var _a;
-    return tslib_1.__generator(this, function (_b) {
+    return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 _b.trys.push([0, 3, , 4]);
@@ -3689,10 +3777,10 @@ GamesRouter.get("/requests", function (req, res) { return tslib_1.__awaiter(void
         }
     });
 }); });
-GamesRouter.get("/custom-game/games", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.get("/custom-game/games", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded, found, error_29;
     var _a;
-    return tslib_1.__generator(this, function (_b) {
+    return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 _b.trys.push([0, 3, , 4]);
@@ -3741,10 +3829,10 @@ GamesRouter.get("/custom-game/games", function (req, res) { return tslib_1.__awa
         }
     });
 }); });
-GamesRouter.post("/custom-game/judge", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/custom-game/judge", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded, found, _a, choice, game_id, game_played, defaultInstance, cashInstance, p2CashInstance, error_30;
     var _b;
-    return tslib_1.__generator(this, function (_c) {
+    return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
                 _c.trys.push([0, 11, , 12]);
@@ -3794,8 +3882,8 @@ GamesRouter.post("/custom-game/judge", function (req, res) { return tslib_1.__aw
                 if (!((game_played === null || game_played === void 0 ? void 0 : game_played.members[0]) === decoded.id)) return [3, 7];
                 return [4, games_1.default.updateOne({ _id: game_id }, {
                         battleScore: {
-                            player1: tslib_1.__assign(tslib_1.__assign({}, game_played.battleScore.player1), { correct_answer: choice }),
-                            player2: tslib_1.__assign({}, game_played.battleScore.player2),
+                            player1: __assign(__assign({}, game_played.battleScore.player1), { correct_answer: choice }),
+                            player2: __assign({}, game_played.battleScore.player2),
                         },
                     })
                         .then(function () {
@@ -3811,8 +3899,8 @@ GamesRouter.post("/custom-game/judge", function (req, res) { return tslib_1.__aw
                 if (!((game_played === null || game_played === void 0 ? void 0 : game_played.members[1]) === decoded.id)) return [3, 9];
                 return [4, games_1.default.updateOne({ _id: game_id }, {
                         battleScore: {
-                            player1: tslib_1.__assign({}, game_played.battleScore.player1),
-                            player2: tslib_1.__assign(tslib_1.__assign({}, game_played.battleScore.player2), { correct_answer: choice }),
+                            player1: __assign({}, game_played.battleScore.player1),
+                            player2: __assign(__assign({}, game_played.battleScore.player2), { correct_answer: choice }),
                         },
                     })
                         .then(function () {
@@ -3837,10 +3925,10 @@ GamesRouter.post("/custom-game/judge", function (req, res) { return tslib_1.__aw
         }
     });
 }); });
-GamesRouter.get("/custom-game/disputes", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.get("/custom-game/disputes", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded, found, judgableGames, _a, error_31;
     var _b;
-    return tslib_1.__generator(this, function (_c) {
+    return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
                 _c.trys.push([0, 3, , 4]);
@@ -3888,10 +3976,10 @@ GamesRouter.get("/custom-game/disputes", function (req, res) { return tslib_1.__
         }
     });
 }); });
-GamesRouter.get("/custom-game/disputes/oversea", function (req, res) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+GamesRouter.get("/custom-game/disputes/oversea", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded, found, id, judgableGame, player1, player2, error_32;
     var _a;
-    return tslib_1.__generator(this, function (_b) {
+    return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 _b.trys.push([0, 3, , 4]);
@@ -3926,7 +4014,7 @@ GamesRouter.get("/custom-game/disputes/oversea", function (req, res) { return ts
                 }
                 player1 = users_1.default.findOne({ _id: judgableGame.members[0] });
                 player2 = users_1.default.findOne({ _id: judgableGame.members[1] });
-                res.json({ gameDetail: tslib_1.__assign(tslib_1.__assign({}, judgableGame), { player1: player1, player2: player2 }) });
+                res.json({ gameDetail: __assign(__assign({}, judgableGame), { player1: player1, player2: player2 }) });
                 return [3, 4];
             case 3:
                 error_32 = _b.sent();

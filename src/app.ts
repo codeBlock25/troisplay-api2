@@ -5,8 +5,8 @@ import cors, { CorsOptions } from "cors";
 import { config as envConfig } from "dotenv";
 import customRoute from "./routes";
 import path from "path";
-import fs, { ReadStream } from "fs";
 import _ from "lodash";
+import fs, { ReadStream } from "fs";
 
 envConfig();
 const server: Application = express();
@@ -25,7 +25,6 @@ server.use(urlencoded({ extended: true }));
 server.use("/test", (_req, res) => {
   res.send("Working");
 });
-
 
 const whitelist: string[] = [
   "http://192.168.43.41:3000",

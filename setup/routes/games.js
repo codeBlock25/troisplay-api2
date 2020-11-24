@@ -451,6 +451,7 @@ GamesRouter.get("/getter", function (req, res) { return __awaiter(void 0, void 0
                 if (!(game === games_1.Games.roshambo ||
                     game === games_1.Games.penalth_card ||
                     game === games_1.Games.matcher)) return [3, 3];
+                console.log(max);
                 return [4, games_1.default.find({
                         members: { $not: { $eq: decoded.id } },
                         played: false,

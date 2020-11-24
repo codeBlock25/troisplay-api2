@@ -320,6 +320,7 @@ GamesRouter.get("/getter", async (req: Request, res: Response) => {
       game === Games.penalth_card ||
       game === Games.matcher
     ) {
+      console.log(max);
       await GameModel.find({
         members: { $not: { $eq: decoded.id } },
         played: false,

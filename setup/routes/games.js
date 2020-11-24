@@ -455,7 +455,7 @@ GamesRouter.get("/getter", function (req, res) { return __awaiter(void 0, void 0
                         members: { $not: { $eq: decoded.id } },
                         played: false,
                         gameID: parseInt(game, 10),
-                        price_in_value: max,
+                        price_in_value: parseInt(max !== null && max !== void 0 ? max : "100", 10),
                     })
                         .sort({ date: 1 })
                         .limit(15)
@@ -1241,14 +1241,14 @@ GamesRouter.post("/penalty/challange", function (req, res) { return __awaiter(vo
                 return [4, function_1.NotificationAction.add({
                         message: "you have just won a game from playing a penalty card game and have earned \u20A6 " + ((_e = game_2 === null || game_2 === void 0 ? void 0 : game_2.price_in_value) !== null && _e !== void 0 ? _e : 0) + ".",
                         userID: decoded.id,
-                        type: enum_1.notificationHintType.win
+                        type: enum_1.notificationHintType.win,
                     })];
             case 12:
                 _t.sent();
                 return [4, function_1.NotificationAction.add({
                         message: "you have just lost a game from playing a penalty card game and have lost \u20A6 " + ((_f = game_2 === null || game_2 === void 0 ? void 0 : game_2.price_in_value) !== null && _f !== void 0 ? _f : 0) + ".",
                         userID: (_g = game_2 === null || game_2 === void 0 ? void 0 : game_2.members[0]) !== null && _g !== void 0 ? _g : "",
-                        type: enum_1.notificationHintType.lost
+                        type: enum_1.notificationHintType.lost,
                     })];
             case 13:
                 _t.sent();
@@ -1313,7 +1313,7 @@ GamesRouter.post("/penalty/challange", function (req, res) { return __awaiter(vo
                 return [4, function_1.NotificationAction.add({
                         message: "you have just lost a game from playing a penalty card game and have lost \u20A6 " + ((_o = game_2 === null || game_2 === void 0 ? void 0 : game_2.price_in_value) !== null && _o !== void 0 ? _o : 0) + ".",
                         userID: decoded.id,
-                        type: enum_1.notificationHintType.lost
+                        type: enum_1.notificationHintType.lost,
                     })];
             case 19:
                 _t.sent();
@@ -1515,7 +1515,7 @@ GamesRouter.post("/roshambo/challange", function (req, res) { return __awaiter(v
                 return [4, function_1.NotificationAction.add({
                         message: "you have just drawn in a game from playing a roshambo game and have recieved \u20A6 " + ((_l = game_3 === null || game_3 === void 0 ? void 0 : game_3.price_in_value) !== null && _l !== void 0 ? _l : 0) + ".",
                         userID: decoded.id,
-                        type: enum_1.notificationHintType.draw
+                        type: enum_1.notificationHintType.draw,
                     })];
             case 18:
                 _0.sent();
@@ -1582,7 +1582,7 @@ GamesRouter.post("/roshambo/challange", function (req, res) { return __awaiter(v
                 return [4, function_1.NotificationAction.add({
                         message: "you have just lost a game from playing a roshambo game and have lost \u20A6 " + ((_v = game_3 === null || game_3 === void 0 ? void 0 : game_3.price_in_value) !== null && _v !== void 0 ? _v : 0) + ".",
                         userID: decoded.id,
-                        type: enum_1.notificationHintType.win
+                        type: enum_1.notificationHintType.win,
                     })];
             case 26:
                 _0.sent();
@@ -1747,7 +1747,7 @@ GamesRouter.post("/matcher/challange", function (req, res) { return __awaiter(vo
                 return [4, function_1.NotificationAction.add({
                         message: "you have just lost a game from playing a guess master game and have earned \u20A6 " + ((_h = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _h !== void 0 ? _h : 0) * 1 + ".",
                         userID: (_j = game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0]) !== null && _j !== void 0 ? _j : "",
-                        type: enum_1.notificationHintType.lost
+                        type: enum_1.notificationHintType.lost,
                     })];
             case 14:
                 _16.sent();

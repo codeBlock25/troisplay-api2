@@ -14,7 +14,7 @@ import defaultModel from "../model/default";
 import { successResHint, errorResHint } from "./default";
 import roomModel from "../model/rooms";
 import AdminCashModel from "../model/admin_model";
-import { RoshamboOption, choices, PayType } from "../types/enum";
+import { RoshamboOption, choices, PayType, notificationHintType } from "../types/enum";
 import { roshamboHint, matcherHint } from "../types/interface";
 import {
   FindWinnerOnRoshambo,
@@ -321,7 +321,7 @@ GamesRouter.get("/getter", async (req: Request, res: Response) => {
         gameID: parseInt(game, 10),
         price_in_value: max,
       })
-        .sort({ date: -1 })
+        .sort({ date: 1 })
         .limit(15)
         .then(async (result: GameType[]) => {
           let r: any[] = [];
@@ -362,7 +362,7 @@ GamesRouter.get("/getter", async (req: Request, res: Response) => {
           $gte: parseInt(min, 10),
         },
       })
-        .sort({ date: -1 })
+        .sort({ date: 1 })
         .limit(15)
         .then(async (result: GameType[]) => {
           let r: any[] = [];
@@ -1015,16 +1015,18 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
     }
     if (winner) {
       await NotificationAction.add({
-        message: `you have just won a game from playing a penalty card game and have earned ${
+        message: `you have just won a game from playing a penalty card game and have earned ₦ ${
           game_?.price_in_value ?? 0
         }.`,
         userID: decoded.id,
+        type: notificationHintType.win
       });
       await NotificationAction.add({
-        message: `you have just lost a game from playing a penalty card game and have lost ${
+        message: `you have just lost a game from playing a penalty card game and have lost ₦ ${
           game_?.price_in_value ?? 0
         }.`,
         userID: game_?.members[0] ?? "",
+        type: notificationHintType.lost
       });
       await new RecordModel({
         userID: decoded.id,
@@ -1103,16 +1105,18 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
         });
     } else {
       await NotificationAction.add({
-        message: `you have just won a game from playing a penalty card game and have earned ${
+        message: `you have just won a game from playing a penalty card game and have earned ₦ ${
           game_?.price_in_value ?? 0
         }.`,
         userID: game_?.members[0] ?? "",
+        type: notificationHintType.win,
       });
       await NotificationAction.add({
-        message: `you have just lost a game from playing a penalty card game and have earned ${
+        message: `you have just lost a game from playing a penalty card game and have lost ₦ ${
           game_?.price_in_value ?? 0
         }.`,
         userID: decoded.id,
+        type: notificationHintType.lost
       });
       await new RecordModel({
         userID: decoded.id,
@@ -1285,16 +1289,18 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
     }
     if (winner === GameRec.win) {
       await NotificationAction.add({
-        message: `you have just won a game from playing a roshambo game and have earned ${
+        message: `you have just won a game from playing a roshambo game and have earned ₦ ${
           game_?.price_in_value ?? 0
         }.`,
         userID: decoded.id,
+        type: notificationHintType.win,
       });
       await NotificationAction.add({
-        message: `you have just lost a game from playing a roshambo game and have earned ${
+        message: `you have just lost a game from playing a roshambo game and have lost ₦ ${
           game_?.price_in_value ?? 0
         }.`,
         userID: game_?.members[0] ?? "",
+        type: notificationHintType.lost,
       });
       await new RecordModel({
         userID: decoded.id,
@@ -1373,16 +1379,18 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
         });
     } else if (winner === GameRec.draw) {
       await NotificationAction.add({
-        message: `you have just drawn in a game from playing a roshambo game and have recieved ${
+        message: `you have just drawn in a game from playing a roshambo game and have recieved ₦ ${
           game_?.price_in_value ?? 0
         }.`,
         userID: decoded.id,
+        type: notificationHintType.draw
       });
       await NotificationAction.add({
-        message: `you have just drawn in a game from playing a roshambo game and have recieved ${
+        message: `you have just drawn in a game from playing a roshambo game and have recieved ₦ ${
           game_?.price_in_value ?? 0
         }.`,
         userID: game_?.members[0] ?? "",
+        type: notificationHintType.draw,
       });
       await new RecordModel({
         userID: decoded.id,
@@ -1473,16 +1481,18 @@ GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
         });
     } else {
       await NotificationAction.add({
-        message: `you have just won a game from playing a roshambo game and have earned ${
-          game_?.price_in_value ?? 0
-        }.`,
-        userID: decoded.id,
-      });
-      await NotificationAction.add({
-        message: `you have just lost a game from playing a roshambo game and have earned ${
+        message: `you have just won a game from playing a roshambo game and have earned ₦ ${
           game_?.price_in_value ?? 0
         }.`,
         userID: game_?.members[0] ?? "",
+        type: notificationHintType.win,
+      });
+      await NotificationAction.add({
+        message: `you have just lost a game from playing a roshambo game and have lost ₦ ${
+          game_?.price_in_value ?? 0
+        }.`,
+        userID: decoded.id,
+        type: notificationHintType.win
       });
       await new RecordModel({
         userID: game_?.members[0],
@@ -1669,16 +1679,18 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
     if (winner) {
       if (count === 1) {
         await NotificationAction.add({
-          message: `you have just won a game from playing a guess master game and have earned ${
+          message: `you have just won a game from playing a guess master game and have earned ₦ ${
             (game_?.price_in_value ?? 0) * 1
           }.`,
           userID: decoded.id,
+          type: notificationHintType.win,
         });
         await NotificationAction.add({
-          message: `you have just lost a game from playing a guess master game and have earned ${
+          message: `you have just lost a game from playing a guess master game and have earned ₦ ${
             (game_?.price_in_value ?? 0) * 1
           }.`,
           userID: game_?.members[0] ?? "",
+          type: notificationHintType.lost
         });
         await new RecordModel({
           userID: decoded.id,
@@ -2183,6 +2195,18 @@ GamesRouter.post(
         isWin: GameRec.draw,
       });
       if (drawCount >= 5) {
+        await NotificationAction.add({
+          message: `you have just won a game from playing a roshambo game and have earned ${
+            game_?.price_in_value ?? 0
+          }.`,
+          userID: decoded.id,
+        });
+        await NotificationAction.add({
+          message: `you have just lost a game from playing a roshambo game and have lost ${
+            game_?.price_in_value ?? 0
+          }.`,
+          userID: game_?.members[0] ?? "",
+        });
         await new RecordModel({
           userID: game_.members[0],
           game: Games.roshambo,

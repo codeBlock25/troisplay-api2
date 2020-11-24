@@ -1,16 +1,12 @@
 import { Model, model, Document, Schema } from "mongoose";
+import { notificationHintType } from "../types/enum";
 
-export enum notificationType {
-  game,
-  update,
-  silent,
-}
 
 export interface NotificationType {
   notifications: {
     message: string;
     time: Date;
-    type: notificationType;
+    type: notificationHintType;
     hasNew: boolean;
   }[];
   userID: string;
@@ -31,8 +27,8 @@ const notificationSchema = new Schema({
         default: new Date(),
       },
       type: {
-        type: notificationType,
-        default: notificationType.game,
+        type: notificationHintType,
+        default: notificationHintType.win,
       },
       hasNew: {
         type: Boolean,

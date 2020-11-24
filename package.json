@@ -1,7 +1,7 @@
 {
   "name": "api",
   "version": "1.0.0",
-  "main": "dist/app.js",
+  "main": "setup/app.js",
   "license": "MIT",
   "scripts": {
     "start": "node .",

@@ -315,17 +315,17 @@ GamesRouter.get("/getter", async (req: Request, res: Response) => {
       return;
     }
     const { min, max, game }: any = req.query;
+    let realGame = parseInt(game, 10);
     if (
-      game === Games.roshambo ||
-      game === Games.penalth_card ||
-      game === Games.matcher
+      realGame === Games.roshambo ||
+      realGame === Games.penalth_card ||
+      realGame === Games.matcher
     ) {
-      console.log(max);
       await GameModel.find({
         members: { $not: { $eq: decoded.id } },
         played: false,
-        gameID: parseInt(game, 10),
-        price_in_value: parseInt(max ?? "100", 10),
+        gameID: realGame,
+        price_in_value: parseInt(max, 10),
       })
         .sort({ date: 1 })
         .limit(15)
@@ -541,11 +541,6 @@ GamesRouter.post("/roshambo", async (req: Request, res: Response) => {
     const { currentCash } = cashInstance;
     const { currentCoin } = coinInstance;
     const { cashRating } = defaultInstance;
-    let isExiting = await GameModel.findOne({
-      played: false,
-      price_in_value: price_in_cash,
-      gameID: Games.roshambo,
-    });
     if (payWith === PayType.cash) {
       if (currentCash < price_in_cash) {
         res
@@ -559,14 +554,6 @@ GamesRouter.post("/roshambo", async (req: Request, res: Response) => {
         res
           .status(401)
           .json({ message: "error found", error: "insufficient fund" });
-        return;
-      }
-    }
-    if (isExiting) {
-      if (isExiting.members[0] !== decoded.id) {
-        res
-          .status(404)
-          .json({ message: "is Exiting", id: isExiting._id, isExiting: true });
         return;
       }
     }
@@ -662,11 +649,6 @@ GamesRouter.post("/penalty", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
     }
-    let isExiting = await GameModel.findOne({
-      played: false,
-      price_in_value: price_in_cash,
-      gameID: Games.penalth_card,
-    });
     if (payWith === PayType.cash) {
       if (currentCash < price_in_cash) {
         res
@@ -680,14 +662,6 @@ GamesRouter.post("/penalty", async (req: Request, res: Response) => {
         res
           .status(401)
           .json({ message: "error found", error: "insufficient fund" });
-        return;
-      }
-    }
-    if (isExiting) {
-      if (isExiting.members[0] !== decoded.id) {
-        res
-          .status(404)
-          .json({ message: "is Exiting", id: isExiting._id, isExiting: true });
         return;
       }
     }
@@ -795,19 +769,6 @@ GamesRouter.post("/guess-master", async (req: Request, res: Response) => {
         res
           .status(401)
           .json({ message: "error found", error: "insufficient fund" });
-        return;
-      }
-    }
-    let isExiting = await GameModel.findOne({
-      played: false,
-      price_in_value: price_in_cash,
-      gameID: Games.matcher,
-    });
-    if (isExiting) {
-      if (isExiting.members[0] !== decoded.id) {
-        res
-          .status(404)
-          .json({ message: "is Exiting", id: isExiting._id, isExiting: true });
         return;
       }
     }

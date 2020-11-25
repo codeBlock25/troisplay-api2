@@ -423,7 +423,7 @@ GamesRouter.get("/search", function (req, res) { return __awaiter(void 0, void 0
     });
 }); });
 GamesRouter.get("/getter", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var auth, token, decoded, found, _a, min, max, game, error_5;
+    var auth, token, decoded, found, _a, min, max, game, realGame, error_5;
     var _b;
     return __generator(this, function (_c) {
         switch (_c.label) {
@@ -448,15 +448,15 @@ GamesRouter.get("/getter", function (req, res) { return __awaiter(void 0, void 0
                     return [2];
                 }
                 _a = req.query, min = _a.min, max = _a.max, game = _a.game;
-                if (!(game === games_1.Games.roshambo ||
-                    game === games_1.Games.penalth_card ||
-                    game === games_1.Games.matcher)) return [3, 3];
-                console.log(max);
+                realGame = parseInt(game, 10);
+                if (!(realGame === games_1.Games.roshambo ||
+                    realGame === games_1.Games.penalth_card ||
+                    realGame === games_1.Games.matcher)) return [3, 3];
                 return [4, games_1.default.find({
                         members: { $not: { $eq: decoded.id } },
                         played: false,
-                        gameID: parseInt(game, 10),
-                        price_in_value: parseInt(max !== null && max !== void 0 ? max : "100", 10),
+                        gameID: realGame,
+                        price_in_value: parseInt(max, 10),
                     })
                         .sort({ date: 1 })
                         .limit(15)
@@ -672,12 +672,12 @@ GamesRouter.post("/play", function (req, res) { return __awaiter(void 0, void 0,
     });
 }); });
 GamesRouter.post("/roshambo", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var auth, _a, price_in_cash, gameInPut, payWith_1, token, decoded_3, found, cashInstance, coinInstance, defaultInstance, currentCash_1, currentCoin_1, cashRating, isExiting, error_7;
+    var auth, _a, price_in_cash, gameInPut, payWith_1, token, decoded_3, found, cashInstance, coinInstance, defaultInstance, currentCash_1, currentCoin_1, cashRating, error_7;
     var _b, _c;
     return __generator(this, function (_d) {
         switch (_d.label) {
             case 0:
-                _d.trys.push([0, 7, , 8]);
+                _d.trys.push([0, 6, , 7]);
                 auth = (_b = req.headers.authorization) !== null && _b !== void 0 ? _b : "";
                 _a = req.body, price_in_cash = _a.price_in_cash, gameInPut = _a.gameInPut, payWith_1 = _a.payWith;
                 if (!auth) {
@@ -713,13 +713,6 @@ GamesRouter.post("/roshambo", function (req, res) { return __awaiter(void 0, voi
                 currentCash_1 = cashInstance.currentCash;
                 currentCoin_1 = coinInstance.currentCoin;
                 cashRating = defaultInstance.cashRating;
-                return [4, games_1.default.findOne({
-                        played: false,
-                        price_in_value: price_in_cash,
-                        gameID: games_1.Games.roshambo,
-                    })];
-            case 5:
-                isExiting = _d.sent();
                 if (payWith_1 === enum_1.PayType.cash) {
                     if (currentCash_1 < price_in_cash) {
                         res
@@ -733,14 +726,6 @@ GamesRouter.post("/roshambo", function (req, res) { return __awaiter(void 0, voi
                         res
                             .status(401)
                             .json({ message: "error found", error: "insufficient fund" });
-                        return [2];
-                    }
-                }
-                if (isExiting) {
-                    if (isExiting.members[0] !== decoded_3.id) {
-                        res
-                            .status(404)
-                            .json({ message: "is Exiting", id: isExiting._id, isExiting: true });
                         return [2];
                     }
                 }
@@ -795,25 +780,25 @@ GamesRouter.post("/roshambo", function (req, res) { return __awaiter(void 0, voi
                         .catch(function (error) {
                         res.status(500).json({ message: "error found", error: error });
                     })];
-            case 6:
+            case 5:
                 _d.sent();
-                return [3, 8];
-            case 7:
+                return [3, 7];
+            case 6:
                 error_7 = _d.sent();
                 res.status(500).json({ message: "error found", error: error_7 });
                 console.error(error_7);
-                return [3, 8];
-            case 8: return [2];
+                return [3, 7];
+            case 7: return [2];
         }
     });
 }); });
 GamesRouter.post("/penalty", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var auth, _a, price_in_cash, gameInPut, payWith_2, token, decoded_4, found, cashInstance, coinInstance, defaultInstance, currentCash_2, currentCoin_2, cashRating, isExiting, error_8;
+    var auth, _a, price_in_cash, gameInPut, payWith_2, token, decoded_4, found, cashInstance, coinInstance, defaultInstance, currentCash_2, currentCoin_2, cashRating, error_8;
     var _b, _c;
     return __generator(this, function (_d) {
         switch (_d.label) {
             case 0:
-                _d.trys.push([0, 7, , 8]);
+                _d.trys.push([0, 6, , 7]);
                 auth = (_b = req.headers.authorization) !== null && _b !== void 0 ? _b : "";
                 _a = req.body, price_in_cash = _a.price_in_cash, gameInPut = _a.gameInPut, payWith_2 = _a.payWith;
                 if (!auth) {
@@ -853,13 +838,6 @@ GamesRouter.post("/penalty", function (req, res) { return __awaiter(void 0, void
                     res.status(406).json({ message: "error found", error: "invalid user" });
                     return [2];
                 }
-                return [4, games_1.default.findOne({
-                        played: false,
-                        price_in_value: price_in_cash,
-                        gameID: games_1.Games.penalth_card,
-                    })];
-            case 5:
-                isExiting = _d.sent();
                 if (payWith_2 === enum_1.PayType.cash) {
                     if (currentCash_2 < price_in_cash) {
                         res
@@ -873,14 +851,6 @@ GamesRouter.post("/penalty", function (req, res) { return __awaiter(void 0, void
                         res
                             .status(401)
                             .json({ message: "error found", error: "insufficient fund" });
-                        return [2];
-                    }
-                }
-                if (isExiting) {
-                    if (isExiting.members[0] !== decoded_4.id) {
-                        res
-                            .status(404)
-                            .json({ message: "is Exiting", id: isExiting._id, isExiting: true });
                         return [2];
                     }
                 }
@@ -935,25 +905,25 @@ GamesRouter.post("/penalty", function (req, res) { return __awaiter(void 0, void
                         .catch(function (error) {
                         res.status(500).json({ message: "error found", error: error });
                     })];
-            case 6:
+            case 5:
                 _d.sent();
-                return [3, 8];
-            case 7:
+                return [3, 7];
+            case 6:
                 error_8 = _d.sent();
                 res.status(500).json({ message: "error found", error: error_8 });
                 console.error(error_8);
-                return [3, 8];
-            case 8: return [2];
+                return [3, 7];
+            case 7: return [2];
         }
     });
 }); });
 GamesRouter.post("/guess-master", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var auth, _a, price_in_cash, gameInPut, payWith_3, token, decoded_5, found, cashInstance, coinInstance, defaultInstance, currentCash_3, currentCoin_3, cashRating, isExiting, error_9;
+    var auth, _a, price_in_cash, gameInPut, payWith_3, token, decoded_5, found, cashInstance, coinInstance, defaultInstance, currentCash_3, currentCoin_3, cashRating, error_9;
     var _b, _c;
     return __generator(this, function (_d) {
         switch (_d.label) {
             case 0:
-                _d.trys.push([0, 7, , 8]);
+                _d.trys.push([0, 6, , 7]);
                 auth = (_b = req.headers.authorization) !== null && _b !== void 0 ? _b : "";
                 _a = req.body, price_in_cash = _a.price_in_cash, gameInPut = _a.gameInPut, payWith_3 = _a.payWith;
                 if (!auth) {
@@ -1009,21 +979,6 @@ GamesRouter.post("/guess-master", function (req, res) { return __awaiter(void 0,
                         return [2];
                     }
                 }
-                return [4, games_1.default.findOne({
-                        played: false,
-                        price_in_value: price_in_cash,
-                        gameID: games_1.Games.matcher,
-                    })];
-            case 5:
-                isExiting = _d.sent();
-                if (isExiting) {
-                    if (isExiting.members[0] !== decoded_5.id) {
-                        res
-                            .status(404)
-                            .json({ message: "is Exiting", id: isExiting._id, isExiting: true });
-                        return [2];
-                    }
-                }
                 return [4, new games_1.default({
                         gameMemberCount: 2,
                         members: [decoded_5.id],
@@ -1075,15 +1030,15 @@ GamesRouter.post("/guess-master", function (req, res) { return __awaiter(void 0,
                         .catch(function (error) {
                         res.status(500).json({ message: "error found", error: error });
                     })];
-            case 6:
+            case 5:
                 _d.sent();
-                return [3, 8];
-            case 7:
+                return [3, 7];
+            case 6:
                 error_9 = _d.sent();
                 res.status(500).json({ message: "error found", error: error_9 });
                 console.error(error_9);
-                return [3, 8];
-            case 8: return [2];
+                return [3, 7];
+            case 7: return [2];
         }
     });
 }); });

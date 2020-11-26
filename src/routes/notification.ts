@@ -30,7 +30,7 @@ notificationRoute.get("/all", async (req: Request, res: Response) => {
     }
     await notificationModel
       .findOne({ userID: decoded.id })
-      .sort({ date: 1 })
+      .sort({ date: -1 })
       .then((notifications) => {
         res.json({ notifications });
       })

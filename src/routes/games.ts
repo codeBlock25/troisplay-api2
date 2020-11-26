@@ -3669,7 +3669,7 @@ GamesRouter.get("/custom-game/games", async (req: Request, res: Response) => {
     };
     let found = await users.findById(decoded.id);
     if (!found) {
-      res.status(419).json({
+      res.status(406).json({
         message: "error found",
         error: "user no found",
       } as errorResHint);

@@ -3761,7 +3761,7 @@ GamesRouter.get("/custom-game/games", function (req, res) { return __awaiter(voi
             case 1:
                 found = _b.sent();
                 if (!found) {
-                    res.status(419).json({
+                    res.status(406).json({
                         message: "error found",
                         error: "user no found",
                     });

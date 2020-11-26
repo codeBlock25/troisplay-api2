@@ -57,12 +57,12 @@ DeviceRouter.post("/", function (req, res) { return __awaiter(void 0, void 0, vo
                 _a = req.body, userID = _a.userID, isDarkMode = _a.isDarkMode, remember = _a.remember, online_status = _a.online_status, email_notification = _a.email_notification, app_notification = _a.app_notification, mobile_notification = _a.mobile_notification;
                 cookies = req.cookies;
                 if (!cookies) {
-                    res.status(410).json({ message: "error found", error: "invalid auth" });
+                    res.status(406).json({ message: "error found", error: "invalid auth" });
                     return [2];
                 }
                 token = cookies === null || cookies === void 0 ? void 0 : cookies.token;
                 if (!token || token === "") {
-                    res.status(410).json({ message: "error found", error: "empty token" });
+                    res.status(406).json({ message: "error found", error: "empty token" });
                     return [2];
                 }
                 decoded = jsonwebtoken_1.verify(token, secret);
@@ -70,7 +70,7 @@ DeviceRouter.post("/", function (req, res) { return __awaiter(void 0, void 0, vo
             case 1:
                 found = _b.sent();
                 if (!found) {
-                    res.status(410).json({ message: "error found", error: "invalid user" });
+                    res.status(406).json({ message: "error found", error: "invalid user" });
                     return [2];
                 }
                 newdevicesetup = new device_1.default({
@@ -104,12 +104,12 @@ DeviceRouter.get("/personal", function (req, res) { return __awaiter(void 0, voi
                 _a.trys.push([0, 3, , 4]);
                 cookies = req.cookies;
                 if (!cookies) {
-                    res.status(410).json({ message: "error found", error: "invalid auth" });
+                    res.status(406).json({ message: "error found", error: "invalid auth" });
                     return [2];
                 }
                 token = cookies === null || cookies === void 0 ? void 0 : cookies.token;
                 if (!token || token === "") {
-                    res.status(410).json({ message: "error found", error: "empty token" });
+                    res.status(406).json({ message: "error found", error: "empty token" });
                     return [2];
                 }
                 decoded = jsonwebtoken_1.verify(token, secret);
@@ -117,7 +117,7 @@ DeviceRouter.get("/personal", function (req, res) { return __awaiter(void 0, voi
             case 1:
                 found = _a.sent();
                 if (!found) {
-                    res.status(410).json({ message: "error found", error: "invalid user" });
+                    res.status(406).json({ message: "error found", error: "invalid user" });
                     return [2];
                 }
                 return [4, device_1.default.findOne({ userID: decoded.id })
@@ -148,12 +148,12 @@ DeviceRouter.put("/", function (req, res) { return __awaiter(void 0, void 0, voi
                 _a = req.body, isDarkMode = _a.isDarkMode, remember = _a.remember, online_status = _a.online_status, email_notification = _a.email_notification, app_notification = _a.app_notification, mobile_notification = _a.mobile_notification;
                 cookies = req.cookies;
                 if (!cookies) {
-                    res.status(410).json({ message: "error found", error: "invalid auth" });
+                    res.status(406).json({ message: "error found", error: "invalid auth" });
                     return [2];
                 }
                 token = cookies === null || cookies === void 0 ? void 0 : cookies.token;
                 if (!token || token === "") {
-                    res.status(410).json({ message: "error found", error: "empty token" });
+                    res.status(406).json({ message: "error found", error: "empty token" });
                     return [2];
                 }
                 decoded = jsonwebtoken_1.verify(token, secret);
@@ -164,7 +164,7 @@ DeviceRouter.put("/", function (req, res) { return __awaiter(void 0, void 0, voi
             case 2:
                 deviceSetup = _b.sent();
                 if (!found) {
-                    res.status(410).json({ message: "error found", error: "invalid user" });
+                    res.status(406).json({ message: "error found", error: "invalid user" });
                     return [2];
                 }
                 device_1.default.updateOne({ userID: decoded.id }, {

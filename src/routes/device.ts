@@ -33,18 +33,18 @@ DeviceRouter.post("/", async (req: Request, res: Response) => {
 
     let cookies: { token: string } = req.cookies;
     if (!cookies) {
-      res.status(410).json({ message: "error found", error: "invalid auth" });
+      res.status(406).json({ message: "error found", error: "invalid auth" });
       return;
     }
     let token: string = cookies?.token;
     if (!token || token === "") {
-      res.status(410).json({ message: "error found", error: "empty token" });
+      res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
     let decoded: string | object | any = verify(token, secret);
     let found = await users.findById(decoded.id);
     if (!found) {
-      res.status(410).json({ message: "error found", error: "invalid user" });
+      res.status(406).json({ message: "error found", error: "invalid user" });
       return;
     }
     let newdevicesetup: Document = new DeviceModel({
@@ -67,18 +67,18 @@ DeviceRouter.get("/personal", async (req: Request, res: Response) => {
   try {
     let cookies: { token: string } = req.cookies;
     if (!cookies) {
-      res.status(410).json({ message: "error found", error: "invalid auth" });
+      res.status(406).json({ message: "error found", error: "invalid auth" });
       return;
     }
     let token: string = cookies?.token;
     if (!token || token === "") {
-      res.status(410).json({ message: "error found", error: "empty token" });
+      res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
     let decoded: string | object | any = verify(token, secret);
     let found = await users.findById(decoded.id);
     if (!found) {
-      res.status(410).json({ message: "error found", error: "invalid user" });
+      res.status(406).json({ message: "error found", error: "invalid user" });
       return;
     }
     await DeviceModel.findOne({ userID: decoded.id })
@@ -106,19 +106,19 @@ DeviceRouter.put("/", async (req: Request, res: Response) => {
     }: IDevice = req.body;
     let cookies: { token: string } = req.cookies;
     if (!cookies) {
-      res.status(410).json({ message: "error found", error: "invalid auth" });
+      res.status(406).json({ message: "error found", error: "invalid auth" });
       return;
     }
     let token: string = cookies?.token;
     if (!token || token === "") {
-      res.status(410).json({ message: "error found", error: "empty token" });
+      res.status(406).json({ message: "error found", error: "empty token" });
       return;
     }
     let decoded: string | object | any = verify(token, secret);
     let found = await users.findById(decoded.id);
     let deviceSetup: any = await DeviceModel.findOne({ userID: decoded.id });
     if (!found) {
-      res.status(410).json({ message: "error found", error: "invalid user" });
+      res.status(406).json({ message: "error found", error: "invalid user" });
       return;
     }
     DeviceModel.updateOne(

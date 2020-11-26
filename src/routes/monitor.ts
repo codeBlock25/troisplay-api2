@@ -4,10 +4,10 @@ import AdminModel from "../model/admin";
 import GameModel, { Games } from "../model/games";
 import PlayerModel from "../model/player";
 import users from "../model/users";
-import { config as envConfig } from "dotenv"
+import { config as envConfig } from "dotenv";
 
-envConfig()
-const secret = process.env.SECRET??"";
+envConfig();
+const secret = process.env.SECRET ?? "";
 const MonitorRouter: Router = Router();
 
 MonitorRouter.get("/", async (req: Request, res: Response) => {
@@ -29,7 +29,7 @@ MonitorRouter.get("/", async (req: Request, res: Response) => {
     let Admin = await AdminModel.findById(decoded.adminID);
     if (!Admin) {
       res
-        .status(419)
+        .status(409)
         .json({ message: "error found", error: "invalid admin account" });
       return;
     }

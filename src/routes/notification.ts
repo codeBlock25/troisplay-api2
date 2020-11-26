@@ -30,7 +30,7 @@ notificationRoute.get("/all", async (req: Request, res: Response) => {
     }
     await notificationModel
       .findOne({ userID: decoded.id })
-      .sort({ date: -1 })
+      .sort({ date: 1 })
       .then((notifications) => {
         res.json({ notifications });
       })
@@ -64,7 +64,7 @@ notificationRoute.put("/mark-read", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
     }
-    const { time }:{ time: string } = req.body;
+    const { time }: { time: string } = req.body;
     await NotificationAction.markRead({
       userID: decoded.id,
       time: new Date(time),

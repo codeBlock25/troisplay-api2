@@ -74,7 +74,7 @@ notificationRoute.get("/all", function (req, res) { return __awaiter(void 0, voi
                 }
                 return [4, notification_1.default
                         .findOne({ userID: decoded.id })
-                        .sort({ date: -1 })
+                        .sort({ date: 1 })
                         .then(function (notifications) {
                         res.json({ notifications: notifications });
                     })

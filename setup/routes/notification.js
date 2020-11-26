@@ -42,6 +42,7 @@ var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = require("express");
 var jsonwebtoken_1 = require("jsonwebtoken");
+var function_1 = require("../function");
 var notification_1 = __importDefault(require("../model/notification"));
 var users_1 = __importDefault(require("../model/users"));
 var notificationRoute = express_1.Router();
@@ -88,6 +89,56 @@ notificationRoute.get("/all", function (req, res) { return __awaiter(void 0, voi
                 error_1 = _b.sent();
                 res.status(500).json({ error: error_1, msssage: "breakdown" });
                 console.log(error_1);
+                return [3, 4];
+            case 4: return [2];
+        }
+    });
+}); });
+notificationRoute.put("/mark-read", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var auth, token, decoded, found, time, error_2;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _b.trys.push([0, 3, , 4]);
+                auth = (_a = req.headers.authorization) !== null && _a !== void 0 ? _a : "";
+                if (!auth) {
+                    res.status(406).json({ message: "error found", error: "invalid auth" });
+                    return [2];
+                }
+                token = auth.replace("Bearer ", "");
+                if (!token || token === "") {
+                    res.status(406).json({ message: "error found", error: "empty token" });
+                    return [2];
+                }
+                decoded = jsonwebtoken_1.verify(token, secret);
+                return [4, users_1.default.findById(decoded.id)];
+            case 1:
+                found = _b.sent();
+                if (!found) {
+                    res.status(406).json({ message: "error found", error: "invalid user" });
+                    return [2];
+                }
+                console.log(req.body);
+                time = req.query.time;
+                return [4, function_1.NotificationAction.markRead({
+                        userID: decoded.id,
+                        time: new Date(time),
+                    })
+                        .then(function () {
+                        res.json({ message: "mark read" });
+                    })
+                        .catch(function (error) {
+                        res.json({ message: "an error occured", error: error });
+                        console.log(error);
+                    })];
+            case 2:
+                _b.sent();
+                return [3, 4];
+            case 3:
+                error_2 = _b.sent();
+                res.status(500).json({ error: error_2 });
+                console.log(error_2);
                 return [3, 4];
             case 4: return [2];
         }

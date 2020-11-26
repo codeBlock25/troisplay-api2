@@ -1168,381 +1168,390 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
   }
 });
 
-GamesRouter.post("/roshambo/challange", async (req: Request, res: Response) => {
-  try {
-    let auth = req.headers.authorization ?? "";
-    let {
-      id,
-      gameInPut,
-      payWith,
-    }: {
-      id: string;
-      gameInPut: {
-        round1: number;
-        round2: number;
-        round3: number;
-        round4: number;
-        round5: number;
+GamesRouter.post(
+  "/roshambo/play-against",
+  async (req: Request, res: Response) => {
+    try {
+      let auth = req.headers.authorization ?? "";
+      let {
+        id,
+        gameInPut,
+        payWith,
+      }: {
+        id: string;
+        gameInPut: {
+          round1: number;
+          round2: number;
+          round3: number;
+          round4: number;
+          round5: number;
+        };
+        payWith: PayType;
+      } = req.body;
+      if (!auth) {
+        res.status(406).json({ message: "error found", error: "invalid auth" });
+        return;
+      }
+      let token: string = auth.replace("Bearer ", "");
+      if (!token || token === "") {
+        res.status(406).json({ message: "error found", error: "empty token" });
+        return;
+      }
+      let decoded = (verify(token, secret) as unknown) as {
+        id: string;
       };
-      payWith: PayType;
-    } = req.body;
-    if (!auth) {
-      res.status(406).json({ message: "error found", error: "invalid auth" });
-      return;
-    }
-    let token: string = auth.replace("Bearer ", "");
-    if (!token || token === "") {
-      res.status(406).json({ message: "error found", error: "empty token" });
-      return;
-    }
-    let decoded = (verify(token, secret) as unknown) as {
-      id: string;
-    };
-    let found = await users.findById(decoded.id);
-    let game_ = await GameModel.findById(id);
-    let cashInstance = await CashWalletModel.findOne({ userID: decoded.id });
-    let coinInstance = await WalletModel.findOne({ userID: decoded.id });
-    let defaultInstance = await defaultModel.findOne({});
-    let adminCashInstance = await AdminCashModel.findOne({});
-    let p2CashInstance = await CashWalletModel.findOne({
-      userID: game_?.members[0],
-    });
-    if (!found) {
-      res.status(406).json({ message: "error found", error: "invalid user" });
-      return;
-    }
-    if (
-      !coinInstance ||
-      !cashInstance ||
-      !defaultInstance ||
-      !p2CashInstance ||
-      !adminCashInstance
-    ) {
-      res.status(500).json({ error: "internal error", message: "error found" });
-      return;
-    }
-    const { currentCash: p1Cash } = cashInstance;
-    const { currentCash: p2Cash } = p2CashInstance;
-    const { currentCoin } = coinInstance;
-    const { currentCash: AdminCurrentCash } = adminCashInstance;
-    const { cashRating, commission_roshambo } = defaultInstance;
-    let winner = FindWinnerOnRoshambo(game_?.battleScore.player1, gameInPut);
-    if (payWith === PayType.coin) {
-      await CashWalletModel.updateOne(
-        { userID: decoded.id },
-        {
-          currentCash: PlayerCoinLeft(
-            commission_roshambo,
-            currentCoin,
-            game_?.price_in_value ?? 0,
-            1,
-            cashRating
-          ),
-        }
-      );
-    } else {
-      await CashWalletModel.updateOne(
-        { userID: decoded.id },
-        {
-          currentCash: PlayerCashLeft(
-            commission_roshambo,
-            p1Cash,
-            game_?.price_in_value ?? 0,
-            1,
-            cashRating
-          ),
-        }
-      );
-    }
-    if (winner === GameRec.win) {
-      await NotificationAction.add({
-        message: `you have just won a game from playing a roshambo game and have earned ₦ ${
-          game_?.price_in_value ?? 0
-        }.`,
-        userID: decoded.id,
-        type: notificationHintType.win,
-      });
-      await NotificationAction.add({
-        message: `you have just lost a game from playing a roshambo game and have lost ₦ ${
-          game_?.price_in_value ?? 0
-        }.`,
-        userID: game_?.members[0] ?? "",
-        type: notificationHintType.lost,
-      });
-      await new RecordModel({
-        userID: decoded.id,
-        game: Games.roshambo,
-        won: "yes",
-        earnings: PlayerCash(
-          commission_roshambo,
-          p1Cash,
-          game_?.price_in_value ?? 0,
-          1,
-          cashRating
-        ),
-      }).save();
-      await new RecordModel({
+      let found = await users.findById(decoded.id);
+      let game_ = await GameModel.findById(id);
+      let cashInstance = await CashWalletModel.findOne({ userID: decoded.id });
+      let coinInstance = await WalletModel.findOne({ userID: decoded.id });
+      let defaultInstance = await defaultModel.findOne({});
+      let adminCashInstance = await AdminCashModel.findOne({});
+      let p2CashInstance = await CashWalletModel.findOne({
         userID: game_?.members[0],
-        game: Games.roshambo,
-        won: "no",
-        earnings: -PlayerCash(
-          commission_roshambo,
-          p2Cash,
-          game_?.price_in_value ?? 0,
-          1,
-          cashRating
-        ),
-      }).save();
-      await CashWalletModel.updateOne(
-        { userID: decoded.id },
-        {
-          currentCash: PlayerCash(
-            commission_roshambo,
-            p1Cash,
-            game_?.price_in_value ?? 0,
-            1,
-            cashRating
-          ),
-        }
-      )
-        .then(() => {
-          res.json({
-            message: "you won",
-            winner,
-            battlePlan: game_?.battleScore.player1,
-            game_result: {
-              round1: MarkRoshamboGame(
-                game_?.battleScore.player1.round1,
-                gameInPut.round1
-              ),
-              round2: MarkRoshamboGame(
-                game_?.battleScore.player1.round2,
-                gameInPut.round2
-              ),
-              round3: MarkRoshamboGame(
-                game_?.battleScore.player1.round3,
-                gameInPut.round3
-              ),
-              round4: MarkRoshamboGame(
-                game_?.battleScore.player1.round4,
-                gameInPut.round4
-              ),
-              round5: MarkRoshamboGame(
-                game_?.battleScore.player1.round5,
-                gameInPut.round5
-              ),
-            },
-            price: PlayerCash(
+      });
+      if (!found) {
+        res.status(406).json({ message: "error found", error: "invalid user" });
+        return;
+      }
+      if (
+        !coinInstance ||
+        !cashInstance ||
+        !defaultInstance ||
+        !p2CashInstance ||
+        !adminCashInstance
+      ) {
+        res
+          .status(500)
+          .json({ error: "internal error", message: "error found" });
+        return;
+      }
+      const { currentCash: p1Cash } = cashInstance;
+      const { currentCash: p2Cash } = p2CashInstance;
+      const { currentCoin } = coinInstance;
+      const { currentCash: AdminCurrentCash } = adminCashInstance;
+      const { cashRating, commission_roshambo } = defaultInstance;
+      console.log(decoded);
+      let winner = FindWinnerOnRoshambo(game_?.battleScore.player1, gameInPut);
+      if (payWith === PayType.coin) {
+        await CashWalletModel.updateOne(
+          { userID: decoded.id },
+          {
+            currentCash: PlayerCoinLeft(
+              commission_roshambo,
+              currentCoin,
+              game_?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
+          }
+        );
+      } else {
+        await CashWalletModel.updateOne(
+          { userID: decoded.id },
+          {
+            currentCash: PlayerCashLeft(
               commission_roshambo,
               p1Cash,
               game_?.price_in_value ?? 0,
               1,
               cashRating
             ),
-          });
-        })
-        .catch((error) => {
-          res.status(500).json({ message: "error found", error });
+          }
+        );
+      }
+      if (winner === GameRec.win) {
+        await NotificationAction.add({
+          message: `you have just won a game from playing a roshambo game and have earned ₦ ${
+            game_?.price_in_value ?? 0
+          }.`,
+          userID: decoded.id,
+          type: notificationHintType.win,
         });
-    } else if (winner === GameRec.draw) {
-      await NotificationAction.add({
-        message: `you have just drawn in a game from playing a roshambo game and have recieved ₦ ${
-          game_?.price_in_value ?? 0
-        }.`,
-        userID: decoded.id,
-        type: notificationHintType.draw,
-      });
-      await NotificationAction.add({
-        message: `you have just drawn in a game from playing a roshambo game and have recieved ₦ ${
-          game_?.price_in_value ?? 0
-        }.`,
-        userID: game_?.members[0] ?? "",
-        type: notificationHintType.draw,
-      });
-      await new RecordModel({
-        userID: decoded.id,
-        game: Games.roshambo,
-        won: "yes",
-        earnings: PlayerDrawCash(
-          commission_roshambo,
-          p1Cash,
-          game_?.price_in_value ?? 0,
-          1,
-          cashRating
-        ),
-      }).save();
-      await new RecordModel({
-        userID: game_?.members[0],
-        game: Games.roshambo,
-        won: "no",
-        earnings: -PlayerDrawCash(
-          commission_roshambo,
-          p2Cash,
-          game_?.price_in_value ?? 0,
-          1,
-          cashRating
-        ),
-      }).save();
-      await CashWalletModel.updateOne(
-        { userID: game_?.members[0] },
-        {
-          currentCash: PlayerDrawCash(
-            commission_roshambo,
-            p2Cash,
-            game_?.price_in_value ?? 0,
-            1,
-            cashRating
-          ),
-        }
-      );
-      await CashWalletModel.updateOne(
-        { userID: decoded.id },
-        {
-          currentCash: PlayerDrawCash(
+        await NotificationAction.add({
+          message: `you have just lost a game from playing a roshambo game and have lost ₦ ${
+            game_?.price_in_value ?? 0
+          }.`,
+          userID: game_?.members[0] ?? "",
+          type: notificationHintType.lost,
+        });
+        await new RecordModel({
+          userID: decoded.id,
+          game: Games.roshambo,
+          won: "yes",
+          earnings: PlayerCash(
             commission_roshambo,
             p1Cash,
             game_?.price_in_value ?? 0,
             1,
             cashRating
           ),
-        }
-      )
-        .then(() => {
-          res.json({
-            message: "you drew",
-            winner,
-            battlePlan: game_?.battleScore.player1,
-            game_result: {
-              round1: MarkRoshamboGame(
-                game_?.battleScore.player1.round1,
-                gameInPut.round1
-              ),
-              round2: MarkRoshamboGame(
-                game_?.battleScore.player1.round2,
-                gameInPut.round2
-              ),
-              round3: MarkRoshamboGame(
-                game_?.battleScore.player1.round3,
-                gameInPut.round3
-              ),
-              round4: MarkRoshamboGame(
-                game_?.battleScore.player1.round4,
-                gameInPut.round4
-              ),
-              round5: MarkRoshamboGame(
-                game_?.battleScore.player1.round5,
-                gameInPut.round5
-              ),
-            },
-            price: PlayerCash(
-              commission_roshambo,
-              p1Cash,
-              game_?.price_in_value ?? 0,
-              1,
-              cashRating
-            ),
-          });
-        })
-        .catch((error) => {
-          res.status(500).json({ message: "error found", error });
-        });
-    } else {
-      await NotificationAction.add({
-        message: `you have just won a game from playing a roshambo game and have earned ₦ ${
-          game_?.price_in_value ?? 0
-        }.`,
-        userID: game_?.members[0] ?? "",
-        type: notificationHintType.win,
-      });
-      await NotificationAction.add({
-        message: `you have just lost a game from playing a roshambo game and have lost ₦ ${
-          game_?.price_in_value ?? 0
-        }.`,
-        userID: decoded.id,
-        type: notificationHintType.win,
-      });
-      await new RecordModel({
-        userID: game_?.members[0],
-        game: Games.roshambo,
-        won: "yes",
-        earnings: PlayerCash(
-          commission_roshambo,
-          p2Cash,
-          game_?.price_in_value ?? 0,
-          1,
-          cashRating
-        ),
-      }).save();
-      await new RecordModel({
-        userID: decoded.id,
-        game: Games.roshambo,
-        won: "no",
-        earnings: -PlayerCash(
-          commission_roshambo,
-          p1Cash,
-          game_?.price_in_value ?? 0,
-          1,
-          cashRating
-        ),
-      }).save();
-      await CashWalletModel.updateOne(
-        { userID: game_?.members[0] },
-        {
-          p1Cash: PlayerCash(
+        }).save();
+        await new RecordModel({
+          userID: game_?.members[0],
+          game: Games.roshambo,
+          won: "no",
+          earnings: -PlayerCash(
             commission_roshambo,
             p2Cash,
             game_?.price_in_value ?? 0,
             1,
             cashRating
           ),
-        }
-      )
-        .then(() => {
-          res.json({
-            message: "you lost",
-            winner,
-            battlePlan: game_?.battleScore.player1,
-            price: 0,
-            game_result: {
-              round1: MarkRoshamboGame(
-                game_?.battleScore.player1.round1,
-                gameInPut.round1
+        }).save();
+        await CashWalletModel.updateOne(
+          { userID: decoded.id },
+          {
+            currentCash: PlayerCash(
+              commission_roshambo,
+              p1Cash,
+              game_?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
+          }
+        )
+          .then(() => {
+            res.json({
+              message: "you won",
+              winner,
+              battlePlan: game_?.battleScore.player1,
+              game_result: {
+                round1: MarkRoshamboGame(
+                  game_?.battleScore.player1.round1,
+                  gameInPut.round1
+                ),
+                round2: MarkRoshamboGame(
+                  game_?.battleScore.player1.round2,
+                  gameInPut.round2
+                ),
+                round3: MarkRoshamboGame(
+                  game_?.battleScore.player1.round3,
+                  gameInPut.round3
+                ),
+                round4: MarkRoshamboGame(
+                  game_?.battleScore.player1.round4,
+                  gameInPut.round4
+                ),
+                round5: MarkRoshamboGame(
+                  game_?.battleScore.player1.round5,
+                  gameInPut.round5
+                ),
+              },
+              price: PlayerCash(
+                commission_roshambo,
+                p1Cash,
+                game_?.price_in_value ?? 0,
+                1,
+                cashRating
               ),
-              round2: MarkRoshamboGame(
-                game_?.battleScore.player1.round2,
-                gameInPut.round2
-              ),
-              round3: MarkRoshamboGame(
-                game_?.battleScore.player1.round3,
-                gameInPut.round3
-              ),
-              round4: MarkRoshamboGame(
-                game_?.battleScore.player1.round4,
-                gameInPut.round4
-              ),
-              round5: MarkRoshamboGame(
-                game_?.battleScore.player1.round5,
-                gameInPut.round5
-              ),
-            },
+            });
+          })
+          .catch((error) => {
+            res.status(500).json({ message: "error found", error });
+            console.error(error);
           });
-        })
-        .catch((error) => {
-          res.status(500).json({ message: "error found", error });
+      } else if (winner === GameRec.draw) {
+        await NotificationAction.add({
+          message: `you have just drawn in a game from playing a roshambo game and have recieved ₦ ${
+            game_?.price_in_value ?? 0
+          }.`,
+          userID: decoded.id,
+          type: notificationHintType.draw,
         });
+        await NotificationAction.add({
+          message: `you have just drawn in a game from playing a roshambo game and have recieved ₦ ${
+            game_?.price_in_value ?? 0
+          }.`,
+          userID: game_?.members[0] ?? "",
+          type: notificationHintType.draw,
+        });
+        await new RecordModel({
+          userID: decoded.id,
+          game: Games.roshambo,
+          won: "yes",
+          earnings: PlayerDrawCash(
+            commission_roshambo,
+            p1Cash,
+            game_?.price_in_value ?? 0,
+            1,
+            cashRating
+          ),
+        }).save();
+        await new RecordModel({
+          userID: game_?.members[0],
+          game: Games.roshambo,
+          won: "no",
+          earnings: -PlayerDrawCash(
+            commission_roshambo,
+            p2Cash,
+            game_?.price_in_value ?? 0,
+            1,
+            cashRating
+          ),
+        }).save();
+        await CashWalletModel.updateOne(
+          { userID: game_?.members[0] },
+          {
+            currentCash: PlayerDrawCash(
+              commission_roshambo,
+              p2Cash,
+              game_?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
+          }
+        );
+        await CashWalletModel.updateOne(
+          { userID: decoded.id },
+          {
+            currentCash: PlayerDrawCash(
+              commission_roshambo,
+              p1Cash,
+              game_?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
+          }
+        )
+          .then(() => {
+            res.json({
+              message: "you drew",
+              winner,
+              battlePlan: game_?.battleScore.player1,
+              game_result: {
+                round1: MarkRoshamboGame(
+                  game_?.battleScore.player1.round1,
+                  gameInPut.round1
+                ),
+                round2: MarkRoshamboGame(
+                  game_?.battleScore.player1.round2,
+                  gameInPut.round2
+                ),
+                round3: MarkRoshamboGame(
+                  game_?.battleScore.player1.round3,
+                  gameInPut.round3
+                ),
+                round4: MarkRoshamboGame(
+                  game_?.battleScore.player1.round4,
+                  gameInPut.round4
+                ),
+                round5: MarkRoshamboGame(
+                  game_?.battleScore.player1.round5,
+                  gameInPut.round5
+                ),
+              },
+              price: PlayerCash(
+                commission_roshambo,
+                p1Cash,
+                game_?.price_in_value ?? 0,
+                1,
+                cashRating
+              ),
+            });
+          })
+          .catch((error) => {
+            res.status(500).json({ message: "error found", error });
+            console.error(error);
+          });
+      } else {
+        await NotificationAction.add({
+          message: `you have just won a game from playing a roshambo game and have earned ₦ ${
+            game_?.price_in_value ?? 0
+          }.`,
+          userID: game_?.members[0] ?? "",
+          type: notificationHintType.win,
+        });
+        await NotificationAction.add({
+          message: `you have just lost a game from playing a roshambo game and have lost ₦ ${
+            game_?.price_in_value ?? 0
+          }.`,
+          userID: decoded.id,
+          type: notificationHintType.win,
+        });
+        await new RecordModel({
+          userID: game_?.members[0],
+          game: Games.roshambo,
+          won: "yes",
+          earnings: PlayerCash(
+            commission_roshambo,
+            p2Cash,
+            game_?.price_in_value ?? 0,
+            1,
+            cashRating
+          ),
+        }).save();
+        await new RecordModel({
+          userID: decoded.id,
+          game: Games.roshambo,
+          won: "no",
+          earnings: -PlayerCash(
+            commission_roshambo,
+            p1Cash,
+            game_?.price_in_value ?? 0,
+            1,
+            cashRating
+          ),
+        }).save();
+        await CashWalletModel.updateOne(
+          { userID: game_?.members[0] },
+          {
+            p1Cash: PlayerCash(
+              commission_roshambo,
+              p2Cash,
+              game_?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
+          }
+        )
+          .then(() => {
+            res.json({
+              message: "you lost",
+              winner,
+              battlePlan: game_?.battleScore.player1,
+              price: 0,
+              game_result: {
+                round1: MarkRoshamboGame(
+                  game_?.battleScore.player1.round1,
+                  gameInPut.round1
+                ),
+                round2: MarkRoshamboGame(
+                  game_?.battleScore.player1.round2,
+                  gameInPut.round2
+                ),
+                round3: MarkRoshamboGame(
+                  game_?.battleScore.player1.round3,
+                  gameInPut.round3
+                ),
+                round4: MarkRoshamboGame(
+                  game_?.battleScore.player1.round4,
+                  gameInPut.round4
+                ),
+                round5: MarkRoshamboGame(
+                  game_?.battleScore.player1.round5,
+                  gameInPut.round5
+                ),
+              },
+            });
+          })
+          .catch((error) => {
+            res.status(500).json({ message: "error found", error });
+            console.error(error);
+          });
+      }
+      await PlayAdmin(
+        commission_roshambo,
+        game_?.price_in_value ?? 0,
+        AdminCurrentCash,
+        cashRating,
+        2
+      );
+    } catch (error) {
+      res.status(500).json({ message: "error found", error });
+      console.error(error);
     }
-    await PlayAdmin(
-      commission_roshambo,
-      game_?.price_in_value ?? 0,
-      AdminCurrentCash,
-      cashRating,
-      2
-    );
-  } catch (error) {
-    res.status(500).json({ message: "error found", error });
-    console.error(error);
   }
-});
+);
 
 GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
   try {

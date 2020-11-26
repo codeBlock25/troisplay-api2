@@ -1,3 +1,4 @@
+import { concat, isEmpty, remove } from "lodash";
 import AdminCashModel from "../model/admin_model";
 import notificationModel from "../model/notification";
 import { GameRec } from "../model/plays";
@@ -26,7 +27,20 @@ export const NotificationAction = {
         },
       }
     ),
-  markRead: () => {},
+  markRead: async ({userID, time}:{userID: string, time: Date}) => { 
+    let allNotifications = await notificationModel.findOne({ userID });
+    if (!allNotifications) return;
+    let { notifications } = allNotifications;
+    let removed = remove(notifications, { time });
+    removed[0]
+    let update: {
+      message: string;
+      time: Date;
+      type: notificationHintType;
+      hasNew: boolean;
+    } = { ...removed[0], hasNew: false };
+    return await notificationModel.updateOne({ userID }, { notifications: [...notifications, update] });
+  },
 };
 
 export async function PlayAdmin(

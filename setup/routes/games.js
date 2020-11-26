@@ -1336,7 +1336,7 @@ GamesRouter.post("/penalty/challange", function (req, res) { return __awaiter(vo
         }
     });
 }); });
-GamesRouter.post("/roshambo/challange", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+GamesRouter.post("/roshambo/play-against", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, _a, id, gameInPut_2, payWith, token, decoded, found, game_3, cashInstance, coinInstance, defaultInstance, adminCashInstance, p2CashInstance, p1Cash_2, p2Cash, currentCoin, AdminCurrentCash, cashRating_2, commission_roshambo_1, winner_1, error_12;
     var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
     return __generator(this, function (_0) {
@@ -1387,7 +1387,9 @@ GamesRouter.post("/roshambo/challange", function (req, res) { return __awaiter(v
                     !defaultInstance ||
                     !p2CashInstance ||
                     !adminCashInstance) {
-                    res.status(500).json({ error: "internal error", message: "error found" });
+                    res
+                        .status(500)
+                        .json({ error: "internal error", message: "error found" });
                     return [2];
                 }
                 p1Cash_2 = cashInstance.currentCash;
@@ -1395,6 +1397,7 @@ GamesRouter.post("/roshambo/challange", function (req, res) { return __awaiter(v
                 currentCoin = coinInstance.currentCoin;
                 AdminCurrentCash = adminCashInstance.currentCash;
                 cashRating_2 = defaultInstance.cashRating, commission_roshambo_1 = defaultInstance.commission_roshambo;
+                console.log(decoded);
                 winner_1 = function_1.FindWinnerOnRoshambo(game_3 === null || game_3 === void 0 ? void 0 : game_3.battleScore.player1, gameInPut_2);
                 if (!(payWith === enum_1.PayType.coin)) return [3, 9];
                 return [4, cash_wallet_1.default.updateOne({ userID: decoded.id }, {
@@ -1462,6 +1465,7 @@ GamesRouter.post("/roshambo/challange", function (req, res) { return __awaiter(v
                     })
                         .catch(function (error) {
                         res.status(500).json({ message: "error found", error: error });
+                        console.error(error);
                     })];
             case 16:
                 _0.sent();
@@ -1524,6 +1528,7 @@ GamesRouter.post("/roshambo/challange", function (req, res) { return __awaiter(v
                     })
                         .catch(function (error) {
                         res.status(500).json({ message: "error found", error: error });
+                        console.error(error);
                     })];
             case 23:
                 _0.sent();
@@ -1578,6 +1583,7 @@ GamesRouter.post("/roshambo/challange", function (req, res) { return __awaiter(v
                     })
                         .catch(function (error) {
                         res.status(500).json({ message: "error found", error: error });
+                        console.error(error);
                     })];
             case 29:
                 _0.sent();

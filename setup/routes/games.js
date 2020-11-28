@@ -1930,7 +1930,7 @@ GamesRouter.post("/matcher/challange", function (req, res) { return __awaiter(vo
     });
 }); });
 GamesRouter.get("/mine", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var auth, token, decoded, found, roomgames_1, customgames_1, error_14;
+    var auth, token, decoded_6, found, roomgames_1, customgames, customs_1, error_14;
     var _a;
     return __generator(this, function (_b) {
         switch (_b.label) {
@@ -1946,29 +1946,31 @@ GamesRouter.get("/mine", function (req, res) { return __awaiter(void 0, void 0, 
                     res.status(406).json({ message: "error found", error: "empty token" });
                     return [2];
                 }
-                decoded = jsonwebtoken_1.verify(token, secret);
-                return [4, users_1.default.findById(decoded.id)];
+                decoded_6 = jsonwebtoken_1.verify(token, secret);
+                return [4, users_1.default.findById(decoded_6.id)];
             case 1:
                 found = _b.sent();
                 if (!found) {
                     res.status(406).json({ message: "error found", error: "invalid user" });
                     return [2];
                 }
-                return [4, rooms_1.default.find({ players: [decoded.id] })];
+                return [4, rooms_1.default.find({ players: [decoded_6.id] })];
             case 2:
                 roomgames_1 = _b.sent();
                 return [4, games_1.default.find({
-                        members: decoded.id,
+                        members: decoded_6.id,
                         gameID: games_1.Games.custom_game,
                         isComplete: false,
-                        played: true,
                     })];
             case 3:
-                customgames_1 = _b.sent();
+                customgames = _b.sent();
+                customs_1 = lodash_1.filter(customgames, function (game) {
+                    return game.members[0] === decoded_6.id;
+                });
                 return [4, games_1.default.find({
                         played: false,
                         gameID: { $not: { $eq: games_1.Games.custom_game } },
-                        members: decoded.id,
+                        members: decoded_6.id,
                     })
                         .sort({ date: -1 })
                         .limit(45)
@@ -1988,7 +1990,7 @@ GamesRouter.get("/mine", function (req, res) { return __awaiter(void 0, void 0, 
                                 _id: g._id,
                             });
                         });
-                        var allGames = lodash_1.concat(result, customgames_1);
+                        var allGames = result;
                         allGames.map(function (rels) {
                             if (rels.gameID === games_1.Games.custom_game) {
                                 games.push(rels);
@@ -2010,7 +2012,7 @@ GamesRouter.get("/mine", function (req, res) { return __awaiter(void 0, void 0, 
                         });
                         res.json({
                             message: "content found",
-                            games: lodash_1.sortBy(games, { date: 1 }),
+                            games: lodash_1.sortBy(lodash_1.concat(games, customs_1), { date: 1 }),
                         });
                     })
                         .catch(function (error) {
@@ -2387,7 +2389,7 @@ GamesRouter.post("/roshambo/challange/one-on-one", function (req, res) { return 
     });
 }); });
 GamesRouter.post("/penalty/challange/one-on-one", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var auth, _a, id_1, gameInPut_3, round_1, payWith, token, decoded_6, found, game_5, cashInstance, coinInstance, defaultInstance, adminCashInstance, p2CashInstance, p1Cash_3, currentCoin, p2Cash_1, cashRating_4, commission_penalty_2, error_16;
+    var auth, _a, id_1, gameInPut_3, round_1, payWith, token, decoded_7, found, game_5, cashInstance, coinInstance, defaultInstance, adminCashInstance, p2CashInstance, p1Cash_3, currentCoin, p2Cash_1, cashRating_4, commission_penalty_2, error_16;
     var _b;
     return __generator(this, function (_c) {
         switch (_c.label) {
@@ -2404,17 +2406,17 @@ GamesRouter.post("/penalty/challange/one-on-one", function (req, res) { return _
                     res.status(406).json({ message: "error found", error: "empty token" });
                     return [2];
                 }
-                decoded_6 = jsonwebtoken_1.verify(token, secret);
-                return [4, users_1.default.findById(decoded_6.id)];
+                decoded_7 = jsonwebtoken_1.verify(token, secret);
+                return [4, users_1.default.findById(decoded_7.id)];
             case 1:
                 found = _c.sent();
                 return [4, games_1.default.findById(id_1)];
             case 2:
                 game_5 = _c.sent();
-                return [4, cash_wallet_1.default.findOne({ userID: decoded_6.id })];
+                return [4, cash_wallet_1.default.findOne({ userID: decoded_7.id })];
             case 3:
                 cashInstance = _c.sent();
-                return [4, walltet_1.default.findOne({ userID: decoded_6.id })];
+                return [4, walltet_1.default.findOne({ userID: decoded_7.id })];
             case 4:
                 coinInstance = _c.sent();
                 return [4, default_1.default.findOne({})];
@@ -2474,21 +2476,21 @@ GamesRouter.post("/penalty/challange/one-on-one", function (req, res) { return _
                         return __generator(this, function (_25) {
                             switch (_25.label) {
                                 case 0: return [4, new plays_1.default({
-                                        player2ID: decoded_6.id,
+                                        player2ID: decoded_7.id,
                                         isWin: (result === null || result === void 0 ? void 0 : result.battleScore.player1["round" + round_1]) === gameInPut_3,
                                         gameID: result === null || result === void 0 ? void 0 : result._id,
                                     }).save()];
                                 case 1:
                                     _25.sent();
                                     return [4, plays_1.default.countDocuments({
-                                            player2ID: decoded_6.id,
+                                            player2ID: decoded_7.id,
                                             gameID: id_1,
                                             isWin: true,
                                         })];
                                 case 2:
                                     winCount = _25.sent();
                                     return [4, plays_1.default.countDocuments({
-                                            player2ID: decoded_6.id,
+                                            player2ID: decoded_7.id,
                                             gameID: id_1,
                                             isWin: false,
                                         })];
@@ -2515,7 +2517,7 @@ GamesRouter.post("/penalty/challange/one-on-one", function (req, res) { return _
                                 case 4:
                                     _25.sent();
                                     return [4, new gamerecord_1.default({
-                                            userID: decoded_6.id,
+                                            userID: decoded_7.id,
                                             game: games_1.Games.penalth_card,
                                             won: "yes",
                                             earnings: commission_penalty_2.value_in === "$"
@@ -2533,7 +2535,7 @@ GamesRouter.post("/penalty/challange/one-on-one", function (req, res) { return _
                                         }).save()];
                                 case 5:
                                     _25.sent();
-                                    return [4, cash_wallet_1.default.updateOne({ userID: decoded_6.id }, {
+                                    return [4, cash_wallet_1.default.updateOne({ userID: decoded_7.id }, {
                                             currentCash: p1Cash_3 +
                                                 (commission_penalty_2.value_in === "$"
                                                     ? ((_q = game_5 === null || game_5 === void 0 ? void 0 : game_5.price_in_value) !== null && _q !== void 0 ? _q : 0) +
@@ -2571,7 +2573,7 @@ GamesRouter.post("/penalty/challange/one-on-one", function (req, res) { return _
                                 case 7:
                                     if (!(loseCount >= 3)) return [3, 11];
                                     return [4, new gamerecord_1.default({
-                                            userID: decoded_6.id,
+                                            userID: decoded_7.id,
                                             game: games_1.Games.penalth_card,
                                             won: "no",
                                             earnings: -(commission_penalty_2.value_in === "$"
@@ -3379,7 +3381,7 @@ GamesRouter.post("/matcher/exit", function (req, res) { return __awaiter(void 0,
     });
 }); });
 GamesRouter.post("/custom-game", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var auth, token, decoded_7, found, cashRating, currentCash_5, _a, player2Username, price_in_value, title, description, answer, endDate, endGameTime, choice, p2, error_25;
+    var auth, token, decoded_8, found, cashRating, currentCash_5, _a, player2Username, price_in_value, title, description, answer, endDate, endGameTime, choice, p2, error_25;
     var _b, _c, _d;
     return __generator(this, function (_e) {
         switch (_e.label) {
@@ -3395,8 +3397,8 @@ GamesRouter.post("/custom-game", function (req, res) { return __awaiter(void 0, 
                     res.status(406).json({ message: "error found", error: "empty token" });
                     return [2];
                 }
-                decoded_7 = jsonwebtoken_1.verify(token, secret);
-                return [4, users_1.default.findById(decoded_7.id)];
+                decoded_8 = jsonwebtoken_1.verify(token, secret);
+                return [4, users_1.default.findById(decoded_8.id)];
             case 1:
                 found = _e.sent();
                 if (!found) {
@@ -3412,7 +3414,7 @@ GamesRouter.post("/custom-game", function (req, res) { return __awaiter(void 0, 
                     cashRating: 0,
                 }).cashRating;
                 return [4, cash_wallet_1.default.findOne({
-                        userID: decoded_7.id,
+                        userID: decoded_8.id,
                     })];
             case 3:
                 currentCash_5 = ((_d = (_e.sent())) !== null && _d !== void 0 ? _d : { currentCash: 0 }).currentCash;
@@ -3426,7 +3428,7 @@ GamesRouter.post("/custom-game", function (req, res) { return __awaiter(void 0, 
                 return [4, player_1.default.findOne({ playername: player2Username })];
             case 4:
                 p2 = _e.sent();
-                if ((!p2 || p2.userID === decoded_7.id) && player2Username !== "") {
+                if ((!p2 || p2.userID === decoded_8.id) && player2Username !== "") {
                     res
                         .status(409)
                         .json({ message: "error found", error: "player 2 not found" });
@@ -3434,7 +3436,7 @@ GamesRouter.post("/custom-game", function (req, res) { return __awaiter(void 0, 
                 }
                 return [4, new games_1.default({
                         gameMemberCount: 2,
-                        members: p2 ? [decoded_7.id, p2.userID] : [decoded_7.id],
+                        members: p2 ? [decoded_8.id, p2.userID] : [decoded_8.id],
                         price_in_coin: cashRating * price_in_value,
                         price_in_value: price_in_value,
                         gameDetail: "A game created between friends",
@@ -3456,7 +3458,7 @@ GamesRouter.post("/custom-game", function (req, res) { return __awaiter(void 0, 
                         .then(function (result) { return __awaiter(void 0, void 0, void 0, function () {
                         return __generator(this, function (_a) {
                             switch (_a.label) {
-                                case 0: return [4, cash_wallet_1.default.updateOne({ userID: decoded_7.id }, { currentCash: currentCash_5 - result.price_in_value })];
+                                case 0: return [4, cash_wallet_1.default.updateOne({ userID: decoded_8.id }, { currentCash: currentCash_5 - result.price_in_value })];
                                 case 1:
                                     _a.sent();
                                     res.json({ message: "successful", game: result });
@@ -3682,7 +3684,7 @@ GamesRouter.post("/custom-game/exit", function (req, res) { return __awaiter(voi
     });
 }); });
 GamesRouter.get("/requests", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var auth, token, decoded_8, found, error_28;
+    var auth, token, decoded_9, found, error_28;
     var _a;
     return __generator(this, function (_b) {
         switch (_b.label) {
@@ -3698,8 +3700,8 @@ GamesRouter.get("/requests", function (req, res) { return __awaiter(void 0, void
                     res.status(406).json({ message: "error found", error: "empty token" });
                     return [2];
                 }
-                decoded_8 = jsonwebtoken_1.verify(token, secret);
-                return [4, users_1.default.findById(decoded_8.id)];
+                decoded_9 = jsonwebtoken_1.verify(token, secret);
+                return [4, users_1.default.findById(decoded_9.id)];
             case 1:
                 found = _b.sent();
                 if (!found) {
@@ -3712,7 +3714,7 @@ GamesRouter.get("/requests", function (req, res) { return __awaiter(void 0, void
                 return [4, games_1.default.find({
                         isComplete: false,
                         gameID: games_1.Games.custom_game,
-                        members: decoded_8.id,
+                        members: decoded_9.id,
                         played: false,
                     })
                         .sort({ date: -1 })
@@ -3720,7 +3722,7 @@ GamesRouter.get("/requests", function (req, res) { return __awaiter(void 0, void
                         res.json({
                             message: "content found",
                             requests: lodash_1.filter(result, function (__game) {
-                                return __game.members[0] !== decoded_8.id;
+                                return __game.members[0] !== decoded_9.id;
                             }),
                         });
                     })

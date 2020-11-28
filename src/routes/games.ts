@@ -2002,7 +2002,9 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
       members: decoded.id,
       gameID: Games.custom_game,
       isComplete: false,
-      played: true,
+    });
+    let customs = filter(customgames, (game) => {
+      return game.members[0] === decoded.id;
     });
     await GameModel.find({
       played: false,
@@ -2027,7 +2029,7 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
             _id: g._id,
           });
         });
-        let allGames = concat(result, customgames);
+        let allGames = result;
         allGames.map((rels) => {
           if (rels.gameID === Games.custom_game) {
             games.push(rels);
@@ -2048,7 +2050,7 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
         });
         res.json({
           message: "content found",
-          games: sortBy(games, { date: 1 }),
+          games: sortBy(concat(games, customs), { date: 1 }),
         });
       })
       .catch((error) => {

@@ -2006,9 +2006,22 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
     let customs = filter(customgames, (game) => {
       return game.members[0] === decoded.id;
     });
+    let luckygames = await GameModel.find({
+      members: decoded.id,
+      gameID: Games.lucky_geoge,
+      isComplete: false,
+      played: false,
+    });
     await GameModel.find({
       played: false,
-      gameID: { $not: { $eq: Games.custom_game } },
+      $and: [
+        {
+          gameID: { $not: { $eq: Games.custom_game } },
+        },
+        {
+          gameID: { $not: { $eq: Games.lucky_geoge } },
+        },
+      ],
       members: decoded.id,
     })
       .sort({ date: -1 })
@@ -2053,7 +2066,9 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
         });
         res.json({
           message: "content found",
-          games: sortBy(concat(games, customs), { date: 1 }),
+          games: sortBy(concat(games, [...luckygames, ...customs]), {
+            date: 1,
+          }),
         });
       })
       .catch((error) => {
@@ -2916,10 +2931,10 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
               currentCash: 0,
             };
 
-        await NotificationAction.add({
-          message: `you have just won a game from playing the lucky judge game and have earned ${result?.battleScore.player1.winnerPrice}.`,
-          userID: winner,
-        });
+            await NotificationAction.add({
+              message: `you have just won a game from playing the lucky judge game and have earned ${result?.battleScore.player1.winnerPrice}.`,
+              userID: winner,
+            });
             await RecordModel.updateOne(
               {
                 userID: winner,

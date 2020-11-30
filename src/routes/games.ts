@@ -2930,7 +2930,6 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
             let { currentCash } = (await CashWalletModel.findById(winner)) ?? {
               currentCash: 0,
             };
-
             await NotificationAction.add({
               message: `you have just won a game from playing the lucky judge game and have earned ${result?.battleScore.player1.winnerPrice}.`,
               userID: winner,
@@ -2953,9 +2952,10 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
               }
             );
           }
-          await GameModel.updateOne({ _id: id }, { played: true })
-            .then(() => {})
-            .catch(console.error);
+          await GameModel.updateOne(
+            { _id: id },
+            { played: true, isComplete: true }
+          );
         }
       })
       .catch((error) => {

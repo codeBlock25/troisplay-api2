@@ -64,10 +64,8 @@ notificationRoute.put("/mark-read", async (req: Request, res: Response) => {
       res.status(406).json({ message: "error found", error: "invalid user" });
       return;
     }
-    const { time }: { time: string } = req.body;
     await NotificationAction.markRead({
       userID: decoded.id,
-      time: new Date(time),
     })
       .then(() => {
         res.json({ message: "mark read" });

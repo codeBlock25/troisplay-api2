@@ -2786,7 +2786,7 @@ GamesRouter.get("/lucky-geoge", async (req: Request, res: Response) => {
     let user = await users.findById(decoded.id);
     let admin = await AdminModel.findById(decoded?.adminID);
     if (admin) {
-      await GameModel.find({ gameID: Games.lucky_geoge, played: false })
+      await GameModel.find({ gameID: Games.lucky_geoge, played: false, isComplete: false })
         .then((games) => {
           res.json({ games });
         })
@@ -2807,6 +2807,7 @@ GamesRouter.get("/lucky-geoge", async (req: Request, res: Response) => {
       await GameModel.find({
         gameID: Games.lucky_geoge,
         played: false,
+        isComplete: false,
         $or: [
           { price_in_value: { $lte: currentCash } },
           { price_in_coin: { $lte: currentCoin } },

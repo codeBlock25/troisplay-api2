@@ -27,7 +27,7 @@ export const NotificationAction = {
         },
       }
     ),
-  markRead: async ({ userID }: { userID: string; time: Date }) => {
+  markRead: async ({ userID }: { userID: string }) => {
     let allNotifications = await notificationModel.findOne({ userID });
     if (!allNotifications) return;
     let { notifications } = allNotifications;

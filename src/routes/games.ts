@@ -35,7 +35,7 @@ import {
   NotificationAction,
 } from "../function";
 import { generate as randGenerate } from "randomstring";
-import { concat, filter, isEmpty, sortBy } from "lodash";
+import { cloneDeep, concat, filter, isEmpty, sortBy } from "lodash";
 import notificationModel from "../model/notification";
 
 envConfig();
@@ -2066,9 +2066,17 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
         });
         res.json({
           message: "content found",
-          games: sortBy(concat(games, [...luckygames, ...customs]), {
-            date: 1,
-          }),
+          games: sortBy(
+            concat(games, [
+              ...filter(luckygames, (game_) => {
+                return game_.members.length < game_.gameMemberCount;
+              }),
+              ...customs,
+            ]),
+            {
+              date: 1,
+            }
+          ),
         });
       })
       .catch((error) => {
@@ -2786,7 +2794,11 @@ GamesRouter.get("/lucky-geoge", async (req: Request, res: Response) => {
     let user = await users.findById(decoded.id);
     let admin = await AdminModel.findById(decoded?.adminID);
     if (admin) {
-      await GameModel.find({ gameID: Games.lucky_geoge, played: false, isComplete: false })
+      await GameModel.find({
+        gameID: Games.lucky_geoge,
+        played: false,
+        isComplete: false,
+      })
         .then((games) => {
           res.json({ games });
         })

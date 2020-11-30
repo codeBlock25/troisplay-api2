@@ -2031,7 +2031,10 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
         });
         let allGames = result;
         allGames.map((rels) => {
-          if (rels.gameID === Games.custom_game) {
+          if (
+            rels.gameID === Games.custom_game ||
+            rels.gameID === Games.lucky_geoge
+          ) {
             games.push(rels);
           } else {
             games.push({
@@ -2913,6 +2916,10 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
               currentCash: 0,
             };
 
+        await NotificationAction.add({
+          message: `you have just won a game from playing the lucky judge game and have earned ${result?.battleScore.player1.winnerPrice}.`,
+          userID: winner,
+        });
             await RecordModel.updateOne(
               {
                 userID: winner,

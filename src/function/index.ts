@@ -27,12 +27,14 @@ export const NotificationAction = {
         },
       }
     ),
-  markRead: async ({ userID, time }: { userID: string; time: Date }) => {
+  markRead: async ({ userID }: { userID: string; time: Date }) => {
     let allNotifications = await notificationModel.findOne({ userID });
     if (!allNotifications) return;
     let { notifications } = allNotifications;
-    let removed = remove(notifications, { time });
-    set(removed[0], "hasNew", false);
+    let removed = remove(notifications, { hasNew: true });
+    removed.map((init) => {
+      set(init, "hasNew", false);
+    });
     return await notificationModel.findOneAndUpdate(
       { userID },
       {

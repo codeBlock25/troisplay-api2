@@ -2800,7 +2800,9 @@ GamesRouter.get("/lucky-geoge", async (req: Request, res: Response) => {
         isComplete: false,
       })
         .then((games) => {
-          res.json({ games });
+          res.json({
+            games
+          });
         })
         .catch((error) => {
           res.status(500).json({ message: "error found", error });
@@ -2826,7 +2828,15 @@ GamesRouter.get("/lucky-geoge", async (req: Request, res: Response) => {
         ],
       })
         .then((games) => {
-          res.json(admin ? { games: allG } : { games });
+          res.json(
+            admin
+              ? { games: allG }
+              : {
+                  games: filter(games, (game_) => {
+                    return game_.members.length < game_.gameMemberCount;
+                  }),
+                }
+          );
         })
         .catch((error) => {
           res.status(500).json({ message: "error found", error });

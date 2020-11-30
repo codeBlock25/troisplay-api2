@@ -4,7 +4,6 @@ import { sortBy } from "lodash";
 import { NotificationAction } from "../function";
 import notificationModel, { NotificationType } from "../model/notification";
 import users from "../model/users";
-import { notificationHintType } from "../types/enum";
 
 const notificationRoute = Router();
 

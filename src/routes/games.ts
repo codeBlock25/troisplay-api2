@@ -2003,9 +2003,9 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
       gameID: Games.custom_game,
       isComplete: false,
     });
-    let customs = filter(customgames, (game) => {
-      return game.members[0] === decoded.id;
-    });
+    // let customs = filter(customgames, (game) => {
+    //   return game.members[0] === decoded.id;
+    // });
     let luckygames = await GameModel.find({
       members: decoded.id,
       gameID: Games.lucky_geoge,
@@ -2067,12 +2067,12 @@ GamesRouter.get("/mine", async (req: Request, res: Response) => {
         res.json({
           message: "content found",
           games: sortBy(
-            concat(games, [
-              ...filter(luckygames, (game_) => {
+            concat(
+              games,
+              filter(luckygames, (game_) => {
                 return game_.members.length < game_.gameMemberCount;
-              }),
-              ...customs,
-            ]),
+              })
+            ),
             {
               date: 1,
             }
@@ -2918,10 +2918,12 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
         },
       }
     )
-      .then(async (result) => {
-        res.json({ message: "successful", price: result?.price_in_value });
-        if ((result?.members.length ?? 0) >= (result?.gameMemberCount ?? 0)) {
-          let winners = shuffle(result?.members ?? [""]).slice(
+      .then(async (game_) => {
+        res.json({ message: "successful", price: game_?.price_in_value });
+        let result = await GameModel.findOne({ _id: id });
+        if (!result) return;
+        if ((result.members.length ?? 0) >= (result.gameMemberCount ?? 0)) {
+          let winners = shuffle(result.members ?? [""]).slice(
             0,
             result?.battleScore.player1.winnerCount
           );
@@ -2940,7 +2942,9 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
             }
           }
           for (let winner in winners) {
-            let { currentCash } = (await CashWalletModel.findById(winner)) ?? {
+            let { currentCash } = (await CashWalletModel.findOne({
+              userID: winner,
+            })) ?? {
               currentCash: 0,
             };
             await NotificationAction.add({
@@ -2958,7 +2962,7 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
               }
             );
             await CashWalletModel.updateOne(
-              { _id: winner },
+              { userID: winner },
               {
                 currentCash:
                   (currentCash ?? 0) + result?.battleScore.player1.winnerPrice,

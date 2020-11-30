@@ -35,7 +35,7 @@ import {
   NotificationAction,
 } from "../function";
 import { generate as randGenerate } from "randomstring";
-import { cloneDeep, concat, filter, isEmpty, sortBy } from "lodash";
+import { cloneDeep, concat, filter, isEmpty, set, sortBy } from "lodash";
 import notificationModel from "../model/notification";
 
 envConfig();
@@ -2801,7 +2801,7 @@ GamesRouter.get("/lucky-geoge", async (req: Request, res: Response) => {
       })
         .then((games) => {
           res.json({
-            games
+            games,
           });
         })
         .catch((error) => {
@@ -2932,11 +2932,16 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
         res.json({ message: "successful", price: game_?.price_in_value });
         let result = await GameModel.findOne({ _id: id });
         if (!result) return;
-        if ((result.members.length ?? 0) >= (result.gameMemberCount ?? 0)) {
+        if (result.members.length >= result.gameMemberCount) {
           let winners = shuffle(result.members ?? [""]).slice(
             0,
             result?.battleScore.player1.winnerCount
           );
+          result.players.forEach((player) => {
+            if (winners.includes(player.id)) {
+              set(player, "winner", true);
+            }
+          });
           for (let member in result?.members) {
             if (!winners.includes(member)) {
               await RecordModel.updateOne(

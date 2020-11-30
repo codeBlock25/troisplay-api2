@@ -8,7 +8,7 @@ export enum Games {
   matcher,
   non,
   lucky_geoge,
-  rooms
+  rooms,
 }
 
 export interface GameType extends Document {
@@ -33,6 +33,8 @@ export interface GameType extends Document {
     phone_number: String;
     ticket: String;
     winner: Boolean;
+    date: Date;
+    id: string;
   }[];
 }
 export interface GameDocType {

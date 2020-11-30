@@ -1,8 +1,10 @@
 import { Router, Request, Response } from "express";
 import { verify } from "jsonwebtoken";
+import { sortBy } from "lodash";
 import { NotificationAction } from "../function";
-import notificationModel from "../model/notification";
+import notificationModel, { NotificationType } from "../model/notification";
 import users from "../model/users";
+import { notificationHintType } from "../types/enum";
 
 const notificationRoute = Router();
 
@@ -30,9 +32,15 @@ notificationRoute.get("/all", async (req: Request, res: Response) => {
     }
     await notificationModel
       .findOne({ userID: decoded.id })
-      .sort({ date: -1 })
       .then((notifications) => {
-        res.json({ notifications });
+        res.json({
+          notifications: {
+            ...notifications,
+            notifications: sortBy(notifications?.notifications ?? [], {
+              time: -1,
+            }),
+          },
+        } as { notifications: NotificationType & Document });
       })
       .catch((error) => {
         res.status(500).json({ error, msssage: "error occured" });

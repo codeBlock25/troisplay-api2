@@ -2877,6 +2877,7 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
         if (!result) return;
         res.json({ message: "successful", price: result.price_in_value });
         if (result.members.length >= result.gameMemberCount) {
+          console.log("all to do.");
           let winners = shuffle(result.members ?? [""]).slice(
             0,
             result?.battleScore.player1.winnerCount

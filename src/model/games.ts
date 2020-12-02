@@ -29,9 +29,9 @@ export interface GameType extends Document {
   playCount: number;
   isComplete: boolean;
   players: {
-    player_name: String;
-    phone_number: String;
-    ticket: String;
+    player_name: string;
+    phone_number: string;
+    ticket: string;
     winner: Boolean;
     date: Date;
     id: string;

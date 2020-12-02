@@ -982,13 +982,6 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
     }
     if (winner) {
       await NotificationAction.add({
-        message: `you have just won a game from playing a penalty card game and have earned ₦ ${
-          game_?.price_in_value ?? 0
-        }.`,
-        userID: decoded.id,
-        type: notificationHintType.win,
-      });
-      await NotificationAction.add({
         message: `you have just lost a game from playing a penalty card game and have lost ₦ ${
           game_?.price_in_value ?? 0
         }.`,
@@ -1077,13 +1070,6 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
         }.`,
         userID: game_?.members[0] ?? "",
         type: notificationHintType.win,
-      });
-      await NotificationAction.add({
-        message: `you have just lost a game from playing a penalty card game and have lost ₦ ${
-          game_?.price_in_value ?? 0
-        }.`,
-        userID: decoded.id,
-        type: notificationHintType.lost,
       });
       await new RecordModel({
         userID: decoded.id,
@@ -1261,13 +1247,6 @@ GamesRouter.post(
       }
       if (winner === GameRec.win) {
         await NotificationAction.add({
-          message: `you have just won a game from playing a roshambo game and have earned ₦ ${
-            game_?.price_in_value ?? 0
-          }.`,
-          userID: decoded.id,
-          type: notificationHintType.win,
-        });
-        await NotificationAction.add({
           message: `you have just lost a game from playing a roshambo game and have lost ₦ ${
             game_?.price_in_value ?? 0
           }.`,
@@ -1351,13 +1330,6 @@ GamesRouter.post(
             console.error(error);
           });
       } else if (winner === GameRec.draw) {
-        await NotificationAction.add({
-          message: `you have just drawn in a game from playing a roshambo game and have recieved ₦ ${
-            game_?.price_in_value ?? 0
-          }.`,
-          userID: decoded.id,
-          type: notificationHintType.draw,
-        });
         await NotificationAction.add({
           message: `you have just drawn in a game from playing a roshambo game and have recieved ₦ ${
             game_?.price_in_value ?? 0
@@ -1459,13 +1431,6 @@ GamesRouter.post(
             game_?.price_in_value ?? 0
           }.`,
           userID: game_?.members[0] ?? "",
-          type: notificationHintType.win,
-        });
-        await NotificationAction.add({
-          message: `you have just lost a game from playing a roshambo game and have lost ₦ ${
-            game_?.price_in_value ?? 0
-          }.`,
-          userID: decoded.id,
           type: notificationHintType.win,
         });
         await new RecordModel({
@@ -1654,13 +1619,6 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
     }
     if (winner) {
       if (count === 1) {
-        await NotificationAction.add({
-          message: `you have just won a game from playing a guess master game and have earned ₦ ${
-            (game_?.price_in_value ?? 0) * 1
-          }.`,
-          userID: decoded.id,
-          type: notificationHintType.win,
-        });
         await NotificationAction.add({
           message: `you have just lost a game from playing a guess master game and have earned ₦ ${
             (game_?.price_in_value ?? 0) * 1
@@ -1893,12 +1851,6 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
           (game_?.price_in_value ?? 0) * 1
         }.`,
         userID: game_?.members[0] ?? "",
-      });
-      await NotificationAction.add({
-        message: `you have just lost a game from playing a guess master game and have earned ${
-          (game_?.price_in_value ?? 0) * 1
-        }.`,
-        userID: decoded.id,
       });
       await new UserPlay({
         player2ID: decoded.id,
@@ -2199,12 +2151,6 @@ GamesRouter.post(
         isWin: GameRec.draw,
       });
       if (drawCount >= 5) {
-        await NotificationAction.add({
-          message: `you have just won a game from playing a roshambo game and have earned ${
-            game_?.price_in_value ?? 0
-          }.`,
-          userID: decoded.id,
-        });
         await NotificationAction.add({
           message: `you have just lost a game from playing a roshambo game and have lost ${
             game_?.price_in_value ?? 0
@@ -2796,8 +2742,6 @@ GamesRouter.get("/lucky-geoge", async (req: Request, res: Response) => {
     if (admin) {
       await GameModel.find({
         gameID: Games.lucky_geoge,
-        played: false,
-        isComplete: false,
       })
         .then((games) => {
           res.json({
@@ -2894,7 +2838,7 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
       }
       await CashWalletModel.updateOne(
         { userID: decoded.id },
-        { currentCash: currentCash - stack * 2 }
+        { currentCash: currentCash - price_in_value }
       );
     } else {
       if (stack > currentCoin) {
@@ -2912,7 +2856,7 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
       length: 12,
       charset: "alphabetic",
     });
-    await GameModel.findOneAndUpdate(
+    await GameModel.updateOne(
       { _id: id },
       {
         $push: {
@@ -2928,25 +2872,60 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
         },
       }
     )
-      .then(async (game_) => {
-        res.json({ message: "successful", price: game_?.price_in_value });
+      .then(async () => {
         let result = await GameModel.findOne({ _id: id });
         if (!result) return;
+        res.json({ message: "successful", price: result.price_in_value });
         if (result.members.length >= result.gameMemberCount) {
           let winners = shuffle(result.members ?? [""]).slice(
             0,
             result?.battleScore.player1.winnerCount
           );
-          result.players.forEach((player) => {
+          result.players.forEach(async (player) => {
             if (winners.includes(player.id)) {
-              set(player, "winner", true);
-            }
-          });
-          for (let member in result?.members) {
-            if (!winners.includes(member)) {
+              await GameModel.updateOne(
+                { _id: player.id },
+                {
+                  $pull: {
+                    players: player,
+                  },
+                  $push: {
+                    members: decoded.id,
+                    players: { ...player, winner: true },
+                  },
+                }
+              );
               await RecordModel.updateOne(
                 {
-                  userID: member,
+                  userID: player.id,
+                },
+                {
+                  won: "yes",
+                  earnings: result?.battleScore.player1.winnerPrice,
+                  date_mark: new Date(),
+                }
+              );
+              await NotificationAction.add({
+                message: `you have just won a game from playing the lucky judge game and have earned ${result?.battleScore.player1.winnerPrice}.`,
+                userID: player.id,
+              });
+              let { currentCash } = (await CashWalletModel.findOne({
+                userID: player.id,
+              })) ?? {
+                currentCash: 0,
+              };
+              await CashWalletModel.updateOne(
+                { userID: player.id },
+                {
+                  currentCash:
+                    (currentCash ?? 0) +
+                    result?.battleScore.player1.winnerPrice,
+                }
+              );
+            } else {
+              await RecordModel.updateOne(
+                {
+                  userID: player.id,
                 },
                 {
                   won: "no",
@@ -2954,36 +2933,12 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
                   date_mark: new Date(),
                 }
               );
+              await NotificationAction.add({
+                message: `the lucky judge game you joined has just ended, sorry you were not one of the winners.`,
+                userID: player.id,
+              });
             }
-          }
-          for (let winner in winners) {
-            let { currentCash } = (await CashWalletModel.findOne({
-              userID: winner,
-            })) ?? {
-              currentCash: 0,
-            };
-            await NotificationAction.add({
-              message: `you have just won a game from playing the lucky judge game and have earned ${result?.battleScore.player1.winnerPrice}.`,
-              userID: winner,
-            });
-            await RecordModel.updateOne(
-              {
-                userID: winner,
-              },
-              {
-                won: "yes",
-                earnings: result?.battleScore.player1.winnerPrice,
-                date_mark: new Date(),
-              }
-            );
-            await CashWalletModel.updateOne(
-              { userID: winner },
-              {
-                currentCash:
-                  (currentCash ?? 0) + result?.battleScore.player1.winnerPrice,
-              }
-            );
-          }
+          });
           await GameModel.updateOne(
             { _id: id },
             { played: true, isComplete: true }

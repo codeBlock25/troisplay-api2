@@ -2884,62 +2884,67 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
           );
           result.players.forEach(async (player) => {
             if (winners.includes(player.id)) {
-              await GameModel.updateOne(
-                { _id: result?._id ?? "" },
-                {
-                  $pull: {
-                    players: player,
-                  },
-                  $push: {
-                    members: decoded.id,
-                    players: { ...player, winner: true },
-                  },
-                }
-              );
-              await RecordModel.updateOne(
-                {
-                  userID: player.id,
-                },
-                {
-                  won: "yes",
-                  earnings: result?.battleScore.player1.winnerPrice,
-                  date_mark: new Date(),
-                }
-              );
-              await NotificationAction.add({
-                message: `you have just won a game from playing the lucky judge game and have earned ${result?.battleScore.player1.winnerPrice}.`,
-                userID: player.id,
-                type: notificationHintType.win,
-              });
               let { currentCash } = (await CashWalletModel.findOne({
                 userID: player.id,
               })) ?? {
                 currentCash: 0,
               };
-              await CashWalletModel.updateOne(
-                { userID: player.id },
-                {
-                  currentCash:
-                    (currentCash ?? 0) +
-                    (result?.battleScore.player1.winnerPrice ?? 0),
-                }
-              );
-            } else {
-              await RecordModel.updateOne(
-                {
+              await Promise.all([
+                GameModel.updateOne(
+                  { _id: result?._id ?? "" },
+                  {
+                    $pull: {
+                      players: { id: player.id },
+                    },
+                    $push: {
+                      players: { ...player, winner: true },
+                    },
+                  }
+                ),
+                RecordModel.updateOne(
+                  {
+                    userID: player.id,
+                  },
+                  {
+                    won: "yes",
+                    earnings: result?.battleScore.player1.winnerPrice,
+                    date_mark: new Date(),
+                  }
+                ),
+                NotificationAction.add({
+                  message: `you have just won a game from playing the lucky judge game and have earned ${result?.battleScore.player1.winnerPrice}.`,
                   userID: player.id,
-                },
-                {
-                  won: "no",
-                  earnings: 0,
-                  date_mark: new Date(),
-                }
-              );
-              await NotificationAction.add({
-                message: `the lucky judge game you joined has just ended, sorry you were not one of the winners.`,
-                userID: player.id,
-                type: notificationHintType.lost,
+                  type: notificationHintType.win,
+                }),
+                CashWalletModel.updateOne(
+                  { userID: player.id },
+                  {
+                    currentCash:
+                      (currentCash ?? 0) +
+                      (result?.battleScore.player1.winnerPrice ?? 0),
+                  }
+                ),
+              ]).catch((error) => {
+                console.log(error);
               });
+            } else {
+              await Promise.all([
+                RecordModel.updateOne(
+                  {
+                    userID: player.id,
+                  },
+                  {
+                    won: "no",
+                    earnings: 0,
+                    date_mark: new Date(),
+                  }
+                ),
+                NotificationAction.add({
+                  message: `the lucky judge game you joined has just ended, sorry you were not one of the winners.`,
+                  userID: player.id,
+                  type: notificationHintType.lost,
+                }),
+              ]);
             }
           });
           await GameModel.updateOne(

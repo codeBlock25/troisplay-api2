@@ -105,12 +105,12 @@ const GameSchema: Schema<GameDocType> = new Schema({
   players: {
     type: [
       {
+        id: String,
         player_name: String,
         phone_number: String,
         ticket: String,
         winner: Boolean,
         date: Boolean,
-        id: String,
       },
     ],
   },

@@ -110,7 +110,7 @@ const GameSchema: Schema<GameDocType> = new Schema({
         phone_number: String,
         ticket: String,
         winner: Boolean,
-        date: Boolean,
+        date: Date,
       },
     ],
   },

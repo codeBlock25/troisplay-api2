@@ -2885,7 +2885,7 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
           result.players.forEach(async (player) => {
             if (winners.includes(player.id)) {
               await GameModel.updateOne(
-                { _id: player.id },
+                { _id: result?._id ?? "" },
                 {
                   $pull: {
                     players: player,
@@ -2909,6 +2909,7 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
               await NotificationAction.add({
                 message: `you have just won a game from playing the lucky judge game and have earned ${result?.battleScore.player1.winnerPrice}.`,
                 userID: player.id,
+                type: notificationHintType.win,
               });
               let { currentCash } = (await CashWalletModel.findOne({
                 userID: player.id,
@@ -2920,7 +2921,7 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
                 {
                   currentCash:
                     (currentCash ?? 0) +
-                    result?.battleScore.player1.winnerPrice,
+                    (result?.battleScore.player1.winnerPrice ?? 0),
                 }
               );
             } else {
@@ -2937,6 +2938,7 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
               await NotificationAction.add({
                 message: `the lucky judge game you joined has just ended, sorry you were not one of the winners.`,
                 userID: player.id,
+                type: notificationHintType.lost,
               });
             }
           });

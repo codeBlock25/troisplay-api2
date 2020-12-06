@@ -1,12 +1,12 @@
 import { Model, model, Schema, Document } from "mongoose";
-import { Games } from "./games";
 
 export interface recordType extends Document {
   userID: string;
   date_mark: Date;
-  game: Games;
-  won: string;
+  winnings: number;
+  losses: number;
   earnings: number;
+  draws: number;
 }
 
 const RecordSchema: Schema = new Schema({
@@ -19,13 +19,18 @@ const RecordSchema: Schema = new Schema({
     required: true,
     default: Date.now(),
   },
-  game: {
-    type: Games,
+  winnings: {
+    type: Number,
     required: true,
     default: 0,
   },
-  won: {
-    type: String,
+  losses: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  draws: {
+    type: Number,
     required: true,
     default: 0,
   },

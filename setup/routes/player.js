@@ -197,7 +197,7 @@ PlayerRouter.post("/new", upload.single("profile-pic"), function (req, res) { re
         }
     });
 }); });
-PlayerRouter.get("/record", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+PlayerRouter.get("/records", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var auth, token, decoded, user_, found, deviceSetup, gamerecord, referal, wallet, cashwallet, error_2;
     var _a;
     return __generator(this, function (_b) {
@@ -228,7 +228,7 @@ PlayerRouter.get("/record", function (req, res) { return __awaiter(void 0, void 
                 deviceSetup = _b.sent();
                 return [4, gamerecord_1.default.find({ userID: decoded.id })
                         .sort({ date_mark: -1 })
-                        .limit(10)];
+                        .limit(30)];
             case 4:
                 gamerecord = _b.sent();
                 return [4, referals_1.default.findOne({ userID: decoded.id })];
@@ -241,14 +241,16 @@ PlayerRouter.get("/record", function (req, res) { return __awaiter(void 0, void 
             case 7:
                 cashwallet = _b.sent();
                 if (!found) {
-                    res.status(410).json({ message: "error found", error: "invalid user" });
+                    res
+                        .status(410)
+                        .json({ message: "errornn found", error: "invalid_ user" });
                     return [2];
                 }
                 res.json({
                     message: "content found",
                     user: {
                         full_name: user_ === null || user_ === void 0 ? void 0 : user_.full_name,
-                        phone_number: user_ === null || user_ === void 0 ? void 0 : user_.phone_number
+                        phone_number: user_ === null || user_ === void 0 ? void 0 : user_.phone_number,
                     },
                     player: {
                         userID: decoded.id,

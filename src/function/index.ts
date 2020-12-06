@@ -1,7 +1,9 @@
-import { concat, isEmpty, remove, set } from "lodash";
+import { remove, set } from "lodash";
 import AdminCashModel from "../model/admin_model";
+import RecordModel from "../model/gamerecord";
 import notificationModel from "../model/notification";
 import { GameRec } from "../model/plays";
+import moment from "moment"
 import { notificationHintType, RoshamboOption } from "../types/enum";
 
 export const NotificationAction = {
@@ -253,6 +255,61 @@ export function FindWinnerOnMatcher(p1: number, p2: number) {
   return p1 === p2;
 }
 
-export function shuffle(array: string[]): string[] {
+export function shuffle(
+  array: any[]
+): {
+  player_name: string;
+  phone_number: string;
+  ticket: string;
+  winner: Boolean;
+  date: Date;
+  id: string;
+}[] {
   return array.sort(() => Math.random() - 0.5);
 }
+
+export const RecordFunc = {
+  update: async ({
+    userID,
+    date,
+    winnings,
+    losses,
+    earnings,
+    draws,
+  }: {
+    userID: string;
+    date: Date;
+    winnings: number;
+    losses: number;
+    earnings: number;
+    draws: number;
+  }) => {
+    let oldRecord = await RecordModel.findOne({ userID, date_mark: new Date(moment(date).format("YYYY-MM-DD")) });
+    if (oldRecord) {
+      return await RecordModel.updateOne(
+        { userID, date_mark: new Date(moment(date).format("YYYY-MM-DD")) },
+        {
+          $inc: {
+            winnings,
+            losses,
+            earnings,
+            draws,
+          },
+        }
+      );
+    } else {
+      return await new RecordModel({
+        winnings,
+        losses,
+        earnings,
+        date_mark: date,
+        draws,
+        userID,
+      }).save();
+    }
+  },
+  delete: async ({ userID, date }: { userID: string; date: Date }) => {
+    return await RecordModel.deleteOne({ userID, date_mark: date });
+  },
+  udateMultiple: () => {},
+};

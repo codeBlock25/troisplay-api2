@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = require("mongoose");
-var games_1 = require("./games");
 var RecordSchema = new mongoose_1.Schema({
     userID: {
         type: String,
@@ -12,13 +11,18 @@ var RecordSchema = new mongoose_1.Schema({
         required: true,
         default: Date.now(),
     },
-    game: {
-        type: games_1.Games,
+    winnings: {
+        type: Number,
         required: true,
         default: 0,
     },
-    won: {
-        type: String,
+    losses: {
+        type: Number,
+        required: true,
+        default: 0,
+    },
+    draws: {
+        type: Number,
         required: true,
         default: 0,
     },

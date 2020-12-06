@@ -46,7 +46,6 @@ interface PlayerType {
   recovery_answer: string;
 }
 
-
 PlayerRouter.post(
   "/new",
   upload.single("profile-pic"),
@@ -146,58 +145,60 @@ PlayerRouter.post(
   }
 );
 
-PlayerRouter.get("/record", async (req: Request, res: Response) => {
-try {
-   let auth: string = req.headers.authorization ?? "";
-   if (!auth) {
-     res.status(410).json({ message: "error found", error: "invalid auth" });
-     return;
-   }
-   let token: string = auth.replace("Bearer ", "");
-   if (!token || token === "") {
-     res.status(410).json({ message: "error found", error: "empty token" });
-     return;
-   }
-  let decoded: string | object | any = verify(token, secret);
-  let user_ = await users.findById(decoded.id);
-  let found = await PlayerModel.findOne({
-    userID: decoded.id,
-  });
-   let deviceSetup = await DeviceModel.findOne({ userID: decoded.id });
-   let gamerecord = await RecordModel.find({ userID: decoded.id })
-     .sort({ date_mark: -1 })
-     .limit(10);
-   let referal = await ReferalModel.findOne({ userID: decoded.id });
-  let wallet = await WalletModel.findOne({ userID: decoded.id });
-  let cashwallet = await CashWalletModel.findOne({ userID: decoded.id });
-   if (!found) {
-     res.status(410).json({ message: "error found", error: "invalid user" });
-     return;
-   }
-   res.json({
-     message: "content found",
-     user: {
-       full_name: user_?.full_name,
-       phone_number: user_?.phone_number
+PlayerRouter.get("/records", async (req: Request, res: Response) => {
+  try {
+    let auth: string = req.headers.authorization ?? "";
+    if (!auth) {
+      res.status(410).json({ message: "error found", error: "invalid auth" });
+      return;
+    }
+    let token: string = auth.replace("Bearer ", "");
+    if (!token || token === "") {
+      res.status(410).json({ message: "error found", error: "empty token" });
+      return;
+    }
+    let decoded: string | object | any = verify(token, secret);
+    let user_ = await users.findById(decoded.id);
+    let found = await PlayerModel.findOne({
+      userID: decoded.id,
+    });
+    let deviceSetup = await DeviceModel.findOne({ userID: decoded.id });
+    let gamerecord = await RecordModel.find({ userID: decoded.id })
+      .sort({ date_mark: -1 })
+      .limit(30);
+    let referal = await ReferalModel.findOne({ userID: decoded.id });
+    let wallet = await WalletModel.findOne({ userID: decoded.id });
+    let cashwallet = await CashWalletModel.findOne({ userID: decoded.id });
+    if (!found) {
+      res
+        .status(410)
+        .json({ message: "errornn found", error: "invalid_ user" });
+      return;
+    }
+    res.json({
+      message: "content found",
+      user: {
+        full_name: user_?.full_name,
+        phone_number: user_?.phone_number,
       },
-     player: {
-       userID: decoded.id,
-       full_name: user_?.full_name,
-       phone_number: user_?.phone_number,
-       playerpic: found.playerpic,
-       playername: found.playername,
-       email: found.email,
-       location: found.location,
-     },
-     deviceSetup,
-     referal,
-     wallet,
-     gamerecord,
-     cashwallet,
-   });
-} catch (error) {
-  res.status(500).json({error})
-}
+      player: {
+        userID: decoded.id,
+        full_name: user_?.full_name,
+        phone_number: user_?.phone_number,
+        playerpic: found.playerpic,
+        playername: found.playername,
+        email: found.email,
+        location: found.location,
+      },
+      deviceSetup,
+      referal,
+      wallet,
+      gamerecord,
+      cashwallet,
+    });
+  } catch (error) {
+    res.status(500).json({ error });
+  }
 });
 
 PlayerRouter.post("/forgot", async (req: Request, res: Response) => {

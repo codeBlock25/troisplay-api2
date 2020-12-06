@@ -68,7 +68,7 @@ RecordRouter.get("/", function (req, res) { return __awaiter(void 0, void 0, voi
             case 1:
                 user = _b.sent();
                 if (!user) {
-                    res.status(401).json({ message: "error found", error: "invalid user" });
+                    res.status(401).json({ message: "error found", error: "invalid_ user" });
                     return [2];
                 }
                 return [4, gamerecord_1.default.find({ userID: decoded.id })

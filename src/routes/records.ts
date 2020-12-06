@@ -24,7 +24,7 @@ RecordRouter.get("/", async (req: Request, res: Response) => {
     };
     let user = await users.findById(decoded.id);
     if (!user) {
-      res.status(401).json({ message: "error found", error: "invalid user" });
+      res.status(401).json({ message: "error found", error: "invalid_ user" });
       return;
     }
     await RecordModel.find({ userID: decoded.id })

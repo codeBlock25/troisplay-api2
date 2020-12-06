@@ -59,11 +59,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.shuffle = exports.FindWinnerOnMatcher = exports.FindWinnerOnRoshambo = exports.MarkRoshamboGame = exports.PlayerDrawCash = exports.PlayerCoinLeft = exports.PlayerCashLeft = exports.PlayerCash = exports.AdminCash = exports.FindWinnerOnPenalty = exports.PlayAdmin = exports.NotificationAction = void 0;
+exports.RecordFunc = exports.shuffle = exports.FindWinnerOnMatcher = exports.FindWinnerOnRoshambo = exports.MarkRoshamboGame = exports.PlayerDrawCash = exports.PlayerCoinLeft = exports.PlayerCashLeft = exports.PlayerCash = exports.AdminCash = exports.FindWinnerOnPenalty = exports.PlayAdmin = exports.NotificationAction = void 0;
 var lodash_1 = require("lodash");
 var admin_model_1 = __importDefault(require("../model/admin_model"));
+var gamerecord_1 = __importDefault(require("../model/gamerecord"));
 var notification_1 = __importDefault(require("../model/notification"));
 var plays_1 = require("../model/plays");
+var moment_1 = __importDefault(require("moment"));
 var enum_1 = require("../types/enum");
 exports.NotificationAction = {
     add: function (_a) {
@@ -87,7 +89,7 @@ exports.NotificationAction = {
         });
     },
     markRead: function (_a) {
-        var userID = _a.userID, time = _a.time;
+        var userID = _a.userID;
         return __awaiter(void 0, void 0, void 0, function () {
             var allNotifications, notifications, removed;
             return __generator(this, function (_b) {
@@ -98,8 +100,10 @@ exports.NotificationAction = {
                         if (!allNotifications)
                             return [2];
                         notifications = allNotifications.notifications;
-                        removed = lodash_1.remove(notifications, { time: time });
-                        lodash_1.set(removed[0], "hasNew", false);
+                        removed = lodash_1.remove(notifications, { hasNew: true });
+                        removed.map(function (init) {
+                            lodash_1.set(init, "hasNew", false);
+                        });
                         return [4, notification_1.default.findOneAndUpdate({ userID: userID }, {
                                 notifications: __spread(notifications, removed),
                             })];
@@ -243,3 +247,49 @@ function shuffle(array) {
     return array.sort(function () { return Math.random() - 0.5; });
 }
 exports.shuffle = shuffle;
+exports.RecordFunc = {
+    update: function (_a) {
+        var userID = _a.userID, date = _a.date, winnings = _a.winnings, losses = _a.losses, earnings = _a.earnings, draws = _a.draws;
+        return __awaiter(void 0, void 0, void 0, function () {
+            var oldRecord;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4, gamerecord_1.default.findOne({ userID: userID, date_mark: new Date(moment_1.default(date).format("YYYY-MM-DD")) })];
+                    case 1:
+                        oldRecord = _b.sent();
+                        if (!oldRecord) return [3, 3];
+                        return [4, gamerecord_1.default.updateOne({ userID: userID, date_mark: new Date(moment_1.default(date).format("YYYY-MM-DD")) }, {
+                                $inc: {
+                                    winnings: winnings,
+                                    losses: losses,
+                                    earnings: earnings,
+                                    draws: draws,
+                                },
+                            })];
+                    case 2: return [2, _b.sent()];
+                    case 3: return [4, new gamerecord_1.default({
+                            winnings: winnings,
+                            losses: losses,
+                            earnings: earnings,
+                            date_mark: date,
+                            draws: draws,
+                            userID: userID,
+                        }).save()];
+                    case 4: return [2, _b.sent()];
+                }
+            });
+        });
+    },
+    delete: function (_a) {
+        var userID = _a.userID, date = _a.date;
+        return __awaiter(void 0, void 0, void 0, function () {
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4, gamerecord_1.default.deleteOne({ userID: userID, date_mark: date })];
+                    case 1: return [2, _b.sent()];
+                }
+            });
+        });
+    },
+    udateMultiple: function () { },
+};

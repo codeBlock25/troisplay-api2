@@ -62,10 +62,12 @@ var GameSchema = new mongoose_1.Schema({
     players: {
         type: [
             {
+                id: String,
                 player_name: String,
                 phone_number: String,
                 ticket: String,
                 winner: Boolean,
+                date: Date,
             },
         ],
     },

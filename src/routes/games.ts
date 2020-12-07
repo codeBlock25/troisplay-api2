@@ -1616,13 +1616,15 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
       await CashWalletModel.updateOne(
         { userID: decoded.id },
         {
-          currentCash: PlayerCashLeft(
-            commission_guess_mater,
-            p1Cash,
-            game_?.price_in_value ?? 0,
-            1,
-            cashRating
-          ),
+          $inc: {
+            currentCash: PlayerCashLeft(
+              commission_guess_mater,
+              0,
+              game_?.price_in_value ?? 0,
+              1,
+              cashRating
+            ),
+          },
         }
       );
     }
@@ -1658,18 +1660,6 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
           earnings: 0,
         });
         await CashWalletModel.updateOne(
-          { userID: game_?.members[0] },
-          {
-            currentCash: PlayerCash(
-              commission_guess_mater,
-              p2Cash,
-              (game_?.price_in_value ?? 0) - (game_?.price_in_value ?? 0) * 1,
-              2,
-              cashRating
-            ),
-          }
-        );
-        await CashWalletModel.updateOne(
           { userID: decoded.id },
           {
             $inc: {
@@ -1699,13 +1689,8 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
           .catch((error) => {
             res.status(500).json({ message: "error found", error });
           });
+        return;
       } else if (count === 2) {
-        await NotificationAction.add({
-          message: `you have just won a game from playing a guess master game and have earned ${
-            (game_?.price_in_value ?? 0) * 0.8
-          }.`,
-          userID: decoded.id,
-        });
         await NotificationAction.add({
           message: `you have just lost a game from playing a guess master game and have earned ${
             (game_?.price_in_value ?? 0) * 0.8
@@ -1743,25 +1728,30 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
         await CashWalletModel.updateOne(
           { userID: game_?.members[0] },
           {
-            currentCash: PlayerCash(
-              commission_guess_mater,
-              p2Cash,
-              (game_?.price_in_value ?? 0) - (game_?.price_in_value ?? 0) * 0.8,
-              2,
-              cashRating
-            ),
+            $inc: {
+              currentCash: PlayerCash(
+                commission_guess_mater,
+                0,
+                (game_?.price_in_value ?? 0) -
+                  (game_?.price_in_value ?? 0) * 0.8,
+                2,
+                cashRating
+              ),
+            },
           }
         );
         await CashWalletModel.updateOne(
           { userID: decoded.id },
           {
-            currentCash: PlayerCash(
-              commission_guess_mater,
-              p1Cash,
-              (game_?.price_in_value ?? 0) * 0.8,
-              2,
-              cashRating
-            ),
+            $inc: {
+              currentCash: PlayerCash(
+                commission_guess_mater,
+                0,
+                (game_?.price_in_value ?? 0) * 0.8,
+                2,
+                cashRating
+              ),
+            },
           }
         )
           .then(() => {
@@ -1780,13 +1770,8 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
           .catch((error) => {
             res.status(500).json({ message: "error found", error });
           });
+        return;
       } else {
-        await NotificationAction.add({
-          message: `you have just won a game from playing a guess master game and have earned ${
-            (game_?.price_in_value ?? 0) * 0.6
-          }.`,
-          userID: decoded.id,
-        });
         await NotificationAction.add({
           message: `you have just lost a game from playing a guess master game and have earned ${
             (game_?.price_in_value ?? 0) * 0.6
@@ -1824,25 +1809,30 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
         await CashWalletModel.updateOne(
           { userID: game_?.members[0] },
           {
-            currentCash: PlayerCash(
-              commission_guess_mater,
-              p2Cash,
-              (game_?.price_in_value ?? 0) - (game_?.price_in_value ?? 0) * 0.6,
-              2,
-              cashRating
-            ),
+            $inc: {
+              currentCash: PlayerCash(
+                commission_guess_mater,
+                0,
+                (game_?.price_in_value ?? 0) -
+                  (game_?.price_in_value ?? 0) * 0.6,
+                2,
+                cashRating
+              ),
+            },
           }
         );
         await CashWalletModel.updateOne(
           { userID: decoded.id },
           {
-            currentCash: PlayerCash(
-              commission_guess_mater,
-              p1Cash,
-              (game_?.price_in_value ?? 0) * 0.6,
-              2,
-              cashRating
-            ),
+            $inc: {
+              currentCash: PlayerCash(
+                commission_guess_mater,
+                0,
+                (game_?.price_in_value ?? 0) * 0.6,
+                2,
+                cashRating
+              ),
+            },
           }
         )
           .then(() => {
@@ -1863,53 +1853,59 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
           });
       }
     } else {
-      await NotificationAction.add({
-        message: `you have just won a game from playing a guess master game and have earned ${
-          (game_?.price_in_value ?? 0) * 1
-        }.`,
-        userID: game_?.members[0] ?? "",
-      });
       await new UserPlay({
         player2ID: decoded.id,
         isWin: false,
         gameID: id,
       }).save();
       if (count >= 3) {
-        await RecordFunc.update({
-          userID: decoded.id,
-          date: new Date(),
-          winnings: 0,
-          losses: 1,
-          draws: 0,
-          earnings: 0,
-        });
-        await RecordFunc.update({
-          userID: game_?.members[0] ?? "",
-          date: new Date(),
-          winnings: 1,
-          losses: 0,
-          draws: 0,
-          earnings: PlayerCash(
-            commission_guess_mater,
-            0,
-            game_?.price_in_value ?? 0,
-            2,
-            cashRating
-          ),
-        });
-        await CashWalletModel.updateOne(
-          { userID: game_?.members[0] },
-          {
-            currentCash: PlayerCash(
+        await Promise.all([
+          await NotificationAction.add({
+            message: `you have just won a game from playing a guess master game and have earned ${PlayerCash(
               commission_guess_mater,
-              p2Cash,
+              0,
+              game_?.price_in_value ?? 0,
+              2,
+              cashRating
+            )}.`,
+            userID: game_?.members[0] ?? "",
+          }),
+          await RecordFunc.update({
+            userID: decoded.id,
+            date: new Date(),
+            winnings: 0,
+            losses: 1,
+            draws: 0,
+            earnings: 0,
+          }),
+          await RecordFunc.update({
+            userID: game_?.members[0] ?? "",
+            date: new Date(),
+            winnings: 1,
+            losses: 0,
+            draws: 0,
+            earnings: PlayerCash(
+              commission_guess_mater,
+              0,
               game_?.price_in_value ?? 0,
               2,
               cashRating
             ),
-          }
-        )
-          .then(() => {
+          }),
+          await CashWalletModel.updateOne(
+            { userID: game_?.members[0] },
+            {
+              currentCash: PlayerCash(
+                commission_guess_mater,
+                p2Cash,
+                game_?.price_in_value ?? 0,
+                2,
+                cashRating
+              ),
+            }
+          ),
+        ])
+          .finally(() => {
             res.json({
               message: "you lost",
               winner: false,

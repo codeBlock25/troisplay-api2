@@ -1590,13 +1590,13 @@ GamesRouter.post("/roshambo/play-against", function (req, res) { return __awaite
     });
 }); });
 GamesRouter.post("/matcher/challange", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var auth, _a, id, gameInPut, payWith, token, decoded, found, game_4, cashInstance, coinInstance, defaultInstance, adminCashInstance, p2CashInstance, p1Cash, currentCoin, p2Cash, AdminCurrentCash, cashRating_3, commission_guess_mater_1, winner, count, error_13;
-    var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15;
-    return __generator(this, function (_16) {
-        switch (_16.label) {
+    var auth, _a, id, gameInPut, payWith, token, decoded, found, game_4, cashInstance, coinInstance, defaultInstance, adminCashInstance, p2CashInstance, p1Cash, currentCoin, p2Cash, AdminCurrentCash, cashRating_3, commission_guess_mater_1, winner, count, _b, _c, _d, error_13;
+    var _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14;
+    return __generator(this, function (_15) {
+        switch (_15.label) {
             case 0:
-                _16.trys.push([0, 43, , 44]);
-                auth = (_b = req.headers.authorization) !== null && _b !== void 0 ? _b : "";
+                _15.trys.push([0, 41, , 42]);
+                auth = (_e = req.headers.authorization) !== null && _e !== void 0 ? _e : "";
                 _a = req.body, id = _a.id, gameInPut = _a.gameInPut, payWith = _a.payWith;
                 if (!auth) {
                     res.status(406).json({ message: "error found", error: "invalid auth" });
@@ -1610,27 +1610,27 @@ GamesRouter.post("/matcher/challange", function (req, res) { return __awaiter(vo
                 decoded = jsonwebtoken_1.verify(token, secret);
                 return [4, users_1.default.findById(decoded.id)];
             case 1:
-                found = _16.sent();
+                found = _15.sent();
                 return [4, games_1.default.findById(id)];
             case 2:
-                game_4 = _16.sent();
+                game_4 = _15.sent();
                 return [4, cash_wallet_1.default.findOne({ userID: decoded.id })];
             case 3:
-                cashInstance = _16.sent();
+                cashInstance = _15.sent();
                 return [4, walltet_1.default.findOne({ userID: decoded.id })];
             case 4:
-                coinInstance = _16.sent();
+                coinInstance = _15.sent();
                 return [4, default_1.default.findOne({})];
             case 5:
-                defaultInstance = _16.sent();
+                defaultInstance = _15.sent();
                 return [4, admin_model_1.default.findOne({})];
             case 6:
-                adminCashInstance = _16.sent();
+                adminCashInstance = _15.sent();
                 return [4, cash_wallet_1.default.findOne({
                         userID: game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0],
                     })];
             case 7:
-                p2CashInstance = _16.sent();
+                p2CashInstance = _15.sent();
                 if (!found) {
                     res.status(406).json({ message: "error found", error: "invalid user" });
                     return [2];
@@ -1654,9 +1654,9 @@ GamesRouter.post("/matcher/challange", function (req, res) { return __awaiter(vo
                         gameID: id,
                     })];
             case 8:
-                count = _16.sent();
+                count = _15.sent();
                 if (payWith === enum_1.PayType.cash) {
-                    if (p1Cash < ((_c = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _c !== void 0 ? _c : 0)) {
+                    if (p1Cash < ((_f = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _f !== void 0 ? _f : 0)) {
                         res
                             .status(401)
                             .json({ message: "error found", error: "insufficient fund" });
@@ -1664,7 +1664,7 @@ GamesRouter.post("/matcher/challange", function (req, res) { return __awaiter(vo
                     }
                 }
                 else {
-                    if (currentCoin < ((_d = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _d !== void 0 ? _d : 0) * cashRating_3) {
+                    if (currentCoin < ((_g = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _g !== void 0 ? _g : 0) * cashRating_3) {
                         res
                             .status(401)
                             .json({ message: "error found", error: "insufficient fund" });
@@ -1673,39 +1673,41 @@ GamesRouter.post("/matcher/challange", function (req, res) { return __awaiter(vo
                 }
                 if (!(payWith === enum_1.PayType.coin)) return [3, 10];
                 return [4, walltet_1.default.updateOne({ userID: decoded.id }, {
-                        currentCash: function_1.PlayerCoinLeft(commission_guess_mater_1, currentCoin, (_e = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _e !== void 0 ? _e : 0, 1, cashRating_3),
+                        currentCash: function_1.PlayerCoinLeft(commission_guess_mater_1, currentCoin, (_h = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _h !== void 0 ? _h : 0, 1, cashRating_3),
                     })];
             case 9:
-                _16.sent();
+                _15.sent();
                 return [3, 12];
             case 10: return [4, cash_wallet_1.default.updateOne({ userID: decoded.id }, {
-                    currentCash: function_1.PlayerCashLeft(commission_guess_mater_1, p1Cash, (_f = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _f !== void 0 ? _f : 0, 1, cashRating_3),
+                    $inc: {
+                        currentCash: function_1.PlayerCashLeft(commission_guess_mater_1, 0, (_j = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _j !== void 0 ? _j : 0, 1, cashRating_3),
+                    },
                 })];
             case 11:
-                _16.sent();
-                _16.label = 12;
+                _15.sent();
+                _15.label = 12;
             case 12:
-                if (!winner) return [3, 33];
-                if (!(count === 1)) return [3, 18];
+                if (!winner) return [3, 30];
+                if (!(count === 1)) return [3, 17];
                 return [4, function_1.NotificationAction.add({
-                        message: "you have just lost a game from playing a guess master game and have earned \u20A6 " + ((_g = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _g !== void 0 ? _g : 0) * 1 + ".",
-                        userID: (_h = game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0]) !== null && _h !== void 0 ? _h : "",
+                        message: "you have just lost a game from playing a guess master game and have earned \u20A6 " + ((_k = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _k !== void 0 ? _k : 0) * 1 + ".",
+                        userID: (_l = game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0]) !== null && _l !== void 0 ? _l : "",
                         type: enum_1.notificationHintType.lost,
                     })];
             case 13:
-                _16.sent();
+                _15.sent();
                 return [4, function_1.RecordFunc.update({
                         userID: decoded.id,
                         date: new Date(),
                         winnings: 1,
                         losses: 0,
                         draws: 0,
-                        earnings: function_1.PlayerCash(commission_guess_mater_1, 0, ((_j = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _j !== void 0 ? _j : 0) * 1, 2, cashRating_3),
+                        earnings: function_1.PlayerCash(commission_guess_mater_1, 0, ((_m = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _m !== void 0 ? _m : 0) * 1, 2, cashRating_3),
                     })];
             case 14:
-                _16.sent();
+                _15.sent();
                 return [4, function_1.RecordFunc.update({
-                        userID: (_k = game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0]) !== null && _k !== void 0 ? _k : "",
+                        userID: (_o = game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0]) !== null && _o !== void 0 ? _o : "",
                         date: new Date(),
                         winnings: 0,
                         losses: 1,
@@ -1713,15 +1715,10 @@ GamesRouter.post("/matcher/challange", function (req, res) { return __awaiter(vo
                         earnings: 0,
                     })];
             case 15:
-                _16.sent();
-                return [4, cash_wallet_1.default.updateOne({ userID: game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0] }, {
-                        currentCash: function_1.PlayerCash(commission_guess_mater_1, p2Cash, ((_l = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _l !== void 0 ? _l : 0) - ((_m = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _m !== void 0 ? _m : 0) * 1, 2, cashRating_3),
-                    })];
-            case 16:
-                _16.sent();
+                _15.sent();
                 return [4, cash_wallet_1.default.updateOne({ userID: decoded.id }, {
                         $inc: {
-                            currentCash: function_1.PlayerCash(commission_guess_mater_1, 0, ((_o = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _o !== void 0 ? _o : 0) * 1, 2, cashRating_3),
+                            currentCash: function_1.PlayerCash(commission_guess_mater_1, 0, ((_p = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _p !== void 0 ? _p : 0) * 1, 2, cashRating_3),
                         },
                     })
                         .then(function () {
@@ -1735,23 +1732,17 @@ GamesRouter.post("/matcher/challange", function (req, res) { return __awaiter(vo
                         .catch(function (error) {
                         res.status(500).json({ message: "error found", error: error });
                     })];
+            case 16:
+                _15.sent();
+                return [2];
             case 17:
-                _16.sent();
-                return [3, 32];
-            case 18:
-                if (!(count === 2)) return [3, 25];
-                return [4, function_1.NotificationAction.add({
-                        message: "you have just won a game from playing a guess master game and have earned " + ((_p = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _p !== void 0 ? _p : 0) * 0.8 + ".",
-                        userID: decoded.id,
-                    })];
-            case 19:
-                _16.sent();
+                if (!(count === 2)) return [3, 23];
                 return [4, function_1.NotificationAction.add({
                         message: "you have just lost a game from playing a guess master game and have earned " + ((_q = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _q !== void 0 ? _q : 0) * 0.8 + ".",
                         userID: (_r = game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0]) !== null && _r !== void 0 ? _r : "",
                     })];
-            case 20:
-                _16.sent();
+            case 18:
+                _15.sent();
                 return [4, function_1.RecordFunc.update({
                         userID: decoded.id,
                         date: new Date(),
@@ -1760,8 +1751,8 @@ GamesRouter.post("/matcher/challange", function (req, res) { return __awaiter(vo
                         draws: 0,
                         earnings: function_1.PlayerCash(commission_guess_mater_1, 0, ((_s = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _s !== void 0 ? _s : 0) * 0.8, 2, cashRating_3),
                     })];
-            case 21:
-                _16.sent();
+            case 19:
+                _15.sent();
                 return [4, function_1.RecordFunc.update({
                         userID: (_t = game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0]) !== null && _t !== void 0 ? _t : "",
                         date: new Date(),
@@ -1770,15 +1761,20 @@ GamesRouter.post("/matcher/challange", function (req, res) { return __awaiter(vo
                         draws: 0,
                         earnings: function_1.PlayerCash(commission_guess_mater_1, 0, ((_u = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _u !== void 0 ? _u : 0) - ((_v = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _v !== void 0 ? _v : 0) * 0.8, 2, cashRating_3),
                     })];
-            case 22:
-                _16.sent();
+            case 20:
+                _15.sent();
                 return [4, cash_wallet_1.default.updateOne({ userID: game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0] }, {
-                        currentCash: function_1.PlayerCash(commission_guess_mater_1, p2Cash, ((_w = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _w !== void 0 ? _w : 0) - ((_x = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _x !== void 0 ? _x : 0) * 0.8, 2, cashRating_3),
+                        $inc: {
+                            currentCash: function_1.PlayerCash(commission_guess_mater_1, 0, ((_w = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _w !== void 0 ? _w : 0) -
+                                ((_x = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _x !== void 0 ? _x : 0) * 0.8, 2, cashRating_3),
+                        },
                     })];
-            case 23:
-                _16.sent();
+            case 21:
+                _15.sent();
                 return [4, cash_wallet_1.default.updateOne({ userID: decoded.id }, {
-                        currentCash: function_1.PlayerCash(commission_guess_mater_1, p1Cash, ((_y = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _y !== void 0 ? _y : 0) * 0.8, 2, cashRating_3),
+                        $inc: {
+                            currentCash: function_1.PlayerCash(commission_guess_mater_1, 0, ((_y = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _y !== void 0 ? _y : 0) * 0.8, 2, cashRating_3),
+                        },
                     })
                         .then(function () {
                         var _a;
@@ -1791,48 +1787,47 @@ GamesRouter.post("/matcher/challange", function (req, res) { return __awaiter(vo
                         .catch(function (error) {
                         res.status(500).json({ message: "error found", error: error });
                     })];
-            case 24:
-                _16.sent();
-                return [3, 32];
-            case 25: return [4, function_1.NotificationAction.add({
-                    message: "you have just won a game from playing a guess master game and have earned " + ((_z = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _z !== void 0 ? _z : 0) * 0.6 + ".",
-                    userID: decoded.id,
+            case 22:
+                _15.sent();
+                return [2];
+            case 23: return [4, function_1.NotificationAction.add({
+                    message: "you have just lost a game from playing a guess master game and have earned " + ((_z = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _z !== void 0 ? _z : 0) * 0.6 + ".",
+                    userID: (_0 = game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0]) !== null && _0 !== void 0 ? _0 : "",
                 })];
-            case 26:
-                _16.sent();
-                return [4, function_1.NotificationAction.add({
-                        message: "you have just lost a game from playing a guess master game and have earned " + ((_0 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _0 !== void 0 ? _0 : 0) * 0.6 + ".",
-                        userID: (_1 = game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0]) !== null && _1 !== void 0 ? _1 : "",
-                    })];
-            case 27:
-                _16.sent();
+            case 24:
+                _15.sent();
                 return [4, function_1.RecordFunc.update({
                         userID: decoded.id,
                         date: new Date(),
                         winnings: 1,
                         losses: 0,
                         draws: 0,
-                        earnings: function_1.PlayerCash(commission_guess_mater_1, 0, ((_2 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _2 !== void 0 ? _2 : 0) * 0.6, 2, cashRating_3),
+                        earnings: function_1.PlayerCash(commission_guess_mater_1, 0, ((_1 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _1 !== void 0 ? _1 : 0) * 0.6, 2, cashRating_3),
                     })];
-            case 28:
-                _16.sent();
+            case 25:
+                _15.sent();
                 return [4, function_1.RecordFunc.update({
-                        userID: (_3 = game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0]) !== null && _3 !== void 0 ? _3 : "",
+                        userID: (_2 = game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0]) !== null && _2 !== void 0 ? _2 : "",
                         date: new Date(),
                         winnings: 0,
                         losses: 1,
                         draws: 0,
-                        earnings: function_1.PlayerCash(commission_guess_mater_1, 0, ((_4 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _4 !== void 0 ? _4 : 0) - ((_5 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _5 !== void 0 ? _5 : 0) * 0.6, 2, cashRating_3),
+                        earnings: function_1.PlayerCash(commission_guess_mater_1, 0, ((_3 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _3 !== void 0 ? _3 : 0) - ((_4 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _4 !== void 0 ? _4 : 0) * 0.6, 2, cashRating_3),
                     })];
-            case 29:
-                _16.sent();
+            case 26:
+                _15.sent();
                 return [4, cash_wallet_1.default.updateOne({ userID: game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0] }, {
-                        currentCash: function_1.PlayerCash(commission_guess_mater_1, p2Cash, ((_6 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _6 !== void 0 ? _6 : 0) - ((_7 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _7 !== void 0 ? _7 : 0) * 0.6, 2, cashRating_3),
+                        $inc: {
+                            currentCash: function_1.PlayerCash(commission_guess_mater_1, 0, ((_5 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _5 !== void 0 ? _5 : 0) -
+                                ((_6 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _6 !== void 0 ? _6 : 0) * 0.6, 2, cashRating_3),
+                        },
                     })];
-            case 30:
-                _16.sent();
+            case 27:
+                _15.sent();
                 return [4, cash_wallet_1.default.updateOne({ userID: decoded.id }, {
-                        currentCash: function_1.PlayerCash(commission_guess_mater_1, p1Cash, ((_8 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _8 !== void 0 ? _8 : 0) * 0.6, 2, cashRating_3),
+                        $inc: {
+                            currentCash: function_1.PlayerCash(commission_guess_mater_1, 0, ((_7 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _7 !== void 0 ? _7 : 0) * 0.6, 2, cashRating_3),
+                        },
                     })
                         .then(function () {
                         var _a;
@@ -1845,24 +1840,27 @@ GamesRouter.post("/matcher/challange", function (req, res) { return __awaiter(vo
                         .catch(function (error) {
                         res.status(500).json({ message: "error found", error: error });
                     })];
+            case 28:
+                _15.sent();
+                _15.label = 29;
+            case 29: return [3, 38];
+            case 30: return [4, new plays_1.default({
+                    player2ID: decoded.id,
+                    isWin: false,
+                    gameID: id,
+                }).save()];
             case 31:
-                _16.sent();
-                _16.label = 32;
-            case 32: return [3, 40];
-            case 33: return [4, function_1.NotificationAction.add({
-                    message: "you have just won a game from playing a guess master game and have earned " + ((_9 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _9 !== void 0 ? _9 : 0) * 1 + ".",
-                    userID: (_10 = game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0]) !== null && _10 !== void 0 ? _10 : "",
-                })];
-            case 34:
-                _16.sent();
-                return [4, new plays_1.default({
-                        player2ID: decoded.id,
-                        isWin: false,
-                        gameID: id,
-                    }).save()];
-            case 35:
-                _16.sent();
-                if (!(count >= 3)) return [3, 39];
+                _15.sent();
+                if (!(count >= 3)) return [3, 37];
+                _c = (_b = Promise).all;
+                return [4, function_1.NotificationAction.add({
+                        message: "you have just won a game from playing a guess master game and have earned " + function_1.PlayerCash(commission_guess_mater_1, 0, (_8 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _8 !== void 0 ? _8 : 0, 2, cashRating_3) + ".",
+                        userID: (_9 = game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0]) !== null && _9 !== void 0 ? _9 : "",
+                    })];
+            case 32:
+                _d = [
+                    _15.sent()
+                ];
                 return [4, function_1.RecordFunc.update({
                         userID: decoded.id,
                         date: new Date(),
@@ -1871,54 +1869,61 @@ GamesRouter.post("/matcher/challange", function (req, res) { return __awaiter(vo
                         draws: 0,
                         earnings: 0,
                     })];
-            case 36:
-                _16.sent();
+            case 33:
+                _d = _d.concat([
+                    _15.sent()
+                ]);
                 return [4, function_1.RecordFunc.update({
-                        userID: (_11 = game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0]) !== null && _11 !== void 0 ? _11 : "",
+                        userID: (_10 = game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0]) !== null && _10 !== void 0 ? _10 : "",
                         date: new Date(),
                         winnings: 1,
                         losses: 0,
                         draws: 0,
-                        earnings: function_1.PlayerCash(commission_guess_mater_1, 0, (_12 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _12 !== void 0 ? _12 : 0, 2, cashRating_3),
+                        earnings: function_1.PlayerCash(commission_guess_mater_1, 0, (_11 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _11 !== void 0 ? _11 : 0, 2, cashRating_3),
                     })];
-            case 37:
-                _16.sent();
+            case 34:
+                _d = _d.concat([
+                    _15.sent()
+                ]);
                 return [4, cash_wallet_1.default.updateOne({ userID: game_4 === null || game_4 === void 0 ? void 0 : game_4.members[0] }, {
-                        currentCash: function_1.PlayerCash(commission_guess_mater_1, p2Cash, (_13 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _13 !== void 0 ? _13 : 0, 2, cashRating_3),
-                    })
-                        .then(function () {
-                        res.json({
-                            message: "you lost",
-                            winner: false,
-                            price: 0,
-                        });
-                    })
-                        .catch(function (error) {
-                        res.status(500).json({ message: "error found", error: error });
+                        currentCash: function_1.PlayerCash(commission_guess_mater_1, p2Cash, (_12 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _12 !== void 0 ? _12 : 0, 2, cashRating_3),
                     })];
-            case 38:
-                _16.sent();
-                return [3, 40];
-            case 39:
+            case 35: return [4, _c.apply(_b, [_d.concat([
+                        _15.sent()
+                    ])])
+                    .finally(function () {
+                    res.json({
+                        message: "you lost",
+                        winner: false,
+                        price: 0,
+                    });
+                })
+                    .catch(function (error) {
+                    res.status(500).json({ message: "error found", error: error });
+                })];
+            case 36:
+                _15.sent();
+                return [3, 38];
+            case 37:
                 res.json({ count: 4 - count, winner: false, price: 0 });
-                _16.label = 40;
-            case 40: return [4, games_1.default.updateOne({
-                    _id: (_14 = game_4 === null || game_4 === void 0 ? void 0 : game_4._id) !== null && _14 !== void 0 ? _14 : "",
+                _15.label = 38;
+            case 38: return [4, games_1.default.updateOne({
+                    _id: (_13 = game_4 === null || game_4 === void 0 ? void 0 : game_4._id) !== null && _13 !== void 0 ? _13 : "",
                 }, {
                     played: true,
                 })];
+            case 39:
+                _15.sent();
+                return [4, function_1.PlayAdmin(commission_guess_mater_1, (_14 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _14 !== void 0 ? _14 : 0, AdminCurrentCash, cashRating_3, 2)];
+            case 40:
+                _15.sent();
+                return [3, 42];
             case 41:
-                _16.sent();
-                return [4, function_1.PlayAdmin(commission_guess_mater_1, (_15 = game_4 === null || game_4 === void 0 ? void 0 : game_4.price_in_value) !== null && _15 !== void 0 ? _15 : 0, AdminCurrentCash, cashRating_3, 2)];
-            case 42:
-                _16.sent();
-                return [3, 44];
-            case 43:
-                error_13 = _16.sent();
+                error_13 = _15.sent();
                 res.status(500).json({ message: "error found", error: error_13 });
                 console.error(error_13);
-                return [3, 44];
-            case 44: return [2];
+                return [3, 42];
+            case 42: return [2];
         }
     });
 }); });
@@ -2726,7 +2731,7 @@ GamesRouter.get("/lucky-geoge", function (req, res) { return __awaiter(void 0, v
     });
 }); });
 GamesRouter.post("/lucky-geoge/play", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var auth, token, decoded, user, currentCash, currentCoin, _a, id_2, payWith, _b, stack, price_in_value, ticket, error_19;
+    var auth, token, decoded, user, currentCash, currentCoin, _a, id_2, payWith, _b, stack, price_in_value, members, gameMemberCount, ticket, error_19;
     var _c, _d, _e, _f, _g, _h, _j;
     return __generator(this, function (_k) {
         switch (_k.label) {
@@ -2759,7 +2764,18 @@ GamesRouter.post("/lucky-geoge/play", function (req, res) { return __awaiter(voi
                 _a = req.body, id_2 = _a.id, payWith = _a.payWith;
                 return [4, games_1.default.findById(id_2)];
             case 4:
-                _b = (_j = (_k.sent())) !== null && _j !== void 0 ? _j : { price_in_coin: 0, price_in_value: 0 }, stack = _b.price_in_coin, price_in_value = _b.price_in_value;
+                _b = (_j = (_k.sent())) !== null && _j !== void 0 ? _j : {
+                    price_in_coin: 0,
+                    price_in_value: 0,
+                }, stack = _b.price_in_coin, price_in_value = _b.price_in_value, members = _b.members, gameMemberCount = _b.gameMemberCount;
+                if (!members || lodash_1.isEmpty(members) || !gameMemberCount) {
+                    res.status(500);
+                    return [2];
+                }
+                if (members.length >= gameMemberCount) {
+                    res.status(402).json({ message: "max count meet" });
+                    return [2];
+                }
                 if (!(payWith === enum_1.PayType.cash)) return [3, 6];
                 if (price_in_value > currentCash) {
                     res

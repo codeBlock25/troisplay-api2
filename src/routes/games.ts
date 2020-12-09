@@ -2784,9 +2784,23 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
       id: string;
       payWith: PayType;
     } = req.body;
-    let { price_in_coin: stack, price_in_value } = (await GameModel.findById(
-      id
-    )) ?? { price_in_coin: 0, price_in_value: 0 };
+    let {
+      price_in_coin: stack,
+      price_in_value,
+      members,
+      gameMemberCount,
+    } = (await GameModel.findById(id)) ?? {
+      price_in_coin: 0,
+      price_in_value: 0,
+    };
+    if (!members || isEmpty(members) || !gameMemberCount) {
+      res.status(500);
+      return;
+    }
+    if (members.length >= gameMemberCount) {
+      res.status(402).json({ message: "max count meet" });
+      return;
+    }
     if (payWith === PayType.cash) {
       if (price_in_value > currentCash) {
         res

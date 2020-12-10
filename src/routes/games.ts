@@ -942,25 +942,25 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
     let winner = FindWinnerOnPenalty(game_?.battleScore.player1, gameInPut)
       ? GameRec.lose
       : GameRec.win;
-    if (payWith === PayType.coin) {
-      await WalletModel.updateOne(
-        { userID: decoded.id },
-        {
-          $inc: {
-            currentCoin: (game_?.price_in_coin ?? 0) * -1,
-          },
-        }
-      );
-    } else {
-      await CashWalletModel.updateOne(
-        { userID: decoded.id },
-        {
-          $inc: {
-            currentCash: (game_?.price_in_value ?? 0) * -1,
-          },
-        }
-      );
-    }
+    // if (payWith === PayType.coin) {
+    //   await WalletModel.updateOne(
+    //     { userID: decoded.id },
+    //     {
+    //       $inc: {
+    //         currentCoin: (game_?.price_in_coin ?? 0) * -1,
+    //       },
+    //     }
+    //   );
+    // } else {
+    //   await CashWalletModel.updateOne(
+    //     { userID: decoded.id },
+    //     {
+    //       $inc: {
+    //         currentCash: (game_?.price_in_value ?? 0) * -1,
+    //       },
+    //     }
+    //   );
+    // }
     if (winner) {
       await NotificationAction.add({
         message: `you have just lost a game from playing a penalty card game and have lost ₦ ${GameCash.playerMoney(
@@ -1559,25 +1559,25 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
         return;
       }
     }
-    if (payWith === PayType.coin) {
-      await WalletModel.updateOne(
-        { userID: decoded.id },
-        {
-          $inc: {
-            currentCoin: (game_?.price_in_coin ?? 0) * -1,
-          },
-        }
-      );
-    } else {
-      await CashWalletModel.updateOne(
-        { userID: decoded.id },
-        {
-          $inc: {
-            currentCash: (game_?.price_in_value ?? 0) * -1,
-          },
-        }
-      );
-    }
+    // if (payWith === PayType.coin) {
+    //   await WalletModel.updateOne(
+    //     { userID: decoded.id },
+    //     {
+    //       $inc: {
+    //         currentCoin: (game_?.price_in_coin ?? 0) * -1,
+    //       },
+    //     }
+    //   );
+    // } else {
+    //   await CashWalletModel.updateOne(
+    //     { userID: decoded.id },
+    //     {
+    //       $inc: {
+    //         currentCash: (game_?.price_in_value ?? 0) * -1,
+    //       },
+    //     }
+    //   );
+    // }
     if (winner) {
       if (count === 1) {
         await NotificationAction.add({

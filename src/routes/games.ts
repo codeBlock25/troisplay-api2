@@ -1193,25 +1193,25 @@ GamesRouter.post(
       const { currentCash: AdminCurrentCash } = adminCashInstance;
       const { cashRating, commission_roshambo } = defaultInstance;
       let winner = FindWinnerOnRoshambo(game_?.battleScore.player1, gameInPut);
-      if (payWith === PayType.coin) {
-        await WalletModel.updateOne(
-          { userID: decoded.id },
-          {
-            $inc: {
-              currentCoin: (game_?.price_in_coin ?? 0) * -1,
-            },
-          }
-        );
-      } else {
-        await CashWalletModel.updateOne(
-          { userID: decoded.id },
-          {
-            $inc: {
-              currentCash: (game_?.price_in_value ?? 0) * -1,
-            },
-          }
-        );
-      }
+      // if (payWith === PayType.coin) {
+      //   await WalletModel.updateOne(
+      //     { userID: decoded.id },
+      //     {
+      //       $inc: {
+      //         currentCoin: (game_?.price_in_coin ?? 0) * -1,
+      //       },
+      //     }
+      //   );
+      // } else {
+      //   await CashWalletModel.updateOne(
+      //     { userID: decoded.id },
+      //     {
+      //       $inc: {
+      //         currentCash: (game_?.price_in_value ?? 0) * -1,
+      //       },
+      //     }
+      //   );
+      // }
       await PlayAdmin(
         commission_roshambo,
         game_?.price_in_value ?? 0,
@@ -2154,7 +2154,7 @@ GamesRouter.post(
           { userID: game_.members[0] },
           {
             $inc: {
-              currentCash: GameCash.playerMoney({
+              currentCash: GameCash.drawCash({
                 commission: commission_roshambo,
                 cashRating: cashRating,
                 game_price: game_?.price_in_value ?? 0,

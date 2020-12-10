@@ -141,12 +141,13 @@ export const GameCash = {
   }) => {
     let cash =
       commission.value_in === "$"
-        ? game_price * memberCount - commission.value * memberCount
+        ? game_price * memberCount ?? 2 - commission.value * memberCount ?? 2
         : commission.value_in === "c"
-        ? game_price * memberCount -
-          cashRating * (commission.value * memberCount)
+        ? game_price * memberCount ??
+          2 - cashRating * (commission.value * memberCount ?? 2)
         : commission.value_in === "%"
-        ? (game_price - (commission.value / 100) * game_price) * memberCount
+        ? (game_price - (commission.value / 100) * game_price) * memberCount ??
+          2
         : 0;
     return cash;
   },

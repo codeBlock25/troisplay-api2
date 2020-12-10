@@ -56,13 +56,15 @@ export async function PlayAdmin(
   return await AdminCashModel.updateOne(
     {},
     {
-      currentCash: AdminCash(
-        commission,
-        AdminCurrentCash,
-        game_price,
-        memberCount ?? 2,
-        cashRating
-      ),
+      $inc: {
+        currentCash: AdminCash(
+          commission,
+          AdminCurrentCash,
+          game_price,
+          memberCount ?? 2,
+          cashRating
+        ),
+      },
     }
   );
 }
@@ -148,7 +150,7 @@ export const GameCash = {
         : 0;
     return cash;
   },
-  playPrice:({
+  playPrice: ({
     commission,
     game_price,
     cashRating,

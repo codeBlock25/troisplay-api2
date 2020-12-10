@@ -27,28 +27,13 @@ import {
   FindWinnerOnPenalty,
   FindWinnerOnMatcher,
   shuffle,
-  PlayerCash,
   PlayAdmin,
-  PlayerDrawCash,
-  PlayerCashLeft,
-  PlayerCoinLeft,
   NotificationAction,
   RecordFunc,
   GameCash,
 } from "../function";
 import { generate as randGenerate } from "randomstring";
-import {
-  cloneDeep,
-  concat,
-  defaults,
-  filter,
-  find,
-  findIndex,
-  isEmpty,
-  set,
-  sortBy,
-} from "lodash";
-import notificationModel from "../model/notification";
+import { concat, filter, find, findIndex, isEmpty, sortBy } from "lodash";
 
 envConfig();
 const GamesRouter: Router = Router();
@@ -79,7 +64,6 @@ GamesRouter.delete("/any/cancel", async (req: Request, res: Response) => {
     const game = await GameModel.findOne({ _id: gameID });
     const defaults = await defaultModel.findOne();
     const adminCash = await AdminCashModel.findOne({});
-    const cash = await CashWalletModel.findOne({ userID: decoded.id });
     if (game) {
       let commission: { value: number; value_in: "c" | "$" | "%" } =
         game.gameID === Games.roshambo
@@ -953,7 +937,6 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
       res.status(500).json({ error: "internal error", message: "error found" });
       return;
     }
-    const { currentCoin } = coinInstance;
     const { currentCash: AdminCurrentCash } = adminCashInstance;
     const { cashRating, commission_penalty } = defaultInstance;
     let winner = FindWinnerOnPenalty(game_?.battleScore.player1, gameInPut)
@@ -964,7 +947,7 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
         { userID: decoded.id },
         {
           $inc: {
-            currentCoin: -(game_?.price_in_coin ?? 0),
+            currentCoin: (game_?.price_in_coin ?? 0) * -1,
           },
         }
       );
@@ -973,7 +956,7 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
         { userID: decoded.id },
         {
           $inc: {
-            currentCash: -(game_?.price_in_value ?? 0),
+            currentCash: (game_?.price_in_value ?? 0) * -1,
           },
         }
       );
@@ -1207,9 +1190,6 @@ GamesRouter.post(
           .json({ error: "internal error", message: "error found" });
         return;
       }
-      const { currentCash: p1Cash } = cashInstance;
-      const { currentCash: p2Cash } = p2CashInstance;
-      const { currentCoin } = coinInstance;
       const { currentCash: AdminCurrentCash } = adminCashInstance;
       const { cashRating, commission_roshambo } = defaultInstance;
       let winner = FindWinnerOnRoshambo(game_?.battleScore.player1, gameInPut);
@@ -1218,7 +1198,7 @@ GamesRouter.post(
           { userID: decoded.id },
           {
             $inc: {
-              currentCoin: -(game_?.price_in_coin ?? 0),
+              currentCoin: (game_?.price_in_coin ?? 0) * -1,
             },
           }
         );
@@ -1227,11 +1207,18 @@ GamesRouter.post(
           { userID: decoded.id },
           {
             $inc: {
-              currentCash: -(game_?.price_in_value ?? 0),
+              currentCash: (game_?.price_in_value ?? 0) * -1,
             },
           }
         );
       }
+      await PlayAdmin(
+        commission_roshambo,
+        game_?.price_in_value ?? 0,
+        AdminCurrentCash,
+        cashRating,
+        2
+      );
       if (winner === GameRec.win) {
         await NotificationAction.add({
           message: `you have just lost a game from playing a roshambo game and have lost ₦ ${GameCash.playerMoney(
@@ -1314,6 +1301,7 @@ GamesRouter.post(
             res.status(500).json({ message: "error found", error });
             console.error(error);
           });
+        return;
       } else if (winner === GameRec.draw) {
         await NotificationAction.add({
           message: `you have just drawn in a game from playing a roshambo game and have recieved ₦ ${GameCash.drawCash(
@@ -1412,6 +1400,7 @@ GamesRouter.post(
             res.status(500).json({ message: "error found", error });
             console.error(error);
           });
+        return;
       } else {
         await NotificationAction.add({
           message: `you have just won a game from playing a roshambo game and have earned ₦ ${GameCash.playerMoney(
@@ -1448,7 +1437,7 @@ GamesRouter.post(
           { userID: game_?.members[0] },
           {
             $inc: {
-              currentCash: -GameCash.playerMoney({
+              currentCash: GameCash.playerMoney({
                 commission: commission_roshambo,
                 cashRating: cashRating,
                 game_price: game_?.price_in_value ?? 0,
@@ -1490,14 +1479,8 @@ GamesRouter.post(
             res.status(500).json({ message: "error found", error });
             console.error(error);
           });
+        return;
       }
-      await PlayAdmin(
-        commission_roshambo,
-        game_?.price_in_value ?? 0,
-        AdminCurrentCash,
-        cashRating,
-        2
-      );
     } catch (error) {
       res.status(500).json({ message: "error found", error });
       console.error(error);
@@ -1554,7 +1537,6 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
     }
     const { currentCash: p1Cash } = cashInstance;
     const { currentCoin } = coinInstance;
-    const { currentCash: p2Cash } = p2CashInstance;
     const { currentCash: AdminCurrentCash } = adminCashInstance;
     const { cashRating, commission_guess_mater } = defaultInstance;
     let winner = FindWinnerOnMatcher(game_?.battleScore.player1, gameInPut);
@@ -1582,7 +1564,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
         { userID: decoded.id },
         {
           $inc: {
-            currentCoin: -(game_?.price_in_coin ?? 0),
+            currentCoin: (game_?.price_in_coin ?? 0) * -1,
           },
         }
       );
@@ -1591,7 +1573,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
         { userID: decoded.id },
         {
           $inc: {
-            currentCash: -(game_?.price_in_value ?? 0),
+            currentCash: (game_?.price_in_value ?? 0) * -1,
           },
         }
       );
@@ -2074,7 +2056,6 @@ GamesRouter.post(
       }
       const { currentCash: p1Cash } = cashInstance;
       const { currentCoin } = coinInstance;
-      const { currentCash: p2Cash } = p2CashInstance;
       //  const { currentCash: AdminCurrentCash } = adminCashInstance;
       const { cashRating, commission_roshambo } = defaultInstance;
       // with coin
@@ -2373,7 +2354,6 @@ GamesRouter.post(
       }
       const { currentCash: p1Cash } = cashInstance;
       const { currentCoin } = coinInstance;
-      const { currentCash: p2Cash } = p2CashInstance;
       // const { currentCash: AdminCurrentCash } = adminCashInstance;
       const { cashRating, commission_penalty } = defaultInstance;
       if (!found) {

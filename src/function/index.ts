@@ -3,7 +3,7 @@ import AdminCashModel from "../model/admin_model";
 import RecordModel from "../model/gamerecord";
 import notificationModel from "../model/notification";
 import { GameRec } from "../model/plays";
-import moment from "moment"
+import moment from "moment";
 import { notificationHintType, RoshamboOption } from "../types/enum";
 
 export const NotificationAction = {
@@ -124,6 +124,97 @@ export function PlayerCash(
       (game_price - (commission.value / 100) * game_price) * memberCount
     : playerCash;
 }
+
+export const GameCash = {
+  playerMoney: ({
+    commission,
+    game_price,
+    cashRating,
+    memberCount = 2,
+  }: {
+    commission: { value: number; value_in: "$" | "c" | "%" };
+    game_price: number;
+    memberCount?: number;
+    cashRating: number;
+  }) => {
+    let cash =
+      commission.value_in === "$"
+        ? game_price * memberCount - commission.value * memberCount
+        : commission.value_in === "c"
+        ? game_price * memberCount -
+          cashRating * (commission.value * memberCount)
+        : commission.value_in === "%"
+        ? (game_price - (commission.value / 100) * game_price) * memberCount
+        : 0;
+    return cash;
+  },
+  playPrice:({
+    commission,
+    game_price,
+    cashRating,
+    memberCount = 2,
+  }: {
+    commission: { value: number; value_in: "$" | "c" | "%" };
+    game_price: number;
+    memberCount?: number;
+    cashRating: number;
+  }) => {
+    let cash =
+      commission.value_in === "$"
+        ? game_price * memberCount - commission.value * memberCount
+        : commission.value_in === "c"
+        ? game_price * memberCount -
+          cashRating * (commission.value * memberCount)
+        : commission.value_in === "%"
+        ? game_price - (commission.value / 100) * game_price
+        : 0;
+    return cash;
+  },
+  drawCash: ({
+    commission,
+    game_price,
+    cashRating,
+    memberCount = 2,
+  }: {
+    commission: { value: number; value_in: "$" | "c" | "%" };
+    game_price: number;
+    memberCount?: number;
+    cashRating: number;
+  }) => {
+    let cash =
+      commission.value_in === "$"
+        ? game_price * memberCount - commission.value * memberCount
+        : commission.value_in === "c"
+        ? game_price * memberCount -
+          cashRating * (commission.value * memberCount)
+        : commission.value_in === "%"
+        ? game_price - (commission.value / 100) * game_price
+        : 0;
+    return cash;
+  },
+  returnsCash: ({
+    commission,
+    game_price,
+    cashRating,
+    memberCount = 2,
+  }: {
+    commission: { value: number; value_in: "$" | "c" | "%" };
+    game_price: number;
+    memberCount?: number;
+    cashRating: number;
+  }) => {
+    let cash =
+      commission.value_in === "$"
+        ? game_price * memberCount - commission.value * memberCount
+        : commission.value_in === "c"
+        ? game_price * memberCount -
+          cashRating * (commission.value * memberCount)
+        : commission.value_in === "%"
+        ? game_price - (commission.value / 100) * game_price
+        : 0;
+    return cash;
+  },
+};
 
 export function PlayerCashLeft(
   commission: { value: number; value_in: "$" | "c" | "%" },
@@ -284,7 +375,10 @@ export const RecordFunc = {
     earnings: number;
     draws: number;
   }) => {
-    let oldRecord = await RecordModel.findOne({ userID, date_mark: new Date(moment(date).format("YYYY-MM-DD")) });
+    let oldRecord = await RecordModel.findOne({
+      userID,
+      date_mark: new Date(moment(date).format("YYYY-MM-DD")),
+    });
     if (oldRecord) {
       return await RecordModel.updateOne(
         { userID, date_mark: new Date(moment(date).format("YYYY-MM-DD")) },

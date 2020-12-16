@@ -33,13 +33,8 @@ notificationRoute.get("/all", async (req: Request, res: Response) => {
       .findOne({ userID: decoded.id })
       .then((notifications) => {
         res.json({
-          notifications: {
-            ...notifications,
-            notifications: sortBy(notifications?.notifications ?? [], {
-              time: -1,
-            }),
-          },
-        } as { notifications: NotificationType & Document });
+          notifications,
+        });
       })
       .catch((error) => {
         res.status(500).json({ error, msssage: "error occured" });

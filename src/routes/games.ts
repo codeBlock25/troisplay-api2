@@ -595,7 +595,12 @@ GamesRouter.post("/roshambo", async (req: Request, res: Response) => {
         res.status(404);
       })
       .catch((error) => {
-        res.status(500).json({ message: "error found", error });
+        res
+          .status(500)
+          .json({
+            message: "error found",
+            error: { ...error, price_in_cash, typ: typeof price_in_cash },
+          });
       });
   } catch (error) {
     res.status(500).json({ message: "error found", error });

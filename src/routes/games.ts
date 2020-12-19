@@ -530,7 +530,7 @@ GamesRouter.post("/roshambo", async (req: Request, res: Response) => {
       res.status(500).json({ error: "internal error", message: "error found" });
       return;
     }
-    console.log(price_in_cash, typeof price_in_cash);
+    console.log(price_in_cash, req.body);
     const { currentCash } = cashInstance;
     const { currentCoin } = coinInstance;
     const { cashRating } = defaultInstance;
@@ -595,12 +595,10 @@ GamesRouter.post("/roshambo", async (req: Request, res: Response) => {
         res.status(404);
       })
       .catch((error) => {
-        res
-          .status(500)
-          .json({
-            message: "error found",
-            error: { ...error, price_in_cash, typ: typeof price_in_cash },
-          });
+        res.status(500).json({
+          message: "error found",
+          error: { ...error, price_in_cash, typ: typeof price_in_cash },
+        });
       });
   } catch (error) {
     res.status(500).json({ message: "error found", error });

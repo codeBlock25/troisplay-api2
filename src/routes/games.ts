@@ -2745,7 +2745,11 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
       .then(async () => {
         let gameOutcome = await GameModel.findOne({ _id: id });
         if (gameOutcome === null || !gameOutcome) return;
-        res.json({ message: "successful", price: gameOutcome.price_in_value });
+        res.json({
+          message: "successful",
+          price: gameOutcome.price_in_value,
+          ticket,
+        });
         if (gameOutcome.members.length >= gameOutcome.gameMemberCount) {
           let winners = shuffle(gameOutcome.players).slice(
             0,

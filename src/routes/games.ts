@@ -2681,9 +2681,8 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
       price_in_value: 0,
     };
 
-    console.log(stack, currentCash);
     if (!members || isEmpty(members) || !gameMemberCount) {
-      res.status(500);
+      res.status(500).json({ error: "not allowed" });
       return;
     }
     if (members.length >= gameMemberCount) {
@@ -2725,6 +2724,8 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
       length: 12,
       charset: "alphabetic",
     });
+
+    console.log(members, ticket);
     await GameModel.updateOne(
       { _id: id },
       {

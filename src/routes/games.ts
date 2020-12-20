@@ -530,7 +530,6 @@ GamesRouter.post("/roshambo", async (req: Request, res: Response) => {
       res.status(500).json({ error: "internal error", message: "error found" });
       return;
     }
-    console.log(price_in_cash, req.body);
     const { currentCash } = cashInstance;
     const { currentCoin } = coinInstance;
     const { cashRating } = defaultInstance;
@@ -2641,7 +2640,7 @@ GamesRouter.get("/lucky-geoge", async (req: Request, res: Response) => {
   }
 });
 
-GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
+GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
   try {
     let auth = req.headers.authorization ?? "";
     if (!auth || auth === "") {
@@ -2686,7 +2685,7 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
       return;
     }
     if (members.length >= gameMemberCount) {
-      res.status(402).json({ message: "max count meet" });
+      res.status(401).json({ message: "max count meet" });
       return;
     }
     if (payWith === PayType.cash) {
@@ -2700,7 +2699,7 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
         { userID: decoded.id },
         {
           $inc: {
-            currentCash: price_in_value,
+            currentCash: -1 * price_in_value,
           },
         }
       );
@@ -2735,26 +2734,26 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
             winner: false,
             ticket,
             date: new Date(),
-            id: user._id,
+            id: decoded.id,
           },
         },
       }
     )
       .then(async () => {
-        let result = await GameModel.findOne({ _id: id });
-        if (!result) return;
-        res.json({ message: "successful", price: result.price_in_value });
-        if (result.members.length >= result.gameMemberCount) {
-          let winners = shuffle(result.players).slice(
+        let gameOutcome = await GameModel.findOne({ _id: id });
+        if (gameOutcome === null || !gameOutcome) return;
+        res.json({ message: "successful", price: gameOutcome.price_in_value });
+        if (gameOutcome.members.length >= gameOutcome.gameMemberCount) {
+          let winners = shuffle(gameOutcome.players).slice(
             0,
-            result?.battleScore.player1.winnerCount
+            gameOutcome?.battleScore.player1.winnerCount
           );
-          result.members.forEach(async (member) => {
+          gameOutcome.members.forEach(async (member) => {
             if (find(winners, { id: member })) {
-              let index = findIndex(result?.players, { id: member });
+              let index = findIndex(gameOutcome?.players, { id: member });
               await Promise.all([
                 await GameModel.updateOne(
-                  { _id: result?._id ?? "" },
+                  { _id: gameOutcome?._id },
                   {
                     $set: {
                       [`players.${index}.winner`]: true,
@@ -2767,10 +2766,10 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
                   winnings: 1,
                   losses: 0,
                   draws: 0,
-                  earnings: result?.price_in_value ?? 0,
+                  earnings: gameOutcome?.price_in_value ?? 0,
                 }),
                 await NotificationAction.add({
-                  message: `you have just won a game from playing the lucky judge game and have earned ${result?.battleScore.player1.winnerPrice}.`,
+                  message: `you have just won a game from playing the lucky judge game and have earned ${gameOutcome?.battleScore.player1.winnerPrice}.`,
                   userID: member,
                   type: notificationHintType.win,
                 }),
@@ -2778,7 +2777,8 @@ GamesRouter.post("/lucky-geoge/play", async (req: Request, res: Response) => {
                   { userID: member },
                   {
                     $inc: {
-                      currentCash: result?.battleScore.player1.winnerPrice ?? 0,
+                      currentCash:
+                        gameOutcome?.battleScore.player1.winnerPrice ?? 0,
                     },
                   }
                 ),

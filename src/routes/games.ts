@@ -2655,7 +2655,6 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
     let decoded = (verify(token, process.env.SECRET ?? "") as unknown) as {
       id: string;
     };
-    console.log(auth, token, decoded);
     let user = await users.findById(decoded.id);
     if (!user) {
       res.status(419).json({ message: "error found", error: "User not found" });
@@ -2681,6 +2680,8 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
       price_in_coin: 0,
       price_in_value: 0,
     };
+
+    console.log(stack, currentCash);
     if (!members || isEmpty(members) || !gameMemberCount) {
       res.status(500);
       return;

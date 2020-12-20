@@ -2725,7 +2725,10 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
       charset: "alphabetic",
     });
 
-    console.log(members, ticket);
+    let gameLen: number = filter(
+      (await GameModel.findOne({ _id: id }))?.players ?? [],
+      { id: decoded.id }
+    ).length;
     await GameModel.updateOne(
       { _id: id },
       {
@@ -2749,6 +2752,7 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
           message: "successful",
           price: gameOutcome.price_in_value,
           ticket,
+          count: gameLen + 1,
         });
         if (gameOutcome.members.length >= gameOutcome.gameMemberCount) {
           let winners = shuffle(gameOutcome.players).slice(

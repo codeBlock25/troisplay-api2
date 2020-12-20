@@ -2655,6 +2655,7 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
     let decoded = (verify(token, process.env.SECRET ?? "") as unknown) as {
       id: string;
     };
+    console.log(auth, token, decoded);
     let user = await users.findById(decoded.id);
     if (!user) {
       res.status(419).json({ message: "error found", error: "User not found" });
@@ -2814,6 +2815,7 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
       });
   } catch (error) {
     res.status(500).json({ message: "error found", error });
+    console.log(error);
   }
 });
 

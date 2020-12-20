@@ -2680,7 +2680,7 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
       price_in_coin: 0,
       price_in_value: 0,
     };
-
+    console.log(gameMemberCount);
     if (!gameMemberCount) {
       res.status(500).json({ error: "not allowed" });
       return;

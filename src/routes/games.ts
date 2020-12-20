@@ -2681,11 +2681,11 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
       price_in_value: 0,
     };
 
-    if (!members || isEmpty(members) || !gameMemberCount) {
+    if (!gameMemberCount) {
       res.status(500).json({ error: "not allowed" });
       return;
     }
-    if (members.length >= gameMemberCount) {
+    if ((members?.length ?? 0) >= gameMemberCount) {
       res.status(401).json({ message: "max count meet" });
       return;
     }

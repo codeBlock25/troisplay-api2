@@ -889,7 +889,6 @@ GamesRouter.post("/penalty/challange", async (req: Request, res: Response) => {
     let {
       id,
       gameInPut,
-      payWith,
     }: {
       id: string;
       gameInPut: {
@@ -1144,7 +1143,6 @@ GamesRouter.post(
       let {
         id,
         gameInPut,
-        payWith,
       }: {
         id: string;
         gameInPut: {
@@ -2680,7 +2678,6 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
       price_in_coin: 0,
       price_in_value: 0,
     };
-    console.log(gameMemberCount);
     if (!gameMemberCount) {
       res.status(500).json({ error: "not allowed" });
       return;
@@ -2828,6 +2825,147 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
     console.log(error);
   }
 });
+
+GamesRouter.post(
+  "/lucky-draw/play/final",
+  async (req: Request, res: Response) => {
+    try {
+      let auth = req.headers.authorization ?? "";
+      if (!auth || auth === "") {
+        res.status(419).json({ message: "error found", error: "invalid auth" });
+        return;
+      }
+      let token = auth.replace("Bearer ", "");
+      if (!token || token === "") {
+        res
+          .status(419)
+          .json({ message: "error found", error: "invalid token" });
+        return;
+      }
+      let decoded = (verify(token, process.env.SECRET ?? "") as unknown) as {
+        adminID: string;
+      };
+      let admin = await AdminModel.findById(decoded.adminID);
+      if (!admin) {
+        res
+          .status(419)
+          .json({ message: "error found", error: "User not found" });
+        return;
+      }
+      const {
+        id,
+        winners,
+      }: {
+        id: string;
+        winners: String[];
+      } = req.body;
+      let {
+        price_in_value,
+        gameMemberCount,
+        players,
+        battleScore,
+        isComplete,
+      } = (await GameModel.findById(id)) ?? {
+        price_in_coin: 0,
+        price_in_value: 0,
+      };
+      if (isComplete === true) {
+        res.status(400).json({ error: "game is done" });
+        return;
+      } else if (winners.length >= (gameMemberCount ?? 0)) {
+        res.status(402).json({ error: "not allowed" });
+        return;
+      } else if (winners.length <= (gameMemberCount ?? 0)) {
+        res.status(401).json({ error: "not allowed" });
+        return;
+      } else if (winners.length === (gameMemberCount ?? 0)) {
+        res.status(403).json({ error: "not allowed" });
+        return;
+      }
+
+      if (!players) {
+        res.status(500).json({ error: "player doesn't exit" });
+        return;
+      } else if (!battleScore) {
+        res.status(500).json({ error: "battleScore doesn't exit" });
+        return;
+      } else {
+        let winners = shuffle(players ?? []).slice(
+          0,
+          battleScore.player1.winnerCount
+        );
+        players.forEach(async (player) => {
+          let isWinner: boolean = Boolean(find(winners, { id: player.id }));
+          if (isWinner) {
+            let index = findIndex(players, { id: player.id });
+            await Promise.all([
+              await GameModel.updateOne(
+                { _id: player.id },
+                {
+                  $set: {
+                    [`players.${index}.winner`]: true,
+                  },
+                }
+              ),
+              await RecordFunc.update({
+                userID: player.id,
+                date: new Date(),
+                winnings: 1,
+                losses: 0,
+                draws: 0,
+                earnings: price_in_value ?? 0,
+              }),
+              await NotificationAction.add({
+                message: `you have just won a game from playing the lucky judge game and have earned ${battleScore?.player1.winnerPrice}.`,
+                userID: player.id,
+                type: notificationHintType.win,
+              }),
+              await CashWalletModel.updateOne(
+                { userID: player.id },
+                {
+                  $inc: {
+                    currentCash: battleScore?.player1.winnerPrice ?? 0,
+                  },
+                }
+              ),
+            ]).catch((error) => {
+              console.log(error);
+            });
+          } else {
+            await Promise.all([
+              await RecordFunc.update({
+                userID: player.id,
+                date: new Date(),
+                winnings: 0,
+                losses: 1,
+                draws: 0,
+                earnings: 0,
+              }),
+              await NotificationAction.add({
+                message: `the lucky judge game you joined has just ended, sorry you were not one of the winners.`,
+                userID: player.id,
+                type: notificationHintType.lost,
+              }),
+            ]);
+          }
+        });
+        await GameModel.updateOne(
+          { _id: id },
+          { played: true, isComplete: true }
+        )
+          .then(() => {
+            res.status(200).json({ message: "game is complete" });
+          })
+          .catch((error) => {
+            res.status(500).json({ message: "error found", error });
+          });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "error found", error });
+      console.log(error);
+    }
+  }
+);
 
 GamesRouter.post("/lucky-judge/update", async (req: Request, res: Response) => {
   try {

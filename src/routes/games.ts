@@ -2878,9 +2878,6 @@ GamesRouter.post(
       } else if (winners.length <= (gameMemberCount ?? 0)) {
         res.status(401).json({ error: "not allowed" });
         return;
-      } else if (winners.length === (gameMemberCount ?? 0)) {
-        res.status(403).json({ error: "not allowed" });
-        return;
       }
 
       if (!players) {

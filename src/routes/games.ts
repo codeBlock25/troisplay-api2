@@ -2751,71 +2751,6 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
           ticket,
           count: gameLen + 1,
         });
-        if (gameOutcome.members.length >= gameOutcome.gameMemberCount) {
-          let winners = shuffle(gameOutcome.players).slice(
-            0,
-            gameOutcome?.battleScore.player1.winnerCount
-          );
-          gameOutcome.members.forEach(async (member) => {
-            if (find(winners, { id: member })) {
-              let index = findIndex(gameOutcome?.players, { id: member });
-              await Promise.all([
-                await GameModel.updateOne(
-                  { _id: gameOutcome?._id },
-                  {
-                    $set: {
-                      [`players.${index}.winner`]: true,
-                    },
-                  }
-                ),
-                await RecordFunc.update({
-                  userID: member,
-                  date: new Date(),
-                  winnings: 1,
-                  losses: 0,
-                  draws: 0,
-                  earnings: gameOutcome?.price_in_value ?? 0,
-                }),
-                await NotificationAction.add({
-                  message: `you have just won a game from playing the lucky judge game and have earned ${gameOutcome?.battleScore.player1.winnerPrice}.`,
-                  userID: member,
-                  type: notificationHintType.win,
-                }),
-                await CashWalletModel.updateOne(
-                  { userID: member },
-                  {
-                    $inc: {
-                      currentCash:
-                        gameOutcome?.battleScore.player1.winnerPrice ?? 0,
-                    },
-                  }
-                ),
-              ]).catch((error) => {
-                console.log(error);
-              });
-            } else {
-              await Promise.all([
-                await RecordFunc.update({
-                  userID: member,
-                  date: new Date(),
-                  winnings: 0,
-                  losses: 1,
-                  draws: 0,
-                  earnings: 0,
-                }),
-                await NotificationAction.add({
-                  message: `the lucky judge game you joined has just ended, sorry you were not one of the winners.`,
-                  userID: member,
-                  type: notificationHintType.lost,
-                }),
-              ]);
-            }
-          });
-          await GameModel.updateOne(
-            { _id: id },
-            { played: true, isComplete: true }
-          );
-        }
       })
       .catch((error) => {
         res.status(500).json({ message: "error found", error });
@@ -3894,3 +3829,73 @@ GamesRouter.get(
 );
 
 export default GamesRouter;
+
+/* 
+altomatic game selection
+        if (gameOutcome.members.length >= gameOutcome.gameMemberCount) {
+          let winners = shuffle(gameOutcome.players).slice(
+            0,
+            gameOutcome?.battleScore.player1.winnerCount
+          );
+          gameOutcome.members.forEach(async (member) => {
+            if (find(winners, { id: member })) {
+              let index = findIndex(gameOutcome?.players, { id: member });
+              await Promise.all([
+                await GameModel.updateOne(
+                  { _id: gameOutcome?._id },
+                  {
+                    $set: {
+                      [`players.${index}.winner`]: true,
+                    },
+                  }
+                ),
+                await RecordFunc.update({
+                  userID: member,
+                  date: new Date(),
+                  winnings: 1,
+                  losses: 0,
+                  draws: 0,
+                  earnings: gameOutcome?.price_in_value ?? 0,
+                }),
+                await NotificationAction.add({
+                  message: `you have just won a game from playing the lucky judge game and have earned ${gameOutcome?.battleScore.player1.winnerPrice}.`,
+                  userID: member,
+                  type: notificationHintType.win,
+                }),
+                await CashWalletModel.updateOne(
+                  { userID: member },
+                  {
+                    $inc: {
+                      currentCash:
+                        gameOutcome?.battleScore.player1.winnerPrice ?? 0,
+                    },
+                  }
+                ),
+              ]).catch((error) => {
+                console.log(error);
+              });
+            } else {
+              await Promise.all([
+                await RecordFunc.update({
+                  userID: member,
+                  date: new Date(),
+                  winnings: 0,
+                  losses: 1,
+                  draws: 0,
+                  earnings: 0,
+                }),
+                await NotificationAction.add({
+                  message: `the lucky judge game you joined has just ended, sorry you were not one of the winners.`,
+                  userID: member,
+                  type: notificationHintType.lost,
+                }),
+              ]);
+            }
+          });
+          await GameModel.updateOne(
+            { _id: id },
+            { played: true, isComplete: true }
+          );
+        }
+
+*/

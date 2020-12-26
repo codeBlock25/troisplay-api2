@@ -2798,7 +2798,7 @@ GamesRouter.post(
         winners,
       }: {
         id: string;
-        winners: String[];
+        winners: string[];
       } = req.body;
       let {
         price_in_value,
@@ -2828,48 +2828,44 @@ GamesRouter.post(
         res.status(500).json({ error: "battleScore doesn't exit" });
         return;
       } else {
-        let winners = shuffle(players ?? []).slice(
-          0,
-          battleScore.player1.winnerCount
-        );
+        winners.forEach(async (winner) => {
+          let index = findIndex(players, { id: winner });
+          await Promise.all([
+            await GameModel.updateOne(
+              { _id: winner },
+              {
+                $set: {
+                  [`players.${index}.winner`]: true,
+                },
+              }
+            ),
+            await RecordFunc.update({
+              userID: winner,
+              date: new Date(),
+              winnings: 1,
+              losses: 0,
+              draws: 0,
+              earnings: price_in_value ?? 0,
+            }),
+            await NotificationAction.add({
+              message: `you have just won a game from playing the lucky judge game and have earned ${battleScore?.player1.winnerPrice}.`,
+              userID: winner,
+              type: notificationHintType.win,
+            }),
+            await CashWalletModel.updateOne(
+              { userID: winner },
+              {
+                $inc: {
+                  currentCash: battleScore?.player1.winnerPrice ?? 0,
+                },
+              }
+            ),
+          ]).catch((error) => {
+            console.log(error);
+          });
+        });
         players.forEach(async (player) => {
-          let isWinner: boolean = Boolean(find(winners, { id: player.id }));
-          if (isWinner) {
-            let index = findIndex(players, { id: player.id });
-            await Promise.all([
-              await GameModel.updateOne(
-                { _id: player.id },
-                {
-                  $set: {
-                    [`players.${index}.winner`]: true,
-                  },
-                }
-              ),
-              await RecordFunc.update({
-                userID: player.id,
-                date: new Date(),
-                winnings: 1,
-                losses: 0,
-                draws: 0,
-                earnings: price_in_value ?? 0,
-              }),
-              await NotificationAction.add({
-                message: `you have just won a game from playing the lucky judge game and have earned ${battleScore?.player1.winnerPrice}.`,
-                userID: player.id,
-                type: notificationHintType.win,
-              }),
-              await CashWalletModel.updateOne(
-                { userID: player.id },
-                {
-                  $inc: {
-                    currentCash: battleScore?.player1.winnerPrice ?? 0,
-                  },
-                }
-              ),
-            ]).catch((error) => {
-              console.log(error);
-            });
-          } else {
+          if (!find(winners, [player.id])) {
             await Promise.all([
               await RecordFunc.update({
                 userID: player.id,
@@ -2884,7 +2880,9 @@ GamesRouter.post(
                 userID: player.id,
                 type: notificationHintType.lost,
               }),
-            ]);
+            ]).catch((error) => {
+              console.log(error);
+            });
           }
         });
         await GameModel.updateOne(

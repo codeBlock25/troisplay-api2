@@ -2683,7 +2683,7 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
       res.status(500).json({ error: "not allowed" });
       return;
     }
-    if ((players?.length ?? 0) > gameMemberCount) {
+    if ((players?.length ?? 0) > (gameMemberCount ?? 0)) {
       res.status(401).json({ message: "max count meet" });
       return;
     }
@@ -2808,10 +2808,10 @@ GamesRouter.post(
       if (isComplete === true) {
         res.status(400).json({ error: "game is done" });
         return;
-      } else if (winners.length >= (gameMemberCount ?? 0)) {
+      } else if (winners.length > (gameMemberCount ?? 0)) {
         res.status(402).json({ error: "not allowed" });
         return;
-      } else if (winners.length <= (gameMemberCount ?? 0)) {
+      } else if (winners.length < (gameMemberCount ?? 0)) {
         res.status(401).json({ error: "not allowed" });
         return;
       }

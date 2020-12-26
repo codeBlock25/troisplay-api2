@@ -2674,6 +2674,7 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
       price_in_value,
       members,
       gameMemberCount,
+      players,
     } = (await GameModel.findById(id)) ?? {
       price_in_coin: 0,
       price_in_value: 0,
@@ -2682,7 +2683,7 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
       res.status(500).json({ error: "not allowed" });
       return;
     }
-    if ((members?.length ?? 0) > gameMemberCount) {
+    if ((players?.length ?? 0) > gameMemberCount) {
       res.status(401).json({ message: "max count meet" });
       return;
     }

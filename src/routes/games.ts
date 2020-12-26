@@ -2682,7 +2682,7 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
       res.status(500).json({ error: "not allowed" });
       return;
     }
-    if ((members?.length ?? 0) >= gameMemberCount) {
+    if ((members?.length ?? 0) > gameMemberCount) {
       res.status(401).json({ message: "max count meet" });
       return;
     }

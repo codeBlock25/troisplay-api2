@@ -26,7 +26,6 @@ import {
   MarkRoshamboGame,
   FindWinnerOnPenalty,
   FindWinnerOnMatcher,
-  shuffle,
   PlayAdmin,
   NotificationAction,
   RecordFunc,
@@ -1649,7 +1648,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
             }) * 0.2
           }.`,
           userID: game_?.members[0] ?? "",
-          type: notificationHintType.lost
+          type: notificationHintType.lost,
         });
         await RecordFunc.update({
           userID: decoded.id,
@@ -2675,7 +2674,6 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
     let {
       price_in_coin: stack,
       price_in_value,
-      members,
       gameMemberCount,
       players,
     } = (await GameModel.findById(id)) ?? {
@@ -2818,7 +2816,6 @@ GamesRouter.post(
         res.status(401).json({ error: "not allowed" });
         return;
       }
-
       if (!players) {
         res.status(500).json({ error: "player doesn't exit" });
         return;

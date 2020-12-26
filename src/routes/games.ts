@@ -2751,12 +2751,6 @@ GamesRouter.post("/lucky-draw/play", async (req: Request, res: Response) => {
           ticket,
           count: gameLen + 1,
         });
-        if (gameOutcome.members.length >= gameOutcome.gameMemberCount) {
-          await GameModel.updateOne(
-            { _id: id },
-            { played: true, isComplete: true }
-          );
-        }
       })
       .catch((error) => {
         res.status(500).json({ message: "error found", error });

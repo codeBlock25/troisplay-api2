@@ -1646,9 +1646,10 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
               commission: commission_guess_mater,
               cashRating: cashRating,
               game_price: game_?.price_in_value ?? 0,
-            }) * 0.8
+            }) * 0.2
           }.`,
           userID: game_?.members[0] ?? "",
+          type: notificationHintType.lost
         });
         await RecordFunc.update({
           userID: decoded.id,
@@ -1728,6 +1729,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
             }) * 0.6
           }.`,
           userID: game_?.members[0] ?? "",
+          type: notificationHintType.lost,
         });
         await RecordFunc.update({
           userID: decoded.id,
@@ -1814,6 +1816,7 @@ GamesRouter.post("/matcher/challange", async (req: Request, res: Response) => {
               }
             )}.`,
             userID: game_?.members[0] ?? "",
+            type: notificationHintType.win,
           }),
           await RecordFunc.update({
             userID: decoded.id,

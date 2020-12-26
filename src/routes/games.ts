@@ -2829,10 +2829,11 @@ GamesRouter.post(
         return;
       } else {
         winners.forEach(async (winner) => {
-          let index = findIndex(players, { id: winner });
+          let index = findIndex(players, { ticket: winner });
+          let _player = find(players, { ticket: winner }) ?? { id: "" };
           await Promise.all([
             await GameModel.updateOne(
-              { _id: winner },
+              { _id: _player.id },
               {
                 $set: {
                   [`players.${index}.winner`]: true,
@@ -2840,7 +2841,7 @@ GamesRouter.post(
               }
             ),
             await RecordFunc.update({
-              userID: winner,
+              userID: _player.id,
               date: new Date(),
               winnings: 1,
               losses: 0,
@@ -2849,11 +2850,11 @@ GamesRouter.post(
             }),
             await NotificationAction.add({
               message: `you have just won a game from playing the lucky judge game and have earned ${battleScore?.player1.winnerPrice}.`,
-              userID: winner,
+              userID: _player.id,
               type: notificationHintType.win,
             }),
             await CashWalletModel.updateOne(
-              { userID: winner },
+              { userID: _player.id },
               {
                 $inc: {
                   currentCash: battleScore?.player1.winnerPrice ?? 0,
@@ -2865,7 +2866,11 @@ GamesRouter.post(
           });
         });
         players.forEach(async (player) => {
-          if (!find(winners, [player.id])) {
+          if (
+            find(winners, (_player_) => {
+              return _player_ !== player.ticket;
+            })
+          ) {
             await Promise.all([
               await RecordFunc.update({
                 userID: player.id,

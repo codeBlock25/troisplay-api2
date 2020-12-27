@@ -2802,6 +2802,7 @@ GamesRouter.post(
         players,
         battleScore,
         isComplete,
+        members,
       } = (await GameModel.findById(id)) ?? {
         price_in_coin: 0,
         price_in_value: 0,
@@ -2809,10 +2810,13 @@ GamesRouter.post(
       if (isComplete === true) {
         res.status(400).json({ error: "game is done" });
         return;
-      } else if (winners.length > (gameMemberCount ?? 0)) {
+      } else if ((members ?? []).length !== (gameMemberCount ?? 0)) {
+        res.status(403).json({ error: "not allowed" });
+        return;
+      } else if (winners.length > (battleScore?.player1.winnerCount ?? 0)) {
         res.status(402).json({ error: "not allowed" });
         return;
-      } else if (winners.length < (gameMemberCount ?? 0)) {
+      } else if (winners.length < (battleScore?.player1.winnerCount ?? 0)) {
         res.status(401).json({ error: "not allowed" });
         return;
       }

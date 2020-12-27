@@ -2832,7 +2832,7 @@ GamesRouter.post(
           let _player = find(players, { ticket: winner }) ?? { id: "" };
           await Promise.all([
             await GameModel.updateOne(
-              { _id: _player.id },
+              { _id: id },
               {
                 $set: {
                   [`players.${index}.winner`]: true,

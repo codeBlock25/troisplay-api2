@@ -1221,7 +1221,7 @@ GamesRouter.post(
       );
       if (winner === GameRec.win) {
         await NotificationAction.add({
-          message: `you have just lost a game from playing a roshambo game and have lost ₦ ${GameCash.playerMoney(
+          message: `you have just lost a game from playing a Rock, paper and Scissor game and have lost ₦ ${GameCash.playerMoney(
             {
               commission: commission_roshambo,
               cashRating: cashRating,
@@ -1304,7 +1304,7 @@ GamesRouter.post(
         return;
       } else if (winner === GameRec.draw) {
         await NotificationAction.add({
-          message: `you have just drawn in a game from playing a roshambo game and have recieved ₦ ${GameCash.drawCash(
+          message: `you have just drawn in a game from playing a Rock, paper and Scissor game and have recieved ₦ ${GameCash.drawCash(
             {
               commission: commission_roshambo,
               cashRating: cashRating,
@@ -1403,7 +1403,7 @@ GamesRouter.post(
         return;
       } else {
         await NotificationAction.add({
-          message: `you have just won a game from playing a roshambo game and have earned ₦ ${GameCash.playerMoney(
+          message: `you have just won a game from playing a Rock, paper and Scissor game and have earned ₦ ${GameCash.playerMoney(
             {
               commission: commission_roshambo,
               cashRating: cashRating,

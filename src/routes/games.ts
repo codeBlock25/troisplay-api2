@@ -554,7 +554,7 @@ GamesRouter.post("/roshambo", async (req: Request, res: Response) => {
       priceType: "virtual",
       price_in_coin: price_in_cash * cashRating ?? 0,
       price_in_value: price_in_cash,
-      gameDetail: "A roshamo (i.e rock, paper, scriossor) game for two.",
+      gameDetail: "A roshambo (i.e rock, paper, scissors) game for two.",
       gameID: Games.roshambo,
       battleScore: { player1: gameInPut },
     })
@@ -665,7 +665,7 @@ GamesRouter.post("/penalty", async (req: Request, res: Response) => {
       priceType: "virtual",
       price_in_coin: price_in_cash * cashRating ?? 0,
       price_in_value: price_in_cash,
-      gameDetail: "A penalt card game for two.",
+      gameDetail: "A penalty card game for two.",
       gameID: Games.penalth_card,
       battleScore: { player1: gameInPut },
     })

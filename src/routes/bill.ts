@@ -68,7 +68,7 @@ BillRouter.post("/airtime", async (req: Request, res: Response) => {
     if (!isUser) {
       res.status(400).json({
         error: "incorrect key",
-        messagee: "error found",
+        message: "error found",
         k: {
           phone_number: phone_number.includes("+")
             ? phone_number
